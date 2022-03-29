@@ -1,0 +1,90 @@
+install.packages("tidyverse")
+library(tidyverse)
+
+install.packages("ggthemes")
+library(ggthemes)
+
+install.packages("deflateBR")
+library(deflateBR)
+
+
+# DOUTORADO -------------------------------------------------------------------------------------------------------
+
+bolsas_doutorado <- as_tibble(bolsas_doutorado)
+bolsas_doutorado
+
+bolsas_doutorado <- edit(bolsas_doutorado)
+names(bolsas_doutorado)[1:2] <- c("mes", "doutorado") #mudando o nome das colunas
+names(bolsas_mestrado)[1:2] <- c("mes", "mestrado")
+
+bolsas_doutorado$def <- deflate(nominal_values =  bolsas_doutorado$doutorado, nominal_dates =  as.Date(bolsas_doutorado$mes),
+        real_date =  "02/2022", index = "ipca")
+
+bolsas_doutorado %>% ggplot() + 
+  geom_line(mapping = aes(x = mes, y = doutorado), size = 1.5) +
+  geom_line(aes(x = mes, y = def), color = "blue", linetype = "twodash", size = 1.5) + theme_economist() +
+  ylim(2000, 4000) + xlab(NULL) + ylab(NULL) +
+  labs(title = "Bolsas de Doutorado no Brasil", caption = "Deflacionamento via deflateBR.\n Autor: Daniel Consul") +
+  theme(plot.title= element_text(hjust=0.5))
+
+
+# MESTRADO --------------------------------------------------------------------------------------------------------
+
+bolsas_mestrado$def <- deflate(nominal_values =  bolsas_mestrado$mestrado, nominal_dates =  as.Date(bolsas_mestrado$mes),
+                                real_date =  "02/2022", index = "ipca")
+
+bolsas_mestrado %>% ggplot() + 
+  geom_line(mapping = aes(x = mes, y = mestrado), size = 1.5) +
+  geom_line(aes(x = mes, y = def), color = "blue", linetype = "twodash", size = 1.5) + theme_economist() +
+  ylim(1000, 3000) + xlab(NULL) + ylab(NULL) +
+  labs(title = "Bolsas de Mestrado no Brasil", caption = "Deflacionamento via deflateBR.\n Autor: Daniel Consul") +
+  theme(plot.title = element_text(hjust=0.5))
+
+
+
+# MESTRADO - OK -----------------------------------------------------------------------------------------------------------
+
+install.packages("reshape2")
+library(reshape2)
+
+teste <- bolsas_mestrado
+
+teste <- data.frame(Data = teste, mestrado = "1", def = "2")
+
+teste <- stack(teste,select=(1:3)) #agrupando os dados
+
+levels(teste$ind)[levels(teste$ind) == "Data.mestrado"] <- "Valores nominais" #substituindo valores de células
+levels(teste$ind)[levels(teste$ind) == "Valores deflacionados"] <- "Valores deflacionados - Preços de 02/2022" #substituindo valores de células
+
+teste$mes <- seq(as.Date('01/04/2013', "%d/%m/%Y"), as.Date('28/02/2022', "%d/%m/%Y"), by = "months")
+#criando uma coluna de datas
+
+ggplot(data = teste, aes(x = mes, y = values, color = ind)) + theme_economist() + 
+  geom_line(size = 1.5, linetype = "solid") + ylim(1000, 3000) + labs(x= " ", y = " ",
+                                                                      title = "Bolsas de Pós-Graduação em R$ \n \n Mestrado", 
+                                        caption = "Deflacionamento via deflateBR.\n Autor: Daniel Consul.", #caption coloca notinha de rodapé no gráfico
+                                        colour = " ") + #colour = " " tira o nome da legenda
+  theme(plot.title= element_text(hjust=0.5), legend.position = "bottom") + scale_color_economist()
+
+
+# DOUTORADO OK ----------------------------------------------------------------------------------------------------
+
+
+bolsas_doutorado <- data.frame(Data = bolsas_doutorado, doutorado = "1", def = "2")
+
+bolsas_doutorado <- stack(bolsas_doutorado,select=(1:3)) #agrupando os dados
+bolsas_doutorado
+
+levels(bolsas_doutorado$ind)[levels(bolsas_doutorado$ind) == "Data.doutorado"] <- "Valores nominais" #substituindo valores de células
+levels(bolsas_doutorado$ind)[levels(bolsas_doutorado$ind) == "Data.def"] <- "Valores deflacionados - Preços de 02/2022"
+bolsas_doutorado
+
+bolsas_doutorado$mes <- seq(as.Date('01/04/2013', "%d/%m/%Y"), as.Date('28/02/2022', "%d/%m/%Y"), by = "months")
+bolsas_doutorado
+
+ggplot(data = bolsas_doutorado, aes(x = mes, y = values, color = ind)) + theme_economist() + 
+  geom_line(size = 1.5, linetype = "solid") + ylim(2000, 4000) + labs(x= " ", y = " ",
+                                                                      title = "Bolsas de Pós-Graduação em R$ \n \n Doutorado", 
+                                                                      caption = "Deflacionamento via deflateBR.\n Autor: Daniel Consul.", #caption coloca notinha de rodapé no gráfico
+                                                                      colour = " ") + #colour = " " tira o nome da legenda
+  theme(plot.title= element_text(hjust=0.5), legend.position = "bottom") + scale_color_economist()
