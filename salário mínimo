@@ -1,0 +1,38 @@
+install.packages("tidyverse")
+library(tidyverse)
+
+dados$ano <- as.numeric(dados$ano)
+dados$salario <- as.numeric(dados$salario)
+
+graph <- dados %>% ggplot() + 
+  geom_line(mapping = aes(x = ano, y = salario), size = 1, colour = "blue") + theme_classic() +
+  ylim(0, 2000) + xlim(1940, 2021) + ylab(NULL) + xlab(NULL) +
+  labs(title = "Salário Mínimo real no Brasil \n(1941-2021)",
+       caption = "Deflacionado pelo IPCA (R$ do último mês)\n Fonte: Ipeadata. \nElaboração: Daniel Consul.") +
+  theme(plot.title = element_text(hjust = 0.5), axis.line.y = element_line(size = 1), axis.line.x = element_line(size = 1)) +
+  geom_vline(xintercept = c(1945, 1951, 1954, 1956, 1961, 1964, 1985, 1990, 1992, 1995, 2003, 2011, 2016, 2019),
+             size = 1, colour = "gray") +
+  annotate("text", x = 1940, y = 2000, label = text) +
+  annotate("text", x = 1948, y = 2000, label = text1) +
+  annotate("text", x = 1959, y = 2000, label = text2) +
+  annotate("text", x = 1975, y = 2000, label = text3) +
+  annotate("text", x = 1999, y = 2000, label = text4) +
+  annotate("text", x = 2007, y = 2000, label = text5) +
+  annotate("text", x = 2014, y = 2000, label = text6) +
+  annotate("text", x = 2021, y = 2000, label = text7)
+
+text <- "GV"
+text1 <- "Dutra"
+text2 <- "JK"
+text3 <- "Ditadura"
+text4 <- "FHC"
+text5 <- "Lula"
+text6 <- "Dilma"
+text7 <- "Bolso\nnaro"
+
+install.packages("gganimate")
+library(gganimate)
+
+graph <- graph + transition_reveal(ano)
+
+animate(graph, fps = 12, height = 800, width = 1200)
