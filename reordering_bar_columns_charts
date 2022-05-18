@@ -1,0 +1,177 @@
+#by: https://guslipkin.medium.com/reordering-bar-and-column-charts-with-ggplot2-in-r-435fad1c643e
+
+install.packages("tidyverse")
+library(tidyverse)
+
+set.seed(2022)
+days_of_the_week <- c("Sunday", "Monday", "Tuesday", "Wednesday", 
+                      "Thursday", "Friday", "Saturday") #criando um vetor com os nomes dos dias
+sales <- data.frame("dayOfMonth" = rep(1:28, 12), #criando uma coluna com 12 grupos de números de 1 a 28
+                    "month" = rep(month.name, each = 28), #criando uma coluna de meses a cada 28 dias
+                    "weekday" = rep(days_of_the_week, 12*4), #12*4 = 48... 336/48 = 7
+                    "paintings" = round(rnorm(28*12, c(sample(1:28, 7)))))
+
+meses_ano <- c("Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+               "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro")
+#se quisesse os meses em português era só trocar "month.name" por "meses_ano" na linha 10
+head(sales, 7)
+
+sales %>%
+  group_by(weekday) %>% #agrupa por dia da semana
+  summarise(weekdaySales = mean(paintings)) %>% #resume as médias da coluna "paintings" por dia da semana
+  ggplot() +
+  labs(title = "Mean Painting Sales by Day of the Week",
+       x = "Day of the Week",
+       y = "Mean Painting Sales") +
+  scale_fill_brewer(palette = "Set2") + #paleta de cores
+  geom_bar(aes(x = weekday, y = weekdaySales, fill = weekday),  #fill = weekday colore as barras
+           stat = "identity", show.legend = FALSE) #esconder legenda
+#we set stat = "identity" so that the y axis value is used
+
+#Unfortunately, our days of the week are not in order. Ajustando isso:
+
+sales %>%
+  group_by(weekday) %>%
+  summarise(weekdaySales = mean(paintings)) %>%
+  ggplot() +
+  labs(title = "Mean Weekly Painting Sales by Day of the Week",
+       x = "Day of the Week",
+       y = "Mean Painting Sales") + 
+  scale_fill_brewer(palette = "Set1") +
+  geom_bar(aes(x = factor(weekday, days_of_the_week), y = weekdaySales, 
+               fill = weekday), stat = "identity", show.legend = FALSE)
+# #By changing x = weekday to x = factor(weekday, days_of_the_week), we can get the days in order. 
+# The key here is that factor() takes two arguments; a vector of data and a vector defining the levels of the data in order.
+# In this case, days_of_the_week defines the levels in order.
+
+#ASCEDING OR DESCENDING ORDER:
+
+sales %>%
+  group_by(weekday) %>%
+  summarise(weekdaySales = mean(paintings)) %>%
+  ggplot() +
+  labs(title = "Mean Weekly Painting Sales in Ascending Order",
+       x = "Day of the Week",
+       y = "Mean Painting Sales") + 
+  scale_fill_brewer(palette = "Set1") +
+  geom_bar(aes(x = reorder(weekday, weekdaySales), y = weekdaySales, 
+               fill = weekday), stat = "identity", show.legend = FALSE)
+#reorder allows us to reorder by numeric value. The first argument is the vector we want to change, in this case, 
+# weekday, and we want to change it to match the order of the second argument, weekdaySales.
+#Default is ASCENDING ORDER.
+
+#Revertendo a ordem:
+
+sales %>%
+  group_by(weekday) %>%
+  summarise(weekdaySales = mean(paintings)) %>%
+  ggplot() +
+  labs(title = "Mean Weekly Painting Sales in Descending Order",
+       x = "Day of the Week",
+       y = "Mean Painting Sales") + 
+  scale_fill_brewer(palette = "Set2") +
+  geom_bar(aes(x = reorder(weekday, -weekdaySales), y = weekdaySales, #-weekdaySales reverte a ordem
+               fill = weekday), stat = "identity", show.legend = FALSE)
+
+sales$paintings <- round(rnorm(28*12, c(sample(1:28, 28*12, replace = TRUE))))
+
+sales %>%
+  group_by(month, weekday) %>% #agrupa por mês e dia da semana
+  summarise(weekdaySales = mean(paintings)) %>%
+  ggplot() +
+  labs(title = "Daily Painting Sales by Month",
+       x = "Mean Painting Sales",
+       y = "Day of the Week") + 
+  scale_fill_brewer(palette = "Set1") +
+  geom_bar(aes(x = weekdaySales, y = factor(weekday, rev(days_of_the_week)), 
+               fill = weekday), stat = "identity", show.legend = FALSE) +
+  facet_wrap(~ month) #mostra um mini-gráfico por mês
+#os meses não estão organizados na ordem correta
+#O QUE FAZER?
+
+install.packages("tidytext")
+library(tidytext)
+
+# Instead of using factor() and reorder(), we change the y axis argument in aes() to use reorder_within:
+# y = reorder_within(weekday, weekdaySales, month). Our first argument, weekday is the vector we want to reorder.
+# The second argument, weekdaySales is the variable we want to use for reordering.
+# The last argument, month, is the variable we want to use for grouping.
+
+sales %>%
+  group_by(month, weekday) %>%
+  summarise(weekdaySales = mean(paintings)) %>%
+  ggplot() +
+  labs(title = "Daily Painting Sales in Descending Order by Month",
+       x = "Mean Painting Sales",
+       y = "Day of the Week") +
+  scale_fill_brewer(palette = "Set2") +
+  geom_bar(aes(x = weekdaySales, 
+               y = reorder_within(weekday, weekdaySales, month), 
+               fill = weekday), stat = "identity", show.legend = FALSE) +
+  facet_wrap(~ month, scales = "free_y") +
+  scale_y_reordered()
+
+sales %>%
+  group_by(month, weekday) %>%
+  summarise(weekdaySales = mean(paintings)) %>%
+  ggplot() +
+  labs(title = "Daily Painting Sales in Ascending Order by Month",
+       x = "Mean Painting Sales",
+       y = "Day of the Week") +
+  scale_fill_brewer(palette = "Set2") +
+  geom_bar(aes(x = weekdaySales, 
+               y = reorder_within(weekday, -weekdaySales, month), 
+               fill = weekday), stat = "identity", show.legend = FALSE) +
+  facet_wrap(~ month, scales = "free_y") +
+  scale_y_reordered()
+
+#CRIAR FACTORS PARA PÔR EM ORDEM:
+
+sales$month <- factor(sales$month, levels = month.name) #fator para pôr em ordem
+sales$weekday <- factor(sales$weekday, levels = rev(days_of_the_week)) #fator para pôr em ordem
+
+sales %>%
+  group_by(month, weekday) %>%
+  summarise(weekdaySales = mean(paintings)) %>%
+  ggplot() +
+  labs(title = "Daily Painting Sales in Descending Order by Month",
+       x = "Mean Painting Sales",
+       y = "Day of the Week") +
+  scale_fill_brewer(palette = "Set1") +
+  geom_bar(aes(x = weekdaySales, y = weekday, fill = weekday), 
+           stat = "identity", show.legend = FALSE) +
+  facet_wrap(~ month) #agora tudo em ordem de calendário
+
+
+# CRIANDO O GRÁFICO EM ORDEM MAS EM PT-BR: ------------------------------------------------------------------------
+
+meses_ano <- c("Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+               "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro")
+
+dias_semana <- c("Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", 
+                      "Quinta-feira", "Sexta-feira", "Sábado")
+
+sales1 <- sales
+
+sales1$meses_ano <- meses_ano
+sales1$dias_semana <- dias_semana
+
+#para ordenar de acordo com o calendário:
+sales1$meses_ano <- factor(sales1$meses_ano, levels = meses_ano)
+sales1$dias_semana <- factor(sales1$dias_semana, levels = rev(dias_semana))
+
+
+
+sales1 %>%
+  group_by(meses_ano, dias_semana) %>%
+  summarise(weekdaySales = mean(paintings)) %>%
+  ggplot() +
+  labs(title = "Vendas diárias por mês",
+       x = "Vendas médias",
+       y = "Dia da semana") +
+  scale_fill_brewer(palette = "Set1") + theme_bw() + 
+  geom_bar(aes(x = weekdaySales, y = dias_semana, fill = dias_semana), 
+           stat = "identity", show.legend = FALSE) +
+  facet_wrap(~ meses_ano) #agora tudo em ordem de calendário
+
+
