@@ -1,0 +1,45 @@
+library(tidyverse)
+library("janitor")
+
+# CDS -------------------------------------------------------------------------------------------------------------
+
+cds <- cds %>% clean_names()
+
+cds <- cds %>% select(periodo, africa_do_sul, brasil, chile, colombia, mexico, russia, indonesia, turquia)
+
+cds <- cds %>% filter(periodo >= "2002-12-01" & periodo <= "2019-12-01")
+
+cds <- cds %>% rename(`South Africa` = africa_do_sul, Brazil = brasil, Chile = chile, Colombia = colombia, Mexico = mexico, Russia = russia, Turkey = turquia, Indonesia = indonesia, month = periodo)
+
+cds$month <- as.Date(cds$month)
+month <- cds$month
+
+cds <- cds %>% select(order(colnames(cds))) #ordenando por ordem alfabética as colunas
+
+cds <- stack(cds, select = (1:9)) #agrupando os dados
+
+cds$month <- rep(month, 8)                                                           
+
+cds <- cds %>% rename(cds_value = values, country = ind)
+
+graph_cds <- cds %>% ggplot(aes(x = month, y = cds_value)) + geom_area(color = "black", fill = "black") +
+  xlab(NULL) + ylab(NULL) + theme_light() + facet_wrap(~ country, strip.position = "top", #nome dos países no topo
+                                                       nrow = 2, ncol = 4)
+
+
+# EMBI+ -----------------------------------------------------------------------------------------------------------
+
+embi$month <- as.Date(embi$month)
+
+embi <- embi %>% select(order(colnames(embi))) #ordenando por ordem alfabética as colunas
+
+embi <- stack(embi, select = (1:9)) #agrupando os dados
+
+embi$month <- rep(month, 8)
+
+embi <- embi %>% rename(embi_value = values, country = ind)
+
+embi %>% ggplot(aes(x = month, y = embi_value)) + geom_area(color = "black", fill = "black") +
+  xlab(NULL) + ylab(NULL) + theme_light() + facet_wrap(~ country, strip.position = "top", #nome dos países no topo
+                                                       nrow = 2, ncol = 4)
+
