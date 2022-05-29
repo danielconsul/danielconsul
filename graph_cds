@@ -1,0 +1,24 @@
+# CDS PANDEMIC GRAPH ----------------------------------------------------------------------------------------------
+
+month <- seq(as.Date('2019/10/01', "%Y/%m/%d"), as.Date('2020/12/01', "%Y/%m/%d"), by = "months") #criando vetor de datas
+
+Sys.setlocale(category = "LC_ALL", locale = "C") #RETIRANDO A LOCALIDADE BRASIL PARA FAZER GRÁFICOS EM INGLÊS
+
+cds1 <- stack(cds, select = (1:9)) #agrupando os dados
+cds1$month <- rep(month, 8)
+cds1 <- edit(cds1)
+cds1$month <- as.Date(cds1$month)
+class(cds1$month)
+
+cds1 %>% ggplot() +
+  geom_line(mapping = aes(x = month, y = cds_values, color = countries), size = 1.2) + theme_light() +
+  theme(legend.position = "bottom") +  guides(colour = guide_legend(nrow = 1, override.aes = list(size = 3))) +
+  scale_colour_brewer(palette = "Set1") + 
+  geom_segment(aes(y = 177.346, yend = 110.843, x = as.Date("2020-04-01", "%Y-%m-%d"), 
+                   xend = as.Date("2020-06-01", "%Y-%m-%d")), size = 1.2, linetype = "dotted") + 
+  geom_segment(aes(y = 592.288, yend = 490.809, x = as.Date("2020-04-01", "%Y-%m-%d"), 
+                   xend = as.Date("2020-06-01", "%Y-%m-%d")), size = 1.2, linetype = "dotted") +
+  labs(x = " ", y = " ", colour = " ", caption = "No data for Russia and Turkey in May 2020.") + 
+  geom_vline(xintercept = as.Date("2020-03-11", "%Y-%m-%d"), size = 1.2, linetype = "twodash") +
+  annotate("text", y = 0, x = as.Date("2020-06-05", "%Y-%m-%d"), label = "WHO declares COVID-19 as a pandemic") +
+  scale_y_continuous(n.breaks = 12) #número de quebras no eixo y
