@@ -1,0 +1,14 @@
+
+# CRUVA DE PHILLIPS BRASILEIRA ------------------------------------------------------------------------------------
+library(tidyverse)
+library(ggrepel) #pacote para os labels não ficarem sobre os pontos
+
+dados$year <- seq(from = 1995, to = 2020)
+
+dados %>% ggplot() + 
+  geom_point(mapping = aes(x = unemp, y = inflation), size = 1.5) +
+  geom_smooth(mapping = aes(x = unemp, y = inflation), method = "lm", size = 1.5) + theme_light() +
+  labs(x = "Taxa de desemprego", y = "Taxa de inflação anual",
+       title = "Curva de Phillips para o Brasil - 1995-2020", caption = "Fonte: FMI.") + theme(legend.position = "none") +
+  geom_label_repel(mapping = aes(x = unemp, y = inflation, label = year), size = 3) + #para tirar a etiqueta dos anos de cima dos pontos
+  scale_y_continuous(n.breaks = 12) + scale_x_continuous(n.breaks = 12)
