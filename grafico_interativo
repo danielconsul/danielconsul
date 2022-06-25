@@ -1,13 +1,6 @@
-install.packages("tidyverse")
 library(tidyverse)
-
-install.packages("gganimate")
 library(gganimate)
-
-install.packages("gifski")
 library(gifski)
-
-install.packages("ggthemes")
 library(ggthemes)
 
 dados1 <- select(dados, periodo, PIB)
@@ -15,7 +8,6 @@ dados2 <- filter(dados1, between(periodo, 1995, 2021))
 
 remove(dados2)
 
-install.packages("deflateBR")
 library(deflateBR)
 
 
@@ -54,8 +46,6 @@ bolsas_mestrado %>% ggplot() +
 
 
 # MESTRADO - OK -----------------------------------------------------------------------------------------------------------
-
-install.packages("reshape2")
 library(reshape2)
 
 teste <- bolsas_mestrado
@@ -101,7 +91,6 @@ d <- ggplot(data = bolsas_doutorado, aes(x = mes, y = values, color = ind)) + th
 
 # ORÇAMENTO CAPES -------------------------------------------------------------------------------------------------
 
-install.packages("ggthemes")
 library(ggthemes)
 options(scipen = 999) #evita número em notação científica
 bolsas$ano <- seq(as.Date('01/01/2004', "%d/%m/%Y"), as.Date('01/01/2021', "%d/%m/%Y"), by = "year")
