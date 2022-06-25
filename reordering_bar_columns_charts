@@ -1,6 +1,5 @@
 #by: https://guslipkin.medium.com/reordering-bar-and-column-charts-with-ggplot2-in-r-435fad1c643e
 
-install.packages("tidyverse")
 library(tidyverse)
 
 set.seed(2022)
@@ -89,7 +88,6 @@ sales %>%
 #os meses não estão organizados na ordem correta
 #O QUE FAZER?
 
-install.packages("tidytext")
 library(tidytext)
 
 # Instead of using factor() and reorder(), we change the y axis argument in aes() to use reorder_within:
