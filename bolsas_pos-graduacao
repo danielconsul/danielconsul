@@ -1,10 +1,5 @@
-install.packages("tidyverse")
 library(tidyverse)
-
-install.packages("ggthemes")
 library(ggthemes)
-
-install.packages("deflateBR")
 library(deflateBR)
 
 
@@ -44,7 +39,6 @@ bolsas_mestrado %>% ggplot() +
 
 # MESTRADO - OK -----------------------------------------------------------------------------------------------------------
 
-install.packages("reshape2")
 library(reshape2)
 
 teste <- bolsas_mestrado
