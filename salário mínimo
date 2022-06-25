@@ -1,4 +1,3 @@
-install.packages("tidyverse")
 library(tidyverse)
 
 dados$ano <- as.numeric(dados$ano)
@@ -30,7 +29,6 @@ text5 <- "Lula"
 text6 <- "Dilma"
 text7 <- "Bolso\nnaro"
 
-install.packages("gganimate")
 library(gganimate)
 
 graph <- graph + transition_reveal(ano)
