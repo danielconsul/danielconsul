@@ -1,0 +1,30 @@
+# FILTRANDO LINHAS ------------------------------------------------------------------------------------------------
+library(tidyverse)
+
+fruit <- c("apple", "banana", "pear", "pinapple")
+
+str_detect(fruit, "a") #contém a
+str_detect(fruit, "^a") #começa com a
+str_detect(fruit, "a$") #termina com a
+str_detect(fruit, "b") #contem b
+str_detect(fruit, "[aeiou]") #procura os caracteres a, e, i, o , u
+
+dados %>% filter(str_detect(Species, "^vir")) #linhas que começam com vir
+
+dados %>% filter(str_detect(Species, "lor$")) #linhas que terminam com lor
+
+dados %>% filter(str_detect(Species, "[wr]")) #linhas que contém w ou r
+
+dados %>% filter(str_detect(Species, "^set")) #linhas que começam com set
+
+dados %>% filter(str_detect(Species, "[vr]")) #contém v ou r
+
+#XERCÍCIO:
+
+tabela1 <- dados %>% filter(str_detect(Species, "^ver")) #começa com ver
+
+tabela2 <- dados %>% filter(str_detect(Species, "ca$")) #termina com ca
+
+#juntando as tabelas:
+
+tabela3 <- bind_rows(tabela1, tabela2)
