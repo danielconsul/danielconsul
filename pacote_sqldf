@@ -1,0 +1,68 @@
+# Pacote sqldf ----------------------------------------------------------------------------------------------------
+library(sqldf)
+
+sqldf('select * from dados where "Species" like "%ca"')
+#seleciona as espécies que terminam em "ca"
+
+sqldf('select * from dados where "Species" like "se_o%"')
+#seleciona palavras que começam com "se" tem um caracter, a letra "o" e terminam em outros termos
+
+sqldf('select * from dados where "Species" = "setosa"')
+#seleciona as linhas com espécie "setosa"
+
+sqldf('select * from dados where "Sepal.Length" > 7')
+#seleciona linhas com Sepal.Legth maior que 7
+
+sqldf('select * from dados where "Sepal.Length" between 6 and 7 order by "Sepal.Length"')
+#seleciona linhas com Sepal.Length entre 6 e 7 e ordena por ordem crescente
+
+sqldf('select * from dados where "Sepal.Length" between 6 and 7 order by "Species"')
+#seleciona linhas com Sepal.Length entre 6 e 7 e ordena por espécie
+
+sqldf('select * from dados where "Sepal.Length" between 6 and 7 order by "Sepal.Length" desc')
+#seleciona linhas com Sepal.Length entre 6 e 7 e ordena por ordem decrescente
+
+sqldf('select * from dados where "Sepal.Length" > 7 and "Sepal.Width" < 3')
+#seleciona linhas com Sepal.Length > 7 e Sepal.Width < 3
+
+sqldf('select * from dados where "Sepal.Length" > 7 or "Sepal.Width" < 3')
+#seleciona linhas com Sepal.Length > 7 ou Sepal.Width < 3
+
+sqldf('select * from dados where "Species" not like "set%"')
+#seleciona linhas com dados em que Species não se parece com "set"
+
+sqldf('select * from dados where "Species" not like "v%"')
+#seleciona linhas com Species que não começam com "v"
+
+sqldf('select distinct Species from dados')
+#retorna os valores únicos da coluna Species, sem os dados que se repetem
+
+sqldf('select distinct "Petal.Width" from dados')
+#retorna os valores únicos da coluna Petal.Width, sem os valores que se repetem
+
+sqldf('select count(*) from dados where "Sepal.Length" > 6')
+#conta o total de linhas em que Sepal.Length é maior do que 6
+
+sqldf('select max("Sepal.Length") from dados')
+#seleciona o valor máximo da coluna Sepal. Length
+
+sqldf('select min("Sepal.Length") from dados')
+#seleciona o valor mínimo da coluna Sepal. Length
+
+sqldf('select sum("Sepal.Length") from dados')
+#retorna a soma da coluna Sepal.Length
+
+sqldf('select avg("Sepal.Length") from dados')
+#retorna a média da coluna Sepal.Length
+
+sqldf('select "Species" from dados group by "Species"')
+#agrupa as espécies por tipo
+
+sqldf('select "Species", count(Species) from dados group by "Species"')
+#mostra a quantidade de espécimes agrupados dentro de cada espécie
+
+sqldf('select "Sepal.Length", count("Sepal.Length") from dados group by "Sepal.Length"')
+#mostra a quantidade de vezes que elementos da coluna Sepal.Length se repetem
+
+sqldf('select "Sepal.Length", count("Sepal.Length") from dados group by "Sepal.Length" having count("Sepal.Length") > 5')
+#mostra apenas os agrupamentos que possuem mais do que cinco ocorrências
