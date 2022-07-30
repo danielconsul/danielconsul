@@ -1,0 +1,39 @@
+#DECOMPOSIÇÃO DA SÉRIE TEMPORAL:
+#Tendência, sazonalidade, aleatoriedade
+
+library(dygraphs)
+
+dados <- ts(dados$passengers, start = c(1949,1), freq = 12) #criando a série temporal com o período dos dados
+
+# The additive model used is:
+#   
+#   Y[t] = T[t] + S[t] + e[t]
+# 
+# The multiplicative model used is:
+#   
+#   Y[t] = T[t] * S[t] * e[t]
+
+
+decomp_adit <- decompose(dados, type = "additive") #decomposição aditiva
+
+decomp_mult <- decompose(dados, type = "multiplicative") #decomposição multiplicativa
+
+plot(decomp_adit) #plotando a decomposição aditiva
+
+plot(decomp_mult) #plotando a decomposição multiplicativa
+
+decomp_adit$seasonal #componente sazonal
+
+decomp_adit$trend #componente da tendência
+
+decomp_adit$random #componente aleatório
+
+decomp_adit$type #mostra o tipo da decomposição, se aditiva ou multiplicativa
+
+plot(decomp_adit$trend) #plota a tendência
+
+plot(decomp_adit$seasonal) #plota a sazonalidade
+
+plot(decomp_adit$x) #plota os dados observados
+
+plot(decomp_adit$random) #plota a parte aleatória
