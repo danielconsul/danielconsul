@@ -1,0 +1,255 @@
+library(tidyverse)
+
+#1. Summarise cases:
+
+# Apply summary functions to columns to create a new table of
+# summary statistics. Summary functions take vectors as input and
+# return one value.
+
+summarise(mtcars, avg = mean(mpg))
+
+# Count number of rows in each group
+# defined by the variables in … Also tally().
+
+count(mtcars, cyl) #conta a quantidade de elementos da coluna
+tally(mtcars, cyl) #soma a coluna
+count(iris, Species)
+
+#2. Group cases:
+
+# Use group_by(.data, …, .add = FALSE, .drop = TRUE) to create a
+# "grouped" copy of a table grouped by columns in ... dplyr
+# functions will manipulate each "group" separately and combine
+# the results.
+
+mtcars %>%
+  group_by(cyl) %>%
+  summarise(avg = mean(mpg)) #cria a média de mpg para cada grupo
+
+iris %>% 
+  group_by(Species) %>% 
+  summarise(avg = mean(Sepal.Length)) #média de Sepal.Length por espécie
+
+iris %>% 
+  group_by(Species) %>% 
+  summarise(soma = sum(Sepal.Width))
+
+# Use rowwise(.data, …) to group data into individual rows. dplyr
+# functions will compute results for each row. Also apply functions
+# to list-columns. See tidyr cheat sheet for list-column workflow.
+
+starwars_1 <- starwars %>%
+  rowwise() %>%
+  mutate(film_count = length(films))
+#a coluna "films" é uma lista. Essa função conta a quantidade de elementos da lista
+
+starwars_1 <- starwars %>%
+  rowwise() %>%
+  mutate(vehicles_count = length(vehicles))
+
+# ungroup(x, …) Returns ungrouped copy of table.
+
+ungroup(mtcars)
+
+#3. Manipulate cases:
+
+filter(mtcars, mpg > 20) #filtra linhas
+
+distinct(mtcars, gear) #remove rows with duplicate values
+distinct(mtcars, carb)
+
+slice(mtcars, 10:15) #selecione linhas por posição
+
+slice_sample(mtcars, n = 5, replace = TRUE) #seleciona linhas aleatoriamente
+
+slice_min(mtcars, mpg, prop = 0.25) #seleciona o quarto maior e o quarto menor mpg
+
+slice_head(mtcars, n = 5) #seleciona as cinco primeiras linhas
+slice_tail(mtcars, n = 5) #seleciona as últimas cinco linhas
+
+95.1 %in% mtcars$disp #retorna TRUE se houver 95.1 em alguma linha da coluna disp
+
+arrange(mtcars, mpg) #ordena a tabela por ordem crescente da variável mpg
+arrange(mtcars, desc(mpg)) #ordena a tabela por ordem decrescente da variável mpg
+
+add_row(cars, speed = 1, dist = 1) #add uma linha na tabela
+
+#4. Manipulate variables:
+
+pull(mtcars, wt) #extrai os valores da variável como um vetor
+
+select(mtcars, mpg, wt) #extrai colunas
+
+relocate(mtcars, mpg, cyl, .after = last_col()) #reordena colunas
+
+summarise(mtcars, across(everything(), mean)) #apresenta a média de cada uma das colunas
+summarise(mtcars, across(everything(), sd))
+
+mutate(mtcars, gpm = 1 / mpg) #cria uma nova variável chamada gpm a partir de algum cálculo
+
+transmute(mtcars, gpm = 1 / mpg) #cria a nova variável mas exclui todas as outras
+
+rename(cars, distance = dist) #renomea a coluna dist para distance
+
+#5. Vectorized functions:
+
+# Vectorized functions take vectors as input and return vectors of the same length as output.
+
+lag(iris$Sepal.Length) #cria um vetor com uma defasagem
+lag(iris$Sepal.Width, 3) #cria um vetor com três defasagens
+
+lead(iris$Sepal.Length) #atrasa os dados em uma observação
+
+cumsum(1:10) #acumula a soma dos elementos
+cumprod(1:10) #acumula a multiplicação dos elementos
+cummin(1:10) #retorna o mínimo da série
+cummax(1:10) #retorna o máximo da série
+
+cume_dist(1:10) #retorna a proporção de todos os valores
+cume_dist(iris$Sepal.Length)
+
+log10(iris$Sepal.Length) #log na base 10
+log(1:10) #logaritmo natural
+
+# case_when is particularly useful inside mutate when you want to
+# create a new variable that relies on a complex combination of existing
+# variables
+
+starwars %>%
+  select(name:mass, gender, species) %>%
+  mutate(
+    type = case_when(
+      height > 200 | mass > 200 ~ "large",
+      species == "Droid"        ~ "robot",
+      TRUE                      ~ "other"
+    )
+  )
+
+iris %>% 
+  select(Sepal.Length, Species) %>% 
+  mutate(
+    type = case_when(
+      Sepal.Length > 5.5 ~ "large",
+      TRUE ~ "not_large"
+    ))
+
+#case_when cria uma nova coluna de acordo com dada classificação
+
+starwars %>%
+  select(name:mass, gender) %>%
+  mutate(
+    type = case_when(
+      height > 150 & mass > 100 ~ "large",
+      TRUE                      ~ "other"
+    )
+  )
+
+
+# 6. Summary functions:
+
+n_distinct(iris) #retorna a quantidade de linhas únicas no dataframe
+
+duplicated(iris) #mostra linha duplicada
+
+!duplicated(iris) #mostra linha não duplicada
+
+iris %>% filter(duplicated(iris)) #mostra as informações da linha duplicada
+
+iris %>% filter(Sepal.Length == 5.8 & Sepal.Width == 2.7 & Petal.Length == 5.1 & 
+                  Petal.Width == 1.9 & Species == "virginica")
+
+first(iris$Sepal.Length) #primeiro valor da variável
+last(iris$Petal.Length) #último valor da variável
+
+iris1 <- distinct(iris) #cria uma tabela sem linhas repetidas
+
+nth(iris$Sepal.Length, 4) #localiza a linha 4 da variável
+
+quantile(iris$Sepal.Length, 0.25) #primeiro quartil
+quantile(iris$Sepal.Length, 0.50) #segundo quartil = mediana
+median(iris$Sepal.Length)
+
+min(iris$Sepal.Length) #valor mínimo
+max(iris$Sepal.Length) #valor máximo
+
+IQR(iris$Sepal.Length) #intervalor interquartílico: IQR(x) = quantile(x, 3/4) - quantile(x, 1/4).
+
+mad(iris$Sepal.Length) #median absolute deviation
+
+# 7. Row names:
+
+# Tidy data does not use rownames, which store a
+# variable outside of the columns. To work with the
+# rownames, first move them into a column.
+
+mtcars
+a <- rownames_to_column(mtcars, var = "C") #transforma os nomes dos carros em uma coluna
+a
+
+USArrests <- rownames_to_column(USArrests, var = "State")
+
+column_to_rownames(a, var = "C") #desfaz o feito
+
+column_to_rownames(USArrests, var = "State") #desfaz o feito
+
+has_rownames(USArrests) #TRUE or FALSE
+
+# 8. Combine tables:
+
+bind_colunas <- bind_cols(head(iris, 10), head(mtcars, 10)) 
+#junta duas tabelas. Precisam ter o mesmo número de linhas
+
+left <- left_join(vix, juro, by = "date")
+#join one table to columns from another, matching values with the rows that they correspond to.
+#join values from y to x
+#mantém o número de observações da variável x, vix
+#includes all rows in x
+
+right <- right_join(vix, juro, by = "date")
+#join values from x to y
+#mantém o número de observações da variável y, juro
+#includes all rows in y
+
+inner <- inner_join(vix, juro, by = "date")
+#join data. Retain only rows with matches
+#includes all rows in x AND y
+#número total de linha igual ao número de linhas da menor tabela
+#só inclui o que dá match nas DUAS tabelas
+
+full <- full_join(vix, juro) #reconhece automático qual a chave
+#Join data. Retain all values, all rows.
+#includes all rows in x OR y
+#inclui todas as linhas. Número de total de linhas igual ao número de linhas da maior tabela
+
+left_join(x, y, by = c("C" = "D")) #especificar colunas chave com nomes distintos
+
+bind_row <- bind_rows(juro, vix) #agrupa dois dataframes um em cima do outro.
+#Precisam ter o mesmo número de colunas
+
+semi <- semi_join(vix, juro)
+#Return rows of x that have a match in y.
+#return vix rows that have a match in juro
+
+anti <- anti_join(vix, juro)
+# Return rows of x that do not have a match in y. Use to see what will not be included in a join.
+#Return vix rows that do not have a match in juro
+
+nest <- nest_join(vix, juro)
+# Join data, nesting matches from y in a single new data frame column.
+
+intersect(iris, iris)
+# Rows that appear in both x and y.
+#deve ter mesmo número de colunas
+
+setdiff(iris, iris)
+# Rows that appear in x but not y.
+#deve ter mesmo número de colunas
+
+union(iris, iris)
+# Rows that appear in x or y. (Duplicates removed).
+
+union_all(iris, iris)
+#retains duplicate
+
+setequal(juro, vix)
+# Use setequal() to test whether two data sets contain the exact same rows (in any order).
