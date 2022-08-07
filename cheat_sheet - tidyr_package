@@ -1,0 +1,160 @@
+library(tidyverse)
+
+# Tidy data is a way to organize tabular data in a consistent data structure across packages.
+
+#Uma tabela está organizada (tidy) se cada variável tem sua própria coluna e cada obs. tem sua própria linha.
+
+
+# 1. Tibbles ------------------------------------------------------------------------------------------------------
+
+glimpse(iris)
+#mostra a tabela com as colunas como linhas
+View(iris)
+#mostra a coluna normal
+
+tibble(x = 1:3, y = c("a", "b", "c")) #construindo um tibble
+
+tribble(~x, ~y,
+        1, "a",
+        2, "b",
+        3, "c") #mesma coisa do comando acima
+
+is_tibble(iris) #testa de uma tabela é tibble
+
+
+# 2. Reshape data -------------------------------------------------------------------------------------------------
+
+# Pivot data to reorganize values into a new layout.
+
+table4a
+
+pivot_longer(table4a, cols = 2:3, names_to ="year",
+             values_to = "cases")
+#reorganiza a tabela. As colunas viram uma única coluna agrupada
+# Column names move to a new names_to column and values to a new values_to column.
+
+table2
+
+pivot_wider(table2, names_from = type,
+            values_from = count)
+#faz o inverso do pivot_longer
+# "Widen" data by expanding two columns into several. One column provides the new column names, the other the values.
+
+
+# 3. Split cells --------------------------------------------------------------------------------------------------
+
+# Use these functions to split or combine cells into individual, isolated values.
+
+table5
+
+unite(table5, century, year, col = "year", sep = "")
+#unindo as colunas century e year sem colocar nada no meio
+unite(table5, century, year, col = "year", sep = "-")
+#unindo as colunas century e year colocando um hífen no meio
+
+table3
+
+separate(table3, rate, sep = "/",
+         into = c("cases", "pop"))
+#separando a coluna rate em duas colunas, cases e pop
+
+separate_rows(table3, rate, sep = "/")
+# Separate each cell in a column into several rows.
+
+
+# 4. Expand tables ------------------------------------------------------------------------------------------------
+
+# expand() generates all combination of variables found in a dataset
+mtcars
+expand(mtcars, cyl, gear,
+       carb)
+
+expand(iris, Sepal.Length, Species)
+
+# Turns implicit missing values into explicit missing values.
+complete(mtcars, cyl, gear,
+         carb)
+
+
+# 5. Handle missing values ----------------------------------------------------------------------------------------
+
+x <- tibble(xis = (c(1:2, NA)), y = c("a", "b", "c"))
+x
+
+drop_na(x) #exclui a linha que contém NA
+
+# Specify a value to replace NA in selected columns.
+
+replace_na(x, list(xis = 2)) #insere o número 2 onde há NA
+
+
+# 6. Nested data --------------------------------------------------------------------------------------------------
+
+#CREATE NESTED DATA
+
+#Nesting creates a list-column of data frames
+
+n_storms <- storms %>%
+  group_by(name) %>%
+  nest()
+
+n_storms <- storms %>%
+  nest(data = c(year:long))
+
+n_iris <- iris %>% 
+  nest(data = c(Sepal.Length, Sepal.Width))
+
+# CREATE TIBBLES WITH LIST-COLUMNS
+
+n_test <- tribble( ~max, ~seq,
+         3, 1:3,
+         4, 1:4,
+         5, 1:5)
+
+tibble(max = c(3, 4, 5), seq = list(1:3, 1:4, 1:5))
+
+enframe(list('3'=1:3, '4'=1:4, '5'=1:5), 'max', 'seq')
+
+# OUTPUT LIST-COLUMNS FROM OTHER FUNCTIONS
+
+mtcars %>%
+  group_by(cyl) %>%
+  summarise(q = list(quantile(mpg)))
+
+# RESHAPE NESTED DATA
+
+n_storms %>% unnest(data)
+
+starwars %>%
+  select(name, films) %>%
+  unnest_longer(films)
+
+starwars %>%
+  select(name, films) %>%
+  unnest_wider(films)
+
+starwars %>%
+  select(name, films) %>%
+  hoist(films, first_film = 1, second_film = 2)
+
+starwars %>% filter(str_detect(name, "^Luke"))
+starwars %>% filter(name == "Luke Skywalker")
+starwars <- starwars
+
+# TRANSFORM NESTED DATA
+
+n_storms %>%
+  rowwise() %>%
+  mutate(n = list(dim(data)))
+
+n_storms %>%
+  rowwise() %>%
+  mutate(n = nrow(data))
+
+starwars %>%
+  rowwise() %>%
+  mutate(transport = list(append(vehicles, starships)))
+
+starwars %>%
+  rowwise() %>%
+  mutate(n_transports = length(c(vehicles, starships)))
