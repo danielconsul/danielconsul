@@ -1,0 +1,18 @@
+library(tidyverse)
+library(gganimate)
+library(gifski) #para fazer a animação
+library(png) #para fazer a animação
+#instalar ambos os dois pacotes acima e reiniciar o R
+
+
+dados$Mês <- seq(as.Date('1998/01/01', "%Y/%m/%d"), as.Date('2021/02/01', "%Y/%m/%d"), by = "months") 
+
+graph_embi <- dados %>% ggplot(aes(x = Mês, y = Brasil)) + geom_area(color = "black", fill = "black") +
+  xlab(NULL) + ylab(NULL) + theme_light()
+
+graph_embi <- graph_embi + transition_reveal(Mês)
+
+animate(graph_embi, fps = 100, height = 500, width = 800, duration = 10, rewind = FALSE)
+#frames/second
+#duration = tempo em segundos
+#rewind = TRUE faz os dados irem e voltarem
