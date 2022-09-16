@@ -1,20 +1,23 @@
 # PACOTES NECESSÁRIOS ---------------------------------------------------------------------------------------------
-library(tidyverse)
-library(patchwork)
-library(gmm)
-library(car)
-library(tseries)
-library(jtools)
-library(ggstance)
-library(stargazer)
-library(lmtest)
-library(skedastic)
-library(urca)
-library(forecast)
-library(GGally)
-library(corrplot)
-library(fBasics)
-library(mFilter)
+library(tidyverse) # Ciência, manipulação de dados, gráficos
+library(patchwork) # Exibição de múltiplos gráficos em uma tela só
+library(gmm) # Modelagem gmm
+library(car) # Testes de diagnósticos, colinearidade
+library(tseries) # Testes de diagnósticos, estacionariedade, normalidade
+library(jtools) # Gráficos da regressão
+library(ggstance) # Gráficos
+library(stargazer) # Impressão dos resultados da regressão
+library(lmtest) # Testes de diagnósticos, autocorrelação
+library(skedastic) # Teste de homocedasticidade
+library(urca) # Testes de diagnósticos, estacionariedade
+library(forecast) # Sazonalidade
+library(GGally) # Gráficos de correlação
+library(corrplot) # Gráficos de correlação
+library(fBasics) # Gráficos de correlação
+library(mFilter) # Extração de tendência e ciclo das séries
+library(gganimate) # Gráfico animado
+library(gifski) # Animação em .gif
+library(png) # Animação
 
 # DETERMINANTES DO ÍNDICE CDS 5 ANOS DE RISCO-PAÍS BRASILEIRO (2003-2019) -----------------------------------------
 
@@ -69,6 +72,18 @@ brazil <- brazil %>% select(-COUNTRY, -CDS_5Y, -INT_RES, -LN_INT_RES, -VIX, -JUR
 
 
 # 3. ANÁLISE GRÁFICA DAS VARIÁVEIS -----------------------------------------------------------------------------------
+# Primeiramente é preciso destacar a principal variável de interesse do estudo. Em nosso caso, LN_CDS_5Y.
+
+graph_CDS <- brazil %>% ggplot() +
+  geom_area(mapping = aes(x = MONTH, y = LN_CDS_5Y)) + theme_light() + ylim(0, 8) + xlab(" ") +
+  annotate("text", as.Date(x = "2008-11-01"), y = 6.5, label = "Crise do Subprime \nnos EUA") +
+  annotate("text", as.Date(x = "2015-12-01"), y = 6.8, label = "Crise político-institucional") +
+  annotate("text", as.Date(x = "2003-08-01"), y = 8, label = "Nível elevado + \n'risco Lula'")
+
+graph_CDS <- graph_CDS + transition_reveal(MONTH)
+animate(graph_CDS, height = 550, width = 800, duration = 10)
+# Instalar os pacotes gganimate, png e gifski e reiniciar o R
+
 g1 <- brazil %>% ggplot() +
   geom_line(mapping = aes(x = MONTH, y = LN_CDS_5Y)) + theme_minimal() + ylim(0, 8) + xlab(" ")
 
@@ -112,12 +127,13 @@ ggmonthplot(IND_PROD_YOY, xlab = " ", ylab = "IND_PROD_YOY")
 decomp_adit <- decompose(LN_CDS_5Y, type = "additive")
 decomp_mult <- decompose(LN_CDS_5Y, type = "mult")
 plot(decomp_adit)
-decomp_adit$x # componente observado
-decomp_adit$seasonal # componente sazonal
-decomp_adit$trend # componente de tendência
-decomp_adit$random #componente aleatório
-LN_CDS_5Y_SA <- ts(decomp_adit$x - decomp_adit$seasonal, start = c(2003, 1), freq = 12) # série dessazonalizada
-ggmonthplot(LN_CDS_5Y_SA) # gráfico sazonal da série dessazonalizada
+decomp_adit$x # Componente observado
+decomp_adit$seasonal # Componente sazonal
+decomp_adit$trend # Componente de tendência
+decomp_adit$random #Componente aleatório
+LN_CDS_5Y_SA <- ts(decomp_adit$x - decomp_adit$seasonal, start = c(2003, 1), freq = 12) # Série dessazonalizada
+ggmonthplot(LN_CDS_5Y_SA) # Gráfico sazonal da série dessazonalizada
+plot(decomp_adit$x)
 plot(decomp_adit$trend)
 plot(decomp_adit$seasonal)
 
@@ -149,7 +165,7 @@ ggcorr(cor_brazil)
 
 # 4.4 ESTATÍSTICAS DESCRITIVAS DAS VARIÁVEIS:
 summary(cor_brazil)
-cor_brazil %>% basicStats() %>% round(digits = 2) %>% View() #estatísticas mais completas
+cor_brazil %>% basicStats() %>% round(digits = 2) %>% View() # Estatísticas mais completas
 
 # 5. CORRELOGRAMA ----------------------------------------------------------------------------------------------------
 par(mfrow = c(1,2)) # Exibe os dois gráficos em uma linha e duas colunas
@@ -163,10 +179,14 @@ par(mfrow = c(1,1))
 # Isso também indica que a série possui um caráter inercial.
 
 # 6. TESTES DE ESTACIONARIEDADE --------------------------------------------------------------------------------------
+# Em geral os testes aqui apresentados referem-se ao conceito de ESTACIONARIDADE FRACA:
+# a) E(Yt) = M, para todo t
+# b) E(Yt - M)(Yt-j - M) = γj, para todo e todo j
+
 plot(x= brazil$MONTH, y = brazil$LN_CDS_5Y, type = "l", xlab = " ", ylab = "LN_CDS_5Y", ylim = c(0, 8))
 
 # AUGMENTED DICKEY-FULLER UNIT ROOT TEST:
-adf.test(brazil$LN_CDS_5Y, k = 0) #lag zero baseado no critério de informação BIC
+adf.test(brazil$LN_CDS_5Y, k = 0) # Lag zero baseado no critério de informação BIC
 adf_test1 <- ur.df(brazil$LN_CDS_5Y, type = "trend", lag = 0)
 summary(adf_test1) # H0: a série possui raiz unitária
 
@@ -231,8 +251,8 @@ barplot(vif_values, main = "VIF Values", horiz = TRUE, col = "steelblue")
 # 7.1.6 AUTOCORRELAÇÃO DOS RESÍDUOS:
 # ATENÇÃO: Teste Durbin-Watson não vale para modelo autorregressivo.
 # Usar o teste BG (LM).
-plot(ols_model$residuals, type = "l", ylab = "Resíduos OLS", xlab = " ") #uma primeira análise gráfica
-bgtest(ols_model, order = 1)
+plot(ols_model$residuals, type = "l", ylab = "Resíduos OLS", xlab = " ") # Uma primeira análise gráfica
+bgtest(ols_model, order = 1) 
 bgtest(ols_model, order = 6)
 bgtest(ols_model, order = 12)
 # Os p-valores dos testes de autocorrelação de Breusch-Pagam (LM Test) indicam que não há evidências de 
@@ -240,7 +260,7 @@ bgtest(ols_model, order = 12)
 # para a regressão do teste (defasagens dos resíduos não explicam os resíduos contemporâneos: ÓTIMO!)
 
 # 7.1.7 NORMALIDADE DOS RESÍDUOS:
-hist(ols_model$residuals, main = "Histograma dos resíduos do modelo OLS", xlab = NULL) # uma primeira observação gráfica
+hist(ols_model$residuals, main = "Histograma dos resíduos do modelo OLS", xlab = NULL) # Uma primeira observação gráfica
 shapiro.test(ols_model$residuals) # H0: os resíduos são normais
 jarque.bera.test(ols_model$residuals) # H0: os resíduos são normais
 
@@ -251,6 +271,24 @@ bptest(ols_model)
 white_lm(ols_model)
 # Ambos os testes indicam a rejeição da hipótese nula de homocedasticidade. Isto é, há indícios de que
 # há presenção de heterocedasticidade nos resíduos do modelo. Alternativa: aplicar a correção de HAC (Newey-West).
+
+# 7.1.9 HIPÓTESES GAUSS-MARKOV E DO MODELO CLÁSSICO DE REGRESSÃO LINEAR PARA SÉRIES TEMPORAIS:
+
+# HIP. 1: O modelo é linear nos parâmetros;
+# HIP. 2: Inexistência de colinearidade perfeita;
+# HIP. 3: Média condicional zero do termo de erro (E(Ui|Xi) = 0), (exogeneidade --> cov(Xi, Ui) = 0);
+#     (Sob as hipóteses 1 a 3 há inexistência de viés nos estimadores (E(b^) = b));
+# HIP. 4: Homocedasticidade ou variância constante de Ui;
+#     (A ocorrência de heterocedasticidade não causa viés nem perda de consistência nos estimadores,
+# mas eles perdem eficiência, isto é, deixam de ter variância mínima);
+# HIP. 5: Ausência de autocorrelação entre os termos de erro (corr(Ut, Us | X) = 0), para todo t != s)
+#     (Sob as hipóteses 1 a 5 os estimadores são BLUE (best linear unbiased estimators))
+# HIP. 6: Normalidade do termo de erro (importante para eficiência, pois sob as hipóteses 1 a 6, os estimadores
+# MQO têm menor variância entre TODOS os estimadores não viesados, inclusive os não lineares);
+# 
+# HIP. 1 a 5: versão para séries temporais das hipóteses de Gauss-Markov.
+# HIP. 1 a 6: são as seis hipóteses do modelo clássico de regressão linear.
+# (WOOLDRIDGE, 2011, pp. 348-350)
 
 # 7.2 GENERALIZED METHOD OF MOMENTS -----------------------------------------------------------------------------------
 
@@ -319,3 +357,7 @@ summary(gmm_model)
 
 # O p-valor de 0,84 indica não se rejeição da hipótese nula do J-test, isto é, os instrumentos utilizados
 # no modelo são válidos.
+
+# REFERÊNCIAS SELECIONADAS ----------------------------------------------------------------------------------------
+# BUENO, Rodrigo de L. da S. Econometria de séries temporais. São Paulo: Cengage Learning, 2015.
+# WOOLDRIDGE, J. M. Introdução à econometria - Uma abordagem moderna. São Paulo: Cengage Learning, 2016.
