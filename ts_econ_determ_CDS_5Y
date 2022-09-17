@@ -79,7 +79,7 @@ graph_CDS <- brazil %>% ggplot() +
   annotate("text", as.Date(x = "2008-11-01"), y = 6.5, label = "Crise do Subprime \nnos EUA") +
   annotate("text", as.Date(x = "2015-12-01"), y = 6.8, label = "Crise político-institucional") +
   annotate("text", as.Date(x = "2003-08-01"), y = 8, label = "Nível elevado + \n'risco Lula'")
-
+graph_CDS
 graph_CDS <- graph_CDS + transition_reveal(MONTH)
 animate(graph_CDS, height = 550, width = 800, duration = 10)
 # Instalar os pacotes gganimate, png e gifski e reiniciar o R
@@ -270,7 +270,8 @@ jarque.bera.test(ols_model$residuals) # H0: os resíduos são normais
 bptest(ols_model)
 white_lm(ols_model)
 # Ambos os testes indicam a rejeição da hipótese nula de homocedasticidade. Isto é, há indícios de que
-# há presenção de heterocedasticidade nos resíduos do modelo. Alternativa: aplicar a correção de HAC (Newey-West).
+# há presença de heterocedasticidade nos resíduos do modelo. Alternativas: aplicar a correção de HAC (Newey-West) ou
+# aplicar log nas variáveis. A aplicação de log, no nosso caso, não resolveu o problema.
 
 # 7.1.9 HIPÓTESES GAUSS-MARKOV E DO MODELO CLÁSSICO DE REGRESSÃO LINEAR PARA SÉRIES TEMPORAIS:
 
