@@ -179,9 +179,9 @@ par(mfrow = c(1,1))
 # Isso também indica que a série possui um caráter inercial.
 
 # 6. TESTES DE ESTACIONARIEDADE --------------------------------------------------------------------------------------
-# Em geral os testes aqui apresentados referem-se ao conceito de ESTACIONARIDADE FRACA:
+# Em geral os testes aqui apresentados referem-se ao conceito de ESTACIONARIEDADE FRACA:
 # a) E(Yt) = M, para todo t
-# b) E(Yt - M)(Yt-j - M) = γj, para todo e todo j
+# b) E(Yt - M)(Yt-j - M) = γj, para todo t e todo j
 
 plot(x= brazil$MONTH, y = brazil$LN_CDS_5Y, type = "l", xlab = " ", ylab = "LN_CDS_5Y", ylim = c(0, 8))
 
