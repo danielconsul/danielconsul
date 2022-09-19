@@ -130,7 +130,7 @@ plot(decomp_adit)
 decomp_adit$x # Componente observado
 decomp_adit$seasonal # Componente sazonal
 decomp_adit$trend # Componente de tendência
-decomp_adit$random #Componente aleatório
+decomp_adit$random # Componente aleatório
 LN_CDS_5Y_SA <- ts(decomp_adit$x - decomp_adit$seasonal, start = c(2003, 1), freq = 12) # Série dessazonalizada
 ggmonthplot(LN_CDS_5Y_SA) # Gráfico sazonal da série dessazonalizada
 plot(decomp_adit$x)
@@ -207,7 +207,7 @@ pp.test(brazil$LN_CDS_5Y, type = "Z(t_alpha)") # H0: a série possui raiz unitá
 # 7.1 ORDINARY LEAST SQUARES ------------------------------------------------------------------------------------------
 
 # 7.1.1 MODELO:
-ols_model <- lm(LN_CDS_5Y ~ LN_CDS_5Y_1 + IND_PROD_YOY + RT12_LN_INT_RES + IND_PROD_US_YOY + LN_VIX +
+ols_model <- lm(LN_CDS_5Y ~ lag(LN_CDS_5Y, 1) + IND_PROD_YOY + RT12_LN_INT_RES + IND_PROD_US_YOY + LN_VIX +
                   INF_YOY + LN_INTEREST_5Y_US + LN_OIL, data = brazil)
 
 # 7.1.2 RESULTADOS ESTIMADOS PELO MODELO:
@@ -361,4 +361,9 @@ summary(gmm_model)
 
 # REFERÊNCIAS SELECIONADAS ----------------------------------------------------------------------------------------
 # BUENO, Rodrigo de L. da S. Econometria de séries temporais. São Paulo: Cengage Learning, 2015.
+
 # WOOLDRIDGE, J. M. Introdução à econometria - Uma abordagem moderna. São Paulo: Cengage Learning, 2016.
+
+# PACIFIC INVESTMENT MANAGEMENT COMPANY. Understanding Investing – Credit Default Swaps.
+# Disponível em: https://global.pimco.com/en-gbl/resources/education/understanding-credit-default-swaps.
+# Acesso em: 19 set. 2022.
