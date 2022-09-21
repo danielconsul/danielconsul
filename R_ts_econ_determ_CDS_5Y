@@ -1,4 +1,17 @@
-# PACOTES NECESSÁRIOS ---------------------------------------------------------------------------------------------
+---
+title: "Econometria de Séries Temporais - MBA Ciência dos Dados (UFF)"
+author: "Daniel Consul de Antoni"
+date: "21 de setembro de 2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### PACOTES NECESSÁRIOS:
+
+```{r, eval = FALSE}
 library(tidyverse) # Ciência, manipulação de dados, gráficos
 library(patchwork) # Exibição de múltiplos gráficos em uma tela só
 library(gmm) # Modelagem gmm
@@ -18,111 +31,116 @@ library(mFilter) # Extração de tendência e ciclo das séries
 library(gganimate) # Gráfico animado
 library(gifski) # Animação em .gif
 library(png) # Animação
+```
 
-# DETERMINANTES DO ÍNDICE CDS 5 ANOS DE RISCO-PAÍS BRASILEIRO (2003-2019) -----------------------------------------
+### DETERMINANTES DO ÍNDICE CDS 5 ANOS DE RISCO-PAÍS BRASILEIRO (2003-2019)
 
-# OBJETIVO:
-# A especificação aqui proposta visa desenvolver um modelo econométrico que explique quais são os principais determinantes
-# do prêmio de risco-país brasileiro CDS (Credit Default Swap) 5 anos.
-# As variáveis explicativas (regressores) selecionadas são do tipo push (exógenas, externas) e pull (domésticas,
-# country-specifics).
-# O período de análise é de janeiro de 2003 a dezembro de 2019 e todos os dados são mensais (fim de período).
+**OBJETIVO:** A especificação aqui proposta visa desenvolver um modelo econométrico que explique quais são os principais determinantes do prêmio de risco-país brasileiro CDS (Credit Default Swap) 5 anos. As variáveis explicativas (regressores) selecionadas são do tipo push (exógenas, externas) e pull (domésticas, country-specifics). O período de análise é de janeiro de 2003 a dezembro de 2019 e todos os dados são mensais (fim de período).
 
-# HIPÓTESES:
-# O trabalho hipotetiza que variáveis externas impactam o prêmio de risco-país brasileiro (e emergentes como um todo), 
-# e que variáveis domésticas podem atuar como mitigadoras desses efeitos globais.
+**HIPÓTESES:** O trabalho hipotetiza que variáveis externas impactam o prêmio de risco-país brasileiro (e emergentes como um todo), e que variáveis domésticas podem atuar como mitigadoras desses efeitos globais.
 
-# O que é o CDS?
-# O CDS é um contrato de seguro contra risco de crédito de ativos e é
-# negociado bilateralmente entre o vendedor, geralmente um banco, e o comprador. Nesse sentido,
-# o comprador visa proteger-se contra eventual risco de crédito por parte da entidade de
-# referência, isto é, a entidade que emite o ativo. Atualmente, o CDS é o principal derivativo de
-# crédito em termos globais (PIMCO, 2017).
+**O que é o CDS?** O CDS é um contrato de seguro contra risco de crédito de ativos e é negociado bilateralmente entre o vendedor, geralmente um banco, e o comprador. Nesse sentido, o comprador visa proteger-se contra eventual risco de crédito por parte da entidade de referência, isto é, a entidade que emite o ativo. Atualmente, o CDS é o principal derivativo de crédito em termos globais (PIMCO, 2017).
 
+### 1. AJUSTANDO OS DADOS:
+Os dados vieram já ajustados diretamente do Excel, bastando apenas criar o vetor de datas no R, o que foi feito a partir do código abaixo:
 
-# 1. AJUSTANDO OS DADOS ----------------------------------------------------------------------------------------------
-
-# Os dados vieram já ajustados diretamente do Excel, bastando apenas criar o vetor de datas no R, o que foi feito
-# a partir do código abaixo:
+```{r, eval = FALSE}
 brazil$MONTH <- seq(as.Date('2003/01/01', "%Y/%m/%d"), as.Date('2019/12/01', "%Y/%m/%d"), by = "months")
 
 original <- brazil # criando um backup com os dados originais
 
 # Selecionando do arquivo original apenas as variáveis de interesse:
 brazil <- brazil %>% select(-COUNTRY, -CDS_5Y, -INT_RES, -LN_INT_RES, -VIX, -JUROS_EUA_5Y, -OIL)
+```
 
-# 2. QUAIS VARIÁVEIS SERÃO UTILIZADAS NO MODELO? ---------------------------------------------------------------------
+### 2. QUAIS VARIÁVEIS SERÃO UTILIZADAS NO MODELO?
 
-# Variável dependente/regressando:
-#   LN_CDS_5Y: logaritmo natural do CDS 5 Anos.
-# 
-# Variáveis independentes/explicativas/regressores:
-#   LN_CDS_5Y(-1): logaritmo natural do CDS 5 Anos com uma defasagem (+);
-#   RT12_LN_INT_RES: taxa de crescimento, em relação ao mesmo período do ano anterior, do logaritmo natural do estoque
-# de reservas internacionais (pull) (-);
-#   INF_YOY: taxa de inflação em relação ao mesmo período do ano anterior (pull) (+);
-#   IND_PROD_YOY: taxa de crescimento do produto industrial em relação ao mesmo período do ano anterior. Proxy para
-# o crescimento do PIB (pull) (-);
-#   IND_PROD_US_YOY: taxa de crescimento do produto industrial dos EUA em relação ao mesmo período do ano anterior. proxy
-# para o crescimento do produto externor (push) (-);
-#   LN_VIX: logaritmo natural do VIX Index, que é um índice de instabilidade global. Proxy para aversão ao risco por
-# parte de investidores externos (push) (+);
-#   LN_OIL: logaritmo natural do preço internacional do petróleo Brent cru (push) (-);
-#   LN_INTEREST_5Y_US: logaritmo natural da taxa de juros de 5 anos dos EUA (+).
+**Variável dependente/regressando:**
 
+LN_CDS_5Y: logaritmo natural do CDS 5 Anos.
 
-# 3. ANÁLISE GRÁFICA DAS VARIÁVEIS -----------------------------------------------------------------------------------
-# Primeiramente é preciso destacar a principal variável de interesse do estudo. Em nosso caso, LN_CDS_5Y.
+**Variáveis independentes/explicativas/regressores:**
 
+LN_CDS_5Y(-1): logaritmo natural do CDS 5 Anos com uma defasagem (+);
+
+RT12_LN_INT_RES: taxa de crescimento, em relação ao mesmo período do ano anterior, do logaritmo natural do estoque de reservas internacionais (pull) (-);
+
+INF_YOY: taxa de inflação em relação ao mesmo período do ano anterior (pull) (+);
+
+IND_PROD_YOY: taxa de crescimento do produto industrial em relação ao mesmo período do ano anterior. Proxy para o crescimento do PIB (pull) (-);
+
+IND_PROD_US_YOY: taxa de crescimento do produto industrial dos EUA em relação ao mesmo período do ano anterior. proxy para o crescimento do produto externor (push) (-);
+
+LN_VIX: logaritmo natural do VIX Index, que é um índice de instabilidade global. Proxy para aversão ao risco por parte de investidores externos (push) (+);
+
+LN_OIL: logaritmo natural do preço internacional do petróleo Brent cru (push) (-);
+
+LN_INTEREST_5Y_US: logaritmo natural da taxa de juros de 5 anos dos EUA (+).
+
+### 3. ANÁLISE GRÁFICA DAS VARIÁVEIS:
+Primeiramente é preciso destacar a principal variável de interesse do estudo. Em nosso caso, LN_CDS_5Y.
+
+```{r, eval = FALSE, results}
 graph_CDS <- brazil %>% ggplot() +
   geom_area(mapping = aes(x = MONTH, y = LN_CDS_5Y)) + theme_light() + ylim(0, 8) + xlab(" ") +
   annotate("text", as.Date(x = "2008-11-01"), y = 6.5, label = "Crise do Subprime \nnos EUA") +
   annotate("text", as.Date(x = "2015-12-01"), y = 6.8, label = "Crise político-institucional") +
   annotate("text", as.Date(x = "2003-08-01"), y = 8, label = "Nível elevado + \n'risco Lula'")
+```
+
+```{r, eval = FALSE}
 graph_CDS
 graph_CDS <- graph_CDS + transition_reveal(MONTH)
 animate(graph_CDS, height = 550, width = 800, duration = 10)
 # Instalar os pacotes gganimate, png e gifski e reiniciar o R
+```
 
+```{r, eval = FALSE}
 g1 <- brazil %>% ggplot() +
-  geom_line(mapping = aes(x = MONTH, y = LN_CDS_5Y)) + theme_minimal() + ylim(0, 8) + xlab(" ")
+geom_line(mapping = aes(x = MONTH, y = LN_CDS_5Y)) + theme_minimal() + ylim(0, 8) + xlab(" ")
 
 g2 <- brazil %>% ggplot() +
-  geom_line(mapping = aes(x = MONTH, y = RT12_LN_INT_RES)) + theme_minimal() + ylim(-2, 8) + xlab(" ")
+geom_line(mapping = aes(x = MONTH, y = RT12_LN_INT_RES)) + theme_minimal() + ylim(-2, 8) + xlab(" ")
 
 g3 <- brazil %>% ggplot() +
-  geom_line(mapping = aes(x = MONTH, y = INF_YOY)) + theme_minimal() + ylim(0, 12) + xlab(" ")
+geom_line(mapping = aes(x = MONTH, y = INF_YOY)) + theme_minimal() + ylim(0, 12) + xlab(" ")
 
 g4 <- brazil %>% ggplot() +
-  geom_line(mapping = aes(x = MONTH, y = IND_PROD_YOY)) + theme_minimal() + ylim(-20, 20) + xlab(" ")
+geom_line(mapping = aes(x = MONTH, y = IND_PROD_YOY)) + theme_minimal() + ylim(-20, 20) + xlab(" ")
 
 g5 <- brazil %>% ggplot() +
-  geom_line(mapping = aes(x = MONTH, y = IND_PROD_US_YOY)) + theme_minimal() + ylim(-18, 10) + xlab(" ")
+geom_line(mapping = aes(x = MONTH, y = IND_PROD_US_YOY)) + theme_minimal() + ylim(-18, 10) + xlab(" ")
 
 g6 <- brazil %>% ggplot() +
-  geom_line(mapping = aes(x = MONTH, y = LN_VIX)) + theme_minimal() + ylim(0, 5) + xlab(" ")
+geom_line(mapping = aes(x = MONTH, y = LN_VIX)) + theme_minimal() + ylim(0, 5) + xlab(" ")
 
 g7 <- brazil %>% ggplot() +
-  geom_line(mapping = aes(x = MONTH, y = LN_OIL)) + theme_minimal() + ylim(0, 6) + xlab(" ")
+geom_line(mapping = aes(x = MONTH, y = LN_OIL)) + theme_minimal() + ylim(0, 6) + xlab(" ")
 
 g8 <- brazil %>% ggplot() +
-  geom_line(mapping = aes(x = MONTH, y = LN_INTEREST_5Y_US)) + theme_minimal() + ylim(-3, 3) + xlab(" ")
+geom_line(mapping = aes(x = MONTH, y = LN_INTEREST_5Y_US)) + theme_minimal() + ylim(-3, 3) + xlab(" ")
 
 (g1 + g2 + g3 + g4) / (g5 + g6 + g7 + g8)
-# Para exibir todos os gráficos em uma tela só. Utilização do pacote patchwork.
-# Ver: https://blog.curso-r.com/posts/2021-05-19-patchwork/
 
-# 4. DECOMPOSIÇÃO E ESTATÍSTICAS DESCRITIVAS DAS VARIÁVEIS -----------------------------------------------------------
+```
 
-# 4.1 SAZONALIDADE:
+Para exibir todos os gráficos em uma tela só: utilização do pacote patchwork.
+
+Ver: https://blog.curso-r.com/posts/2021-05-19-patchwork/
+
+### 4. DECOMPOSIÇÃO E ESTATÍSTICAS DESCRITIVAS DAS VARIÁVEIS:
+4.1 SAZONALIDADE:
+```{r, eval = FALSE}
 # Primeiramente é necessário transformar as variáveis para o tipo "ts".
 
 LN_CDS_5Y <- ts(brazil$LN_CDS_5Y, start = c(2003,1), freq = 12)
 ggmonthplot(LN_CDS_5Y, xlab = " ", ylab = "LN_CDS_5Y")
 IND_PROD_YOY <- ts(brazil$IND_PROD_YOY, start = c(2003, 1), freq = 12)
 ggmonthplot(IND_PROD_YOY, xlab = " ", ylab = "IND_PROD_YOY")
+```
 
-# 4.2 DECOMPOSIÇÃO DA SÉRIE:
+4.2 DECOMPOSIÇÃO DA SÉRIE:
+```{r, eval = FALSE}
 # Duas opções: decomposição aditiva ou multiplicativa.
 decomp_adit <- decompose(LN_CDS_5Y, type = "additive")
 decomp_mult <- decompose(LN_CDS_5Y, type = "mult")
@@ -143,8 +161,10 @@ plot(LN_CDS_5Y_HP)
 show(LN_CDS_5Y_HP)
 LN_CDS_5Y_HP$cycle
 LN_CDS_5Y_HP$trend
+```
 
-# 4.3 CORRELAÇÃO ENTRE AS VARIÁVEIS:
+4.3 CORRELAÇÃO ENTRE AS VARIÁVEIS:
+```{r, eval = FALSE}
 # Criando uma tabela que contém apenas as variáveis de interesse para os cálculos de correlação:
 cor_brazil <- brazil %>% select(LN_CDS_5Y, RT12_LN_INT_RES, IND_PROD_YOY, INF_YOY, IND_PROD_US_YOY, 
                                 LN_VIX, LN_INTEREST_5Y_US, LN_OIL) %>% drop_na()
@@ -154,35 +174,37 @@ correlation <- cor(cor_brazil) %>% round(digits = 2) %>% as.data.frame() %>% Vie
 corrplot(cor(cor_brazil), method = "circle")
 corrplot(cor(cor_brazil), method = "circle", type = "lower", tl.col = "black")
 corrplot(cor(cor_brazil), method = "square", type = "lower", tl.col = "black")
-corrplot(cor(cor_brazil), method = "ellipse", type = "lower", tl.col = "black")
+corrplot(cor(cor_brazil), method = "ellipse", type = "lower", tl.col = "blue")
 corrplot(cor(cor_brazil), method = "number", type = "lower", tl.col = "black")
-corrplot(cor(cor_brazil), method = "number", type = "lower", tl.col = "black")
+corrplot(cor(cor_brazil), method = "number", type = "lower", tl.col = "green")
 corrplot(cor(cor_brazil), method = "shade", type = "lower", tl.col = "black")
-corrplot(cor(cor_brazil), method = "color", type = "lower", tl.col = "black")
+corrplot(cor(cor_brazil), method = "color", type = "lower", tl.col = "pink")
 corrplot(cor(cor_brazil), method = "pie", type = "lower", tl.col = "black")
-
 ggcorr(cor_brazil)
+```
 
-# 4.4 ESTATÍSTICAS DESCRITIVAS DAS VARIÁVEIS:
+4.4 ESTATÍSTICAS DESCRITIVAS DAS VARIÁVEIS:
+```{r, eval = FALSE}
 summary(cor_brazil)
 cor_brazil %>% basicStats() %>% round(digits = 2) %>% View() # Estatísticas mais completas
+```
 
-# 5. CORRELOGRAMA ----------------------------------------------------------------------------------------------------
+### 5. CORRELOGRAMA:
+```{r, eval = FALSE}
 par(mfrow = c(1,2)) # Exibe os dois gráficos em uma linha e duas colunas
 acf(brazil$LN_CDS_5Y, main = "Função de autocorrelação")
 pacf(brazil$LN_CDS_5Y, main = "Função de autocorrelação parcial")
 par(mfrow = c(1,1)) 
-# A característica do correlograma (função de autocorrelação decrescente e função de autocorrelação parcial com                                  )
-# uma quebra na primeira defasagem) indica que a série LN_CDS_5Y é um processo estocástico autorregressivo
-# de ordem um (AR(1)) (BUENO, 2015). Isto é, é necessário que a primeira defasagem do regressando seja incluída
-# como variável explicativa no modelo para que não haja autocorrelação dos resíduos.
-# Isso também indica que a série possui um caráter inercial.
+```
 
-# 6. TESTES DE ESTACIONARIEDADE --------------------------------------------------------------------------------------
-# Em geral os testes aqui apresentados referem-se ao conceito de ESTACIONARIEDADE FRACA:
-# a) E(Yt) = M, para todo t
-# b) E(Yt - M)(Yt-j - M) = γj, para todo t e todo j
+A característica do correlograma (função de autocorrelação decrescente e função de autocorrelação parcial com uma quebra na primeira defasagem) indica que a série LN_CDS_5Y é um processo estocástico autorregressivo de ordem um (AR(1)) (BUENO, 2015). Isto é, é necessário que a primeira defasagem do regressando seja incluída como variável explicativa no modelo para que não haja autocorrelação dos resíduos. Isso também indica que a série possui um caráter inercial.
 
+### 6. TESTES DE ESTACIONARIEDADE: 
+Em geral os testes aqui apresentados referem-se ao conceito de ESTACIONARIEDADE FRACA:
+a) Média constante e finita;
+b) Variância constante e finita;
+c) Covariância dependendo apenas de um intervalo j em t-j
+```{r, eval = FALSE}
 plot(x= brazil$MONTH, y = brazil$LN_CDS_5Y, type = "l", xlab = " ", ylab = "LN_CDS_5Y", ylim = c(0, 8))
 
 # AUGMENTED DICKEY-FULLER UNIT ROOT TEST:
@@ -199,18 +221,22 @@ summary(kpss_test1) # H0: a série é estacionária
 
 # PHILLIPS-PERRON UNIT ROOT TEST:
 pp.test(brazil$LN_CDS_5Y, type = "Z(t_alpha)") # H0: a série possui raiz unitária
+```
 
-# 7. ESPECIFICAÇÕES ECONOMÉTRICAS  -----------------------------------------------------------------------------------
+### 7. ESPECIFICAÇÕES ECONOMÉTRICAS:
 
-# Serão testados dois métodos econométricos: Ordinary Least Squares (OLS) e Generalized Method Of Moments (GMM).
+Serão testados dois métodos econométricos: Ordinary Least Squares (OLS) e Generalized Method Of Moments (GMM).
 
-# 7.1 ORDINARY LEAST SQUARES ------------------------------------------------------------------------------------------
+7.1 ORDINARY LEAST SQUARES
 
-# 7.1.1 MODELO:
+7.1.1 MODELO:
+```{r, eval = FALSE}
 ols_model <- lm(LN_CDS_5Y ~ lag(LN_CDS_5Y, 1) + IND_PROD_YOY + RT12_LN_INT_RES + IND_PROD_US_YOY + LN_VIX +
                   INF_YOY + LN_INTEREST_5Y_US + LN_OIL, data = brazil)
+```
 
-# 7.1.2 RESULTADOS ESTIMADOS PELO MODELO:
+7.1.2 RESULTADOS ESTIMADOS PELO MODELO:
+```{r, eval = FALSE}
 summary(ols_model)
 summ(ols_model)
 summ(ols_model, confint = TRUE, digits = 4)
@@ -219,94 +245,98 @@ plot_summs(ols_model, plot.distributions = TRUE, inner_ci_level = .9)
 summ(ols_model, vifs = TRUE)
 stargazer(ols_model, header = FALSE, type = "html", out = "ols_model.html", title = "Resultados do modelo OLS",
           digits = 3)
+```
 
-# 7.1.3 GRÁFICOS DE DIAGNÓSTICOS DOS RESULTADOS DO MODELO:
+7.1.3 GRÁFICOS DE DIAGNÓSTICOS DOS RESULTADOS DO MODELO:
+
+1. A Residuals vs. Fitted plot: It is a scatter plot of residuals on the y axis and fitted values (estimated responses) on the x axis. The plot is used to detect non-linearity, unequal error variances, and outliers;
+
+2. A Normal Q-Q plot: um gráfico para verificar a normalidade dos resíduos;
+
+3. Um scale-location plot: it is a type of plot that displays the fitted values of a regression model along the x-axis and the the square root of the standardized residuals along the y-axis;
+
+4. A Residuals vs. Leverage plot: Observations with high leverage have a strong influence on the coefficients in the regression model. If we remove these observations, the coefficients of the model would change noticeably.
+
+```{r, eval = FALSE}
 stats:::plot.lm(ols_model) 
+```
 
-# 1. A Residuals vs. Fitted plot: It is a scatter plot of residuals on the y axis and fitted
-# values (estimated responses) on the x axis. The plot is used to detect non-linearity, unequal error variances,
-# and outliers;
-
-# 2. A Normal Q-Q plot: um gráfico para verificar a normalidade dos resíduos;
-
-# 3. Um scale-location plot: it is a type of plot that displays the fitted values of a regression model 
-# along the x-axis and the the square root of the standardized residuals along the y-axis;
-
-# 4. A Residuals vs. Leverage plot: Observations with high leverage have a strong influence on the
-# coefficients in the regression model. If we remove these observations, the coefficients of the model would
-# change noticeably.
-
-# 7.1.4 INTERVALO DE CONFIANÇA DOS COEFICIENTES ESTIMADOS PELO MODELO:
+7.1.4 INTERVALO DE CONFIANÇA DOS COEFICIENTES ESTIMADOS PELO MODELO:
+```{r, eval = FALSE}
 confint(ols_model, level = 0.95) %>% round(digits = 2)
 # Intervalo de confiança dos estimadores com 95% de nível de confiança (default).
 confint(ols_model, level = 0.9) %>% round(digits = 2)
 # Intervalo de confiança dos estimadores com 90% de nível de confiança.
+```
 
-# 7.1.5 VIF (FATOR DE INFLAÇÃO DA VARIÂNCIA) PARA ANÁLISE DE MULTICOLINEARIDADE:
+7.1.5 VIF (FATOR DE INFLAÇÃO DA VARIÂNCIA) PARA ANÁLISE DE MULTICOLINEARIDADE:
+```{r, eval = FALSE}
 vif(ols_model)
 # Valores baixos (< 5) indicam que não há problema de colinearidade.
 vif_values <- vif(ols_model)
 barplot(vif_values, main = "VIF Values", horiz = TRUE, col = "steelblue")
+```
 
-# 7.1.6 AUTOCORRELAÇÃO DOS RESÍDUOS:
-# ATENÇÃO: Teste Durbin-Watson não vale para modelo autorregressivo.
-# Usar o teste BG (LM).
+7.1.6 AUTOCORRELAÇÃO DOS RESÍDUOS:
+
+ATENÇÃO: Teste Durbin-Watson não vale para modelo autorregressivo.
+Usar o teste BG (LM).
+```{r, eval = FALSE}
 plot(ols_model$residuals, type = "l", ylab = "Resíduos OLS", xlab = " ") # Uma primeira análise gráfica
 bgtest(ols_model, order = 1) 
 bgtest(ols_model, order = 6)
 bgtest(ols_model, order = 12)
-# Os p-valores dos testes de autocorrelação de Breusch-Pagam (LM Test) indicam que não há evidências de 
-# autocorrelação nos resíduos do modelo. Isto é, os resíduos não possuem significância estatística
-# para a regressão do teste (defasagens dos resíduos não explicam os resíduos contemporâneos: ÓTIMO!)
+```
+Os p-valores dos testes de autocorrelação de Breusch-Pagam (LM Test) indicam que não há evidências de autocorrelação nos resíduos do modelo. Isto é, os resíduos não possuem significância estatística para a regressão do teste (defasagens dos resíduos não explicam os resíduos contemporâneos: ÓTIMO!)
 
-# 7.1.7 NORMALIDADE DOS RESÍDUOS:
+7.1.7 NORMALIDADE DOS RESÍDUOS:
+```{r, eval = FALSE}
 hist(ols_model$residuals, main = "Histograma dos resíduos do modelo OLS", xlab = NULL) # Uma primeira observação gráfica
 shapiro.test(ols_model$residuals) # H0: os resíduos são normais
 jarque.bera.test(ols_model$residuals) # H0: os resíduos são normais
+```
 
-# 7.1.8 TESTE DE HETEROCEDASTICIDADE:
-# Há dois testes mais comuns de deteccção de heterocedasticidade: Teste BPG e Teste White.
-# Em ambos os testes a hipótese nula é de presença de homocedasticidade.
+7.1.8 TESTE DE HETEROCEDASTICIDADE:
+Há dois testes mais comuns de deteccção de heterocedasticidade: Teste BPG e Teste White.
+Em ambos os testes a hipótese nula é de presença de homocedasticidade.
+```{r, eval = FALSE}
 bptest(ols_model)
 white_lm(ols_model)
-# Ambos os testes indicam a rejeição da hipótese nula de homocedasticidade. Isto é, há indícios de que
-# há presença de heterocedasticidade nos resíduos do modelo. Alternativas: aplicar a correção de HAC (Newey-West) ou
-# aplicar log nas variáveis. A aplicação de log, no nosso caso, não resolveu o problema.
+```
 
-# 7.1.9 HIPÓTESES GAUSS-MARKOV E DO MODELO CLÁSSICO DE REGRESSÃO LINEAR PARA SÉRIES TEMPORAIS:
+Ambos os testes indicam a rejeição da hipótese nula de homocedasticidade. Isto é, há indícios de que há presença de heterocedasticidade nos resíduos do modelo. Alternativas: aplicar a correção de HAC (Newey-West) ou aplicar log nas variáveis. A aplicação de log, no nosso caso, não resolveu o problema.
 
-# HIP. 1: O modelo é linear nos parâmetros;
-# HIP. 2: Inexistência de colinearidade perfeita;
-# HIP. 3: Média condicional zero do termo de erro (E(Ui|Xi) = 0), (exogeneidade --> cov(Xi, Ui) = 0);
-#     (Sob as hipóteses 1 a 3 há inexistência de viés nos estimadores (E(b^) = b));
-# HIP. 4: Homocedasticidade ou variância constante de Ui;
-#     (A ocorrência de heterocedasticidade não causa viés nem perda de consistência nos estimadores,
-# mas eles perdem eficiência, isto é, deixam de ter variância mínima);
-# HIP. 5: Ausência de autocorrelação entre os termos de erro (corr(Ut, Us | X) = 0), para todo t != s)
-#     (Sob as hipóteses 1 a 5 os estimadores são BLUE (best linear unbiased estimators))
-# HIP. 6: Normalidade do termo de erro (importante para eficiência, pois sob as hipóteses 1 a 6, os estimadores
-# MQO têm menor variância entre TODOS os estimadores não viesados, inclusive os não lineares);
-# 
-# HIP. 1 a 5: versão para séries temporais das hipóteses de Gauss-Markov.
-# HIP. 1 a 6: são as seis hipóteses do modelo clássico de regressão linear.
-# (WOOLDRIDGE, 2011, pp. 348-350)
+7.1.9 HIPÓTESES GAUSS-MARKOV E DO MODELO CLÁSSICO DE REGRESSÃO LINEAR PARA SÉRIES TEMPORAIS:
 
-# 7.2 GENERALIZED METHOD OF MOMENTS -----------------------------------------------------------------------------------
+HIP. 1: O modelo é linear nos parâmetros;
 
-# O método OLS é o mais conhecido na econometria. Geralmente os estudos da disciplina iniciam a partir de modelos
-# OLS. Entretanto, uma das hipóteses de Gauss-Markov para que os estimadores OLS sejam BLUE (best linear unbiased
-# estimators) é que haja ausência de endogeneidade no modelo. Isto é, não deve haver relação entre os resíduos
-# e as variáveis dependentes (cov(x,u = 0)). Entretanto, esta é uma hipótese de difícil verificação empírica.
-# Para contornar esse problema, é comum utilizar o método GMM, através da instrumentalização das variáveis
-# problemáticas, endógenas.
-# Mas o que é um instrumento? Um instrumento é uma variável que possui duas características:
-# possui correlação com a variável que será instrumentalizada e não possui correlação com os resíduos.
-# De acordo com Wooldridge (2001, pp. 50-51), a endogeneidade ocorre basicamente por conta de três motivos:
-# variáveis omitidas, erros de medidas ou simultaneidade. Em nosso arcabouço consideramos como endógenas todas as
-# variáveis do tipo pull, as quais foram devidamente instrumentalizadas a partir de lags. As variáveis do tipo push
-# foram consideradas exógenas
+HIP. 2: Inexistência de colinearidade perfeita;
 
-# 7.2.1 CRIANDO OS INSTRUMENTOS:
+HIP. 3: Média condicional zero do termo de erro (E(Ui|Xi) = 0), (exogeneidade --> cov(Xi, Ui) = 0);
+     (Sob as hipóteses 1 a 3 há inexistência de viés nos estimadores (E(b^) = b));
+     
+HIP. 4: Homocedasticidade ou variância constante de Ui;
+     (A ocorrência de heterocedasticidade não causa viés nem perda de consistência nos estimadores,
+mas eles perdem eficiência, isto é, deixam de ter variância mínima);
+
+HIP. 5: Ausência de autocorrelação entre os termos de erro (corr(Ut, Us | X) = 0), para todo t != s)
+     (Sob as hipóteses 1 a 5 os estimadores são BLUE (best linear unbiased estimators));
+     
+HIP. 6: Normalidade do termo de erro (importante para eficiência, pois sob as hipóteses 1 a 6, os estimadores
+MQO têm menor variância entre TODOS os estimadores não viesados, inclusive os não lineares);
+ 
+HIP. 1 a 5: versão para séries temporais das hipóteses de Gauss-Markov.
+
+HIP. 1 a 6: são as seis hipóteses do modelo clássico de regressão linear.
+
+(WOOLDRIDGE, 2011, pp. 348-350)
+
+7.2 GENERALIZED METHOD OF MOMENTS
+
+O método OLS é o mais conhecido na econometria. Geralmente os estudos da disciplina iniciam a partir de modelos OLS. Entretanto, uma das hipóteses de Gauss-Markov para que os estimadores OLS sejam BLUE (best linear unbiased estimators) é que haja ausência de endogeneidade no modelo. Isto é, não deve haver relação entre os resíduos e as variáveis dependentes (cov(x,u = 0)). Entretanto, esta é uma hipótese de difícil verificação empírica. Para contornar esse problema, é comum utilizar o método GMM, através da instrumentalização das variáveis problemáticas, endógenas. Mas o que é um instrumento? Um instrumento é uma variável que possui duas características: possui correlação com a variável que será instrumentalizada e não possui correlação com os resíduos. De acordo com Wooldridge (2001, pp. 50-51), a endogeneidade ocorre basicamente por conta de três motivos: variáveis omitidas, erros de medidas ou simultaneidade. Em nosso arcabouço consideramos como endógenas todas as variáveis do tipo pull, as quais foram devidamente instrumentalizadas a partir de lags. As variáveis do tipo push foram consideradas exógenas
+
+7.2.1 CRIANDO OS INSTRUMENTOS:
+```{r, eval = FALSE}
 brazil$LN_CDS_5Y_1 <- lag(brazil$LN_CDS_5Y, 1)
 brazil$IND_PROD_YOY_1 <- lag(brazil$IND_PROD_YOY, 1)
 brazil$IND_PROD_YOY_2 <- lag(brazil$IND_PROD_YOY, 2)
@@ -317,53 +347,64 @@ brazil$RT12_LN_INT_RES_3 <- lag(brazil$RT12_LN_INT_RES, 3)
 brazil$INF_YOY_1 <- lag(brazil$INF_YOY, 1)
 brazil$INF_YOY_2 <- lag(brazil$INF_YOY, 2)
 brazil$INF_YOY_3 <- lag(brazil$INF_YOY, 3)
+````
 
-# 7.2.2 O MODELO:
+7.2.2 O MODELO:
+```{r, eval = FALSE}
 gmm_model <- gmm(LN_CDS_5Y ~ LN_CDS_5Y_1 + IND_PROD_YOY + RT12_LN_INT_RES + IND_PROD_US_YOY + LN_VIX +
                    INF_YOY + LN_INTEREST_5Y_US + LN_OIL, ~ LN_CDS_5Y_1 + IND_PROD_YOY_1 + IND_PROD_YOY_2 +
                    IND_PROD_YOY_3 + RT12_LN_INT_RES_1 + RT12_LN_INT_RES_2 + RT12_LN_INT_RES_3 + 
                    LN_VIX + LN_INTEREST_5Y_US + LN_OIL + INF_YOY_1 + INF_YOY_2 + INF_YOY_3,
                  data = brazil, vcov = "HAC", kernel = "Bartlett", bw = bwAndrews, prewhite = 0)
+```
 
-# 7.2.3 RESULTADOS ESTIMADOS PELO MODELO:
+7.2.3 RESULTADOS ESTIMADOS PELO MODELO:
+```{r, eval = FALSE}
 summary(gmm_model)
 stargazer(gmm_model, header = FALSE, type = "html", out = "gmm_model.html", title = "Resultados do modelo GMM",
           digits = 3)
+```
 
-# 7.2.4 GRÁFICOS DE DIAGNÓSTICOS:
+7.2.4 GRÁFICOS DE DIAGNÓSTICOS:
+```{r, eval = FALSE}
 plot.gmm(gmm_model)
+```
 
-# 7.2.5 AUTOCORRELAÇÃO DOS RESÍDUOS:
+7.2.5 AUTOCORRELAÇÃO DOS RESÍDUOS:
+```{r, eval = FALSE}
 plot(gmm_model$residuals, type = "l", ylab = "Resíduos GMM", xlab = " ") # Uma primeira análise gráfica.
-# O teste BG (LM) de autocorrelação não se aplica ao modelo GMM. Entretando, a utilização da correção
-# de HAC e a análise gráfica dispensam a preocupação com autocorrelação no modelo.
+```
+O teste BG (LM) de autocorrelação não se aplica ao modelo GMM. Entretando, a utilização da correção de HAC e a análise gráfica dispensam a preocupação com autocorrelação no modelo.
 
-# 7.2.6 NORMALIDADE DOS RESÍDUOS:
+7.2.6 NORMALIDADE DOS RESÍDUOS:
+```{r, eval = FALSE}
 hist(gmm_model$residuals, main = "Histograma dos resíduos do modelo GMM", xlab = NULL) # Uma primeira observação gráfica
 shapiro.test(gmm_model$residuals) # H0: os resíduos são normais
 jarque.bera.test(gmm_model$residuals) # H0: os resíduos são normais
-# No modelo GMM somente a 1% de nível de significância é possível afirmar que os resíduos são normais.
+```
 
-# 7.2.7 TESTE DE HETEROCEDASTICIDADE:
+No modelo GMM somente a 1% de nível de significância é possível afirmar que os resíduos são normais.
 
-# Os testes de heterocedasticidade não se aplicam ao modelo GMM. Entretando, a utilização da correção
-# de HAC dispensa a preocupação com heterocedasticidade no modelo.
+7.2.7 TESTE DE HETEROCEDASTICIDADE:
 
-# 7.2.8 TESTE J DE VALIDADE DOS INSTRUMENTOS:
+Os testes de heterocedasticidade não se aplicam ao modelo GMM. Entretando, a utilização da correção de HAC dispensa a preocupação com heterocedasticidade no modelo.
+
+7.2.8 TESTE J DE VALIDADE DOS INSTRUMENTOS:
+```{r, eval = FALSE}
 summary(gmm_model)
+```
 
-# J-Test: degrees of freedom is 5 
-# J-test   P-value
-# Test E(g)=0:    2.00766  0.84808
+J-Test: degrees of freedom is 5 
+J-test   P-value
+Test E(g)=0:    2.00766  0.84808
 
-# O p-valor de 0,84 indica não se rejeição da hipótese nula do J-test, isto é, os instrumentos utilizados
-# no modelo são válidos.
+O p-valor de 0,84 indica não se rejeição da hipótese nula do J-test, isto é, os instrumentos utilizados no modelo são válidos.
 
-# REFERÊNCIAS SELECIONADAS ----------------------------------------------------------------------------------------
-# BUENO, Rodrigo de L. da S. Econometria de séries temporais. São Paulo: Cengage Learning, 2015.
+### REFERÊNCIAS SELECIONADAS:
 
-# WOOLDRIDGE, J. M. Introdução à econometria - Uma abordagem moderna. São Paulo: Cengage Learning, 2016.
+BUENO, Rodrigo de L. da S. Econometria de séries temporais. São Paulo: Cengage Learning, 2015.
 
-# PACIFIC INVESTMENT MANAGEMENT COMPANY. Understanding Investing – Credit Default Swaps.
-# Disponível em: https://global.pimco.com/en-gbl/resources/education/understanding-credit-default-swaps.
-# Acesso em: 19 set. 2022.
+WOOLDRIDGE, J. M. Introdução à econometria - Uma abordagem moderna. São Paulo: Cengage Learning, 2016.
+
+PACIFIC INVESTMENT MANAGEMENT COMPANY. Understanding Investing – Credit Default Swaps. Disponível em: https://global.pimco.com/en-gbl/resources/education/understanding-credit-default-swaps. Acesso em: 19 set. 2022.
+
