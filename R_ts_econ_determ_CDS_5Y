@@ -80,7 +80,7 @@ LN_INTEREST_5Y_US: logaritmo natural da taxa de juros de 5 anos dos EUA (+).
 ### 3. ANÁLISE GRÁFICA DAS VARIÁVEIS:
 Primeiramente é preciso destacar a principal variável de interesse do estudo. Em nosso caso, LN_CDS_5Y.
 
-```{r, eval = FALSE, results}
+```{r, eval = FALSE}
 graph_CDS <- brazil %>% ggplot() +
   geom_area(mapping = aes(x = MONTH, y = LN_CDS_5Y)) + theme_light() + ylim(0, 8) + xlab(" ") +
   annotate("text", as.Date(x = "2008-11-01"), y = 6.5, label = "Crise do Subprime \nnos EUA") +
