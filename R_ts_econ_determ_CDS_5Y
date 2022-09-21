@@ -134,6 +134,7 @@ Ver: https://blog.curso-r.com/posts/2021-05-19-patchwork/
 # Primeiramente é necessário transformar as variáveis para o tipo "ts".
 
 LN_CDS_5Y <- ts(brazil$LN_CDS_5Y, start = c(2003,1), freq = 12)
+LN_CDS_5Y
 ggmonthplot(LN_CDS_5Y, xlab = " ", ylab = "LN_CDS_5Y")
 IND_PROD_YOY <- ts(brazil$IND_PROD_YOY, start = c(2003, 1), freq = 12)
 ggmonthplot(IND_PROD_YOY, xlab = " ", ylab = "IND_PROD_YOY")
@@ -146,9 +147,9 @@ decomp_adit <- decompose(LN_CDS_5Y, type = "additive")
 decomp_mult <- decompose(LN_CDS_5Y, type = "mult")
 plot(decomp_adit)
 decomp_adit$x # Componente observado
-decomp_adit$seasonal # Componente sazonal
+decomp_adit$seasonal %>% round(digits = 6) # Componente sazonal
 decomp_adit$trend # Componente de tendência
-decomp_adit$random # Componente aleatório
+decomp_adit$random %>% round(digits = 6) # Componente aleatório
 LN_CDS_5Y_SA <- ts(decomp_adit$x - decomp_adit$seasonal, start = c(2003, 1), freq = 12) # Série dessazonalizada
 ggmonthplot(LN_CDS_5Y_SA) # Gráfico sazonal da série dessazonalizada
 plot(decomp_adit$x)
@@ -156,7 +157,7 @@ plot(decomp_adit$trend)
 plot(decomp_adit$seasonal)
 
 # FILTRO HP:
-LN_CDS_5Y_HP <- hpfilter(LN_CDS_5Y, freq = 14400, drift = TRUE)
+LN_CDS_5Y_HP <- hpfilter(LN_CDS_5Y, freq = 14400)
 plot(LN_CDS_5Y_HP)
 show(LN_CDS_5Y_HP)
 LN_CDS_5Y_HP$cycle
@@ -178,7 +179,7 @@ corrplot(cor(cor_brazil), method = "ellipse", type = "lower", tl.col = "blue")
 corrplot(cor(cor_brazil), method = "number", type = "lower", tl.col = "black")
 corrplot(cor(cor_brazil), method = "number", type = "lower", tl.col = "green")
 corrplot(cor(cor_brazil), method = "shade", type = "lower", tl.col = "black")
-corrplot(cor(cor_brazil), method = "color", type = "lower", tl.col = "pink")
+corrplot(cor(cor_brazil), method = "color", type = "lower", tl.col = "black")
 corrplot(cor(cor_brazil), method = "pie", type = "lower", tl.col = "black")
 ggcorr(cor_brazil)
 ```
@@ -239,6 +240,10 @@ ols_model <- lm(LN_CDS_5Y ~ lag(LN_CDS_5Y, 1) + IND_PROD_YOY + RT12_LN_INT_RES +
 ```{r, eval = FALSE}
 summary(ols_model)
 summ(ols_model)
+# Atentar para o teste F de significância global da regressão com k e n-k-1 graus de liberdade:
+# H0: o meu modelo e um modelo só com intercepto são iguais.
+# H1: o meu modelo gera um resultado melhor do que só o modelo com o intercepto.
+
 summ(ols_model, confint = TRUE, digits = 4)
 plot_summs(ols_model)
 plot_summs(ols_model, plot.distributions = TRUE, inner_ci_level = .9)
@@ -249,13 +254,13 @@ stargazer(ols_model, header = FALSE, type = "html", out = "ols_model.html", titl
 
 7.1.3 GRÁFICOS DE DIAGNÓSTICOS DOS RESULTADOS DO MODELO:
 
-1. A Residuals vs. Fitted plot: It is a scatter plot of residuals on the y axis and fitted values (estimated responses) on the x axis. The plot is used to detect non-linearity, unequal error variances, and outliers;
+1. Residuals vs. Fitted plot: um gráfico do tipo scatter com resíduos no eixo y e os valores ajustados (respostas imediatas) no eixo x. O gráfico é utilizado para detectar não-linearidade, outliers...;
 
-2. A Normal Q-Q plot: um gráfico para verificar a normalidade dos resíduos;
+2. Normal Q-Q plot: um gráfico para verificar a normalidade dos resíduos;
 
-3. Um scale-location plot: it is a type of plot that displays the fitted values of a regression model along the x-axis and the the square root of the standardized residuals along the y-axis;
+3. Scale-location plot: é um tipo de gráfico que exibe os valores ajustados de um modelo de regressão no eixo x e a raiz quadrada dos resíduos padronizados no eixo y;
 
-4. A Residuals vs. Leverage plot: Observations with high leverage have a strong influence on the coefficients in the regression model. If we remove these observations, the coefficients of the model would change noticeably.
+4. Residuals vs. Leverage plot: observações com alto grau de alavancagem têm fortes influências sobre os coeficientes do modelo. Se removermos essas observações, os coeficientes do modelo seriam alterados substancialmente.
 
 ```{r, eval = FALSE}
 stats:::plot.lm(ols_model) 
@@ -372,7 +377,7 @@ plot.gmm(gmm_model)
 
 7.2.5 AUTOCORRELAÇÃO DOS RESÍDUOS:
 ```{r, eval = FALSE}
-plot(gmm_model$residuals, type = "l", ylab = "Resíduos GMM", xlab = " ") # Uma primeira análise gráfica.
+plot(gmm_model$residuals, type = "l", xlab = " ", ylab = "Residuos GMM") # Uma primeira análise gráfica.
 ```
 O teste BG (LM) de autocorrelação não se aplica ao modelo GMM. Entretando, a utilização da correção de HAC e a análise gráfica dispensam a preocupação com autocorrelação no modelo.
 
@@ -407,4 +412,3 @@ BUENO, Rodrigo de L. da S. Econometria de séries temporais. São Paulo: Cengage
 WOOLDRIDGE, J. M. Introdução à econometria - Uma abordagem moderna. São Paulo: Cengage Learning, 2016.
 
 PACIFIC INVESTMENT MANAGEMENT COMPANY. Understanding Investing – Credit Default Swaps. Disponível em: https://global.pimco.com/en-gbl/resources/education/understanding-credit-default-swaps. Acesso em: 19 set. 2022.
-
