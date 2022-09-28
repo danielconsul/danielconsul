@@ -1,0 +1,129 @@
+'Programação em Economia e Finanças
+'Trabalho 1 - Daniel Consul de Antoni
+'O trabalho visa adaptar um programa visto em aula para cálculo de média e desvio-padrão de quatro variáveis macroeconômicas mensuradas em frequência anual (inflation, growth, unemployment e debt) para seis países latino-americanos (Argentina, Brazil, Chile, Colombia, Mexico e Uruguai). O programa fará a leitura de duas listas, countries e variables, as quais já estão disponíveis nas páginas de cada uma das quatro variáveis.
+
+mode quiet 'Comando para tornar mais simples a leitura do código pelo Eviews
+
+'Primeiro precisamos padronizar os prefixos dos nomes das variáveis para que fiquem iguais àqueles contidos no objeto "variables":
+for %object Inflation Growth Unemployment Debt
+	pageselect {%object}
+	rename infl_* inflation_* g_* growth_* u_* unemployment_*	
+next
+
+smpl 2000 @last 'Ajustando a amostra selecionada, que irá do ano 2000 até o último ano com observações, 2020.
+
+delete(noerr) table_{%variable} 'Para sobrescrever as tabelas já criadas
+
+'Primeiramente uma análise acerca do objeto "countries":
+for %object Inflation Growth Unemployment Debt
+	pageselect {%object}
+if @isobject("countries")=0 then 'A função @isobject verifica se existe o objeto "countries" nas páginas do workfile
+	%error = "A lista de países não foi criada!"
+	@uiprompt(%error) 'Emite um aviso com a mensagem entre aspas acima caso alguma página não tenha o objeto "countries"
+	stop 'Aborda a execução do código
+endif
+next
+
+'Pode ocorrer também que o objeto "countries" tenha sido criado mas esteja vazio. Então é necessário que o código reconheça se este problema está ocorrendo:
+for %object Inflation Growth Unemployment Debt
+	pageselect {%object}
+if @isempty(countries(1)) = 1 then '@isempty é uma função que avalia se o objeto está vazio ou não
+	%error = "A lista de países está vazia!"
+	@uiprompt(%error) 'Emite um aviso com a mensagem entre aspas acima caso em alguma página o objeto countries esteja vazio
+	stop
+endif
+next
+
+'Agora façamos os mesmos dois códigos acima, apenas adaptando-os para o objeto "variables":
+for %object Inflation Growth Unemployment Debt
+	pageselect {%object}
+if @isobject("variables") = 0 then
+	%error = "A lista de variáveis não foi criada!"
+	@uiprompt(%error)
+	stop
+endif
+next
+
+for %object Inflation Growth Unemployment Debt
+	pageselect {%object}
+if @isempty(variables(1)) = 1 then
+	%error = "A lista de variáveis está vazia!"
+	@uiprompt(%error)
+	stop
+endif
+next
+
+'Agora vamos determinar o número de países a serem analisados no programa:
+!max_countries = @rows(countries) '@rows lê o número de linhas do objeto countries (nesse caso o número total de observações, de 2000 a 2020: 21)
+!n_countries = 0 'Inicializando a contagem do número de países
+!i = 1 'Inicializando a contagem no objeto "countries"
+!indicador_de_vazio = 0 'Indica se tal posição está vazia ou não. Agora devemos criar um WHILE LOOP para que enquanto o string vector não estiver vazio, a leitura siga avançando em uma unidade os países existentes:
+while !indicador_de_vazio = 0
+	!n_countries = !n_countries + 1
+	!i = !i + 1
+	if (!i <= !max_countries) then
+		!indicador_de_vazio = @isempty(countries(!i))
+	else
+		!indicador_de_vazio = 1
+	endif
+wend
+
+'Agora vamos determinar o número de variáveis a serem analisadas no programa, no mesmo estilo do que foi feito acima para os países:
+!max_variables = @rows(variables)
+!n_variables = 0
+!j = 1
+!indicador_de_vazio = 0
+while !indicador_de_vazio = 0
+	!n_variables = !n_variables + 1
+	!j = !j + 1
+	if (!j <= !max_variables) then
+		!indicador_de_vazio = @isempty(variables(!j))
+	else
+		!indicador_de_vazio = 1
+	endif
+wend
+
+'Agora vamos percorrer as quatro variáveis de interesse: inflation, growth, unemployment e debt:
+for !k = 1 to !n_variables
+	%variable = variables(!k) 'Criando uma string vector do tipo alfanumérica com o nome de todas as quatro variáveis em análise
+	pageselect {%variable} 'Este comando serve para migrar entre as quatro páginas do workfile, uma para cada uma das variáveis citadas acima
+	matrix(!n_countries, 2) results_{%variable} 'Criando a matriz que vai armazenar os resultados de média e desvio-padrão de cada uma das quatro variáveis. Para cada uma das páginas, a matriz criada deve vir com o nome results_NOME DA VARIÁVEL (exemplo: results_debt)
+	for !f = 1 to !n_countries
+		%country = countries(!f) 'Criando uma string vector do tipo alfanumérica com o nome dos seis países em análise
+		results_{%variable}(!f, 1) = @mean({%variable}_{%country}) 'Fazendo o cálculo da média para cada variável e cada país
+		results_{%variable}(!f, 2) = @stdev({%variable}_{%country}) 'Fazendo o cálculo do desvio-padrão para cada variável e cada país
+	next
+next
+
+'Agora para finalizar vamos preparar as tabelas (conforme visto em aula) que receberão os resultados gerados pelo programa:
+for !k = 1 to !n_variables
+	%variable = variables(!k)
+	pageselect {%variable}
+	table(!n_countries + 1, 3) table_{%variable}
+	table_{%variable}.setwidth(1) 15
+	table_{%variable}.setwidth(2) 10
+	table_{%variable}.setwidth(3) 10
+'The setcell command puts a string or number into a cell of a table (setcell(nome da tabela, linha, coluna, "texto", texto centralizado).
+'Inserindo o cabeçalho com o nome das três colunas da tabela: País, Média e Desvio-padrão
+	setcell(table_{%variable}, 1, 1, "País", "c")
+	setcell(table_{%variable}, 1, 2, "Média", "c")
+	setcell(table_{%variable}, 1, 3, "Desvio-padrão", "c")
+
+'Ajustando os números nos lugates corretos da nova tabela, transferindo-os da matriz de resultados:
+	for !p = 1 to !n_countries
+		setcell(table_{%variable}, !p + 1, 1, countries(!p), "c")
+		setcell(table_{%variable}, !p + 1, 2, results_{%variable}(!p, 1), "c", 2)
+		setcell(table_{%variable}, !p + 1, 3, results_{%variable}(!p, 2), "c", 2)
+		table_{%variable}.setlines(a{!p}:c{!p}) + o
+	next
+
+	!n = !n_countries + 1
+
+'Inserindo as linhas horizontais e verticais que dividem a tabela
+	table_{%variable}.setlines(a1:a{!n}) + o
+	table_{%variable}.setlines(b1:b{!n}) + o
+	table_{%variable}.setlines(c1:c{!n}) + o
+	
+next
+
+'O código acima foi responsável por calcular média e desvio-padrão de quatro variáveis macroeconômicas (inflation, growth, unemployment e debt) para seis países (Argentina, Brasil, Chile, Colômbia, México e Uruguai). O resultado final foi a criação de uma tabela para cada uma das quatro variáveis contendo os nomes dos países e as médias e desvios-padrão.
