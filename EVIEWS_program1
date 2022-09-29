@@ -4,12 +4,6 @@
 
 mode quiet 'Comando para tornar mais simples a leitura do código pelo Eviews
 
-'Primeiro precisamos padronizar os prefixos dos nomes das variáveis para que fiquem iguais àqueles contidos no objeto "variables":
-for %object Inflation Growth Unemployment Debt
-	pageselect {%object}
-	rename infl_* inflation_* g_* growth_* u_* unemployment_*	
-next
-
 smpl 2000 @last 'Ajustando a amostra selecionada, que irá do ano 2000 até o último ano com observações, 2020.
 
 delete(noerr) table_{%variable} 'Para sobrescrever as tabelas já criadas
@@ -87,6 +81,7 @@ wend
 for !k = 1 to !n_variables
 	%variable = variables(!k) 'Criando uma string vector do tipo alfanumérica com o nome de todas as quatro variáveis em análise
 	pageselect {%variable} 'Este comando serve para migrar entre as quatro páginas do workfile, uma para cada uma das variáveis citadas acima
+	rename infl_* inflation_* g_* growth_* u_* unemployment_* 'Padronizando os prefixos dos nomes das variáveis para que fiquem iguais àqueles contidos no objeto "variables":
 	matrix(!n_countries, 2) results_{%variable} 'Criando a matriz que vai armazenar os resultados de média e desvio-padrão de cada uma das quatro variáveis. Para cada uma das páginas, a matriz criada deve vir com o nome results_NOME DA VARIÁVEL (exemplo: results_debt)
 	for !f = 1 to !n_countries
 		%country = countries(!f) 'Criando uma string vector do tipo alfanumérica com o nome dos seis países em análise
