@@ -1,0 +1,217 @@
+library(tidyverse)
+library(janitor)
+
+# As informações do banco de dados referem-se a vendas de varejo de uma super loja global ao longo de quatro anos,
+# de 01.01.2011 a 31.12.2014.
+
+dados <- clean_names(dados) # ajustando os nomes das variáveis no banco de dados
+
+count(dados %>% distinct(product_name)) # são 3.788 produtos distintos que foram comercializados
+
+dados$order_date <- as.Date(dados$order_date) # transformando a coluna order_date em data
+
+vendas_data <- dados %>% count(order_date) #mostra quantas vendas foram feitas por dia
+
+
+# O modo de embarque é o seguinte:
+dados %>% count(ship_mode)
+# 1 First Class     7505
+(7505/total)*100 # 14,6%
+
+# 2 Same Day        2701
+(2701/total)*100 # 5,27%
+
+# 3 Second Class   10309
+(10309/total)*100 # 20,1%
+
+# 4 Standard Class 30775
+(30775/total)*100 # 60,0%
+total <- 7505 + 2701 + 10309 + 30775
+
+# Tabela que resume os tipos de embarque:
+
+tipo_embarque <- tribble(
+  ~"Tipo de Embarque", ~Percentual,
+  "First Class", "14.6%",
+  "Same Day", "5.27%",
+  "Second Class", "20.1%",
+  "Stardard Class", "60.0%",
+)
+
+# O histograma mostra as vendas por dia:
+hist(vendas_data$n, xlab = "Quantidade de vendas por dia", main = "Histograma das vendas por dia",
+     breaks = 50, ylab = "Quantidade de dias")
+
+# Separando por ano as vendas:
+
+vendas_data_2011 <- vendas_data %>% filter(order_date >= "2011-01-01" & order_date <= "2011-12-31")
+vendas_data_2012 <- vendas_data %>% filter(order_date >= "2012-01-01" & order_date <= "2012-12-31")
+vendas_data_2013 <- vendas_data %>% filter(order_date >= "2013-01-01" & order_date <= "2013-12-31")
+vendas_data_2014 <- vendas_data %>% filter(order_date >= "2014-01-01" & order_date <= "2014-12-31")
+
+# A tabela abaixo mostra a média, desvio-padrão e mediana das vendas ao longo do período 2011-2014:
+
+resumo_vendas_ano <- tribble(
+  ~Ano, ~media, ~DP, ~Mediana,
+  "2011", as.numeric(mean(vendas_data_2011$n)), as.numeric(sd(vendas_data_2011$n)), as.numeric(median(vendas_data_2011$n)),
+  "2012", as.numeric(mean(vendas_data_2012$n)), as.numeric(sd(vendas_data_2012$n)), as.numeric(median(vendas_data_2012$n)),
+  "2013", as.numeric(mean(vendas_data_2013$n)), as.numeric(sd(vendas_data_2013$n)), as.numeric(median(vendas_data_2013$n)),
+  "2014", as.numeric(mean(vendas_data_2014$n)), as.numeric(sd(vendas_data_2014$n)), as.numeric(median(vendas_data_2014$n)),
+  )
+
+# O gráfico abaixo mostra a média, desvio-padrão e mediana das vendas ao logo do período 2011-2014:
+
+resumo_vendas_ano <- resumo_vendas_ano %>% rename(Média = media)
+
+resumo_vendas_ano %>% ggplot() +
+  geom_col(aes(x = "Média", y = Média, fill = Ano), position = "dodge") + 
+  geom_col(aes(x = "Desvio-padrão", y = DP, fill = Ano), position = "dodge") +
+  geom_col(aes(x = "Mediana", y = Mediana, fill = Ano), position = "dodge") + theme_light() +
+  scale_fill_brewer(palette = "Set1") + labs(title = "Estatísticas descritivas das vendas por ano",
+                                             x = " ", y = " ") +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom")
+
+# É possível verificar que tanto a média quanto a mediana das vendas se mostraram crescentes ao longo do 
+# período 2011-2014. O último ano foi o que apresentou as maiores médias e medianas de vendas por dia. Isso indica
+# que a empresa vem mostrando uma crescente na sua produção ao longo dos últimos anos.
+
+# Pra quantos países a empresa vendeu?
+count(dados %>% distinct(country)) # 147 países
+
+# Pra quantos clientes a empresa vendeu?
+count(dados %>% distinct(customer_name)) # A empresa vendeu para 795 clientes diferentes
+
+# Qual o lucro total no período?
+
+dados %>% select(profit) %>% sum(na.rm = TRUE) # 1.467.049
+dados %>% filter(order_date >= "2011-01-01" & order_date <= "2011-12-31") %>% select(profit) %>% sum(na.rm = TRUE)
+dados %>% filter(order_date >= "2012-01-01" & order_date <= "2012-12-31") %>% select(profit) %>% sum(na.rm = TRUE)
+dados %>% filter(order_date >= "2013-01-01" & order_date <= "2013-12-31") %>% select(profit) %>% sum(na.rm = TRUE)
+dados %>% filter(order_date >= "2014-01-01" & order_date <= "2014-12-31") %>% select(profit) %>% sum(na.rm = TRUE)
+
+# A tabela abaixo mostra a participação do ano nos lucros da empresa:
+lucro_percentual_ano <- tribble(
+  ~Ano, ~Percentual,
+  2011, (dados %>% filter(order_date >= "2011-01-01" & order_date <= "2011-12-31") %>% select(profit) %>% sum(na.rm = TRUE))/dados %>% select(profit) %>% sum(na.rm = TRUE)*100,
+  2012, (dados %>% filter(order_date >= "2012-01-01" & order_date <= "2012-12-31") %>% select(profit) %>% sum(na.rm = TRUE))/dados %>% select(profit) %>% sum(na.rm = TRUE)*100,
+  2013, (dados %>% filter(order_date >= "2013-01-01" & order_date <= "2013-12-31") %>% select(profit) %>% sum(na.rm = TRUE))/dados %>% select(profit) %>% sum(na.rm = TRUE)*100,
+  2014, (dados %>% filter(order_date >= "2014-01-01" & order_date <= "2014-12-31") %>% select(profit) %>% sum(na.rm = TRUE))/dados %>% select(profit) %>% sum(na.rm = TRUE)*100,
+)
+
+
+# Qual a média de lucros?
+# Algumas transações apresentaram lucros negativos, embora a maioria, por óbvio, tenha apresentado lucro positivo.
+# A média de lucro por transação ao longo dos quatro anos foi de 28.6 mil dólares.
+mean(dados$profit, na.rm = TRUE)
+
+# Quantas transações ocorreram acima do lucro médio?
+count(dados %>% filter(profit >= mean(dados$profit, na.rm = TRUE))) # 15.039
+
+# Quantas transações ocorreram abaixo do lucro médio?
+count(dados %>% filter(profit < mean(dados$profit, na.rm = TRUE))) # 36.245
+
+# Quantos clientes diferentes realizaram transações acima do lucro médio?
+lucro_maior <- dados %>% filter(profit > mean(dados$profit, na.rm = TRUE))
+lucro_maior %>% distinct(customer_name) # 795 clientes, isto é, todos os clientes, em algum momento,
+# fizeram alguma transação que rendeu lucro acima do lucro médio
+
+# Analisando o lucro total por país:
+lucro_pais <- dados %>% group_by(country) %>% summarise(lucro_total = sum(profit))
+lucro_pais %>% arrange(desc(lucro_total))
+# Os países que apresentaram maior soma total de lucros foram China, índia e Reino Unido
+
+lucro_pais %>% arrange((lucro_total))
+# Os países que apresentaram menor soma total de lucros foram Turquia, Nigéria e Holanda.
+
+# Quantos países apresentaram lucro negativo ao longo dos quatro anos?
+lucro_pais %>% filter(lucro_total < 0) %>% count()
+# 29 países apresentaram lucro total negativo ao longo dos quatro países
+
+lucro_negativo <- lucro_pais %>% filter(lucro_total < 0)
+lucro_neg <- as.data.frame(lucro_negativo$country) %>% edit()
+
+
+# PROPOSTA 1: RETIRAR PAÍSES COM LUCRO NEGATIVO -------------------------------------------------------------------
+
+# PROPOSTA: retirar os países que apresentaram lucro negativo nos últimos quatro anos e verificar
+# o impacto somente dos países lucrativos:
+
+dados_sem_luc_neg <- dados %>% filter(country != "Argentina" & country != "Denmark" & country != "Dominican Republic"
+                 & country != "Haiti" & country != "Honduras" & country != "Ireland" & country != "Kazakhstan"
+                 & country != "Lithuania" & country != "Myanmar (Burma)" & country != "Netherlands" & country != "Nigeria"
+                 & country != "Pakistan" & country != "Panama" & country != "Papua New Guinea" & country != "Peru"
+                 & country != "Philippines" & country != "Portugal" & country != "South Korea" & country != "Sweden"
+                 & country != "Tajikistan" & country != "Thailand" & country != "Turkey" & country != "Turkmenistan"
+                 & country != "Uganda" & country != "United Arab Emirates" & country != "Venezuela" & country != "Vietnam"
+                 & country != "Yemen" & country != "Zimbabwe")
+
+lucro_pais_sem_luc_neg <- dados_sem_luc_neg %>% group_by(country) %>% summarise(lucro_total = sum(profit))
+
+#EXCLUÍDOS OS LUCROS NEGATIVOS:
+mean(lucro_pais_sem_luc_neg$lucro_total, na.rm = TRUE) # lucro total médio 13.922,73
+median(lucro_pais_sem_luc_neg$lucro_total, na.rm = TRUE)
+
+#COM TODAS AS OBSERVAÇÕES:
+mean(lucro_pais$lucro_total, na.rm = TRUE) # lucro total médio 8.089,45
+median(lucro_pais$lucro_total, na.rm = TRUE)
+
+
+# INTERPRETAÇÃO: o lucro médio teria sido 5.833,28 maior se a empresa não tivesse negociado com todos os países
+# que apresentaram lucro negativo nas transações no período 2011-2014. Logo, há indícios de que
+# o país pode aumentar seu lucro se não comercializar mais com esses países. Isso indica que 29 países seriam
+# excluídos da lista de comércio:
+
+# [1] "Argentina"            "Denmark"              "Dominican Republic"   "Haiti"                "Honduras"            
+# [6] "Ireland"              "Kazakhstan"           "Lithuania"            "Myanmar (Burma)"      "Netherlands"         
+# [11] "Nigeria"              "Pakistan"             "Panama"               "Papua New Guinea"     "Peru"                
+# [16] "Philippines"          "Portugal"             "South Korea"          "Sweden"               "Tajikistan"          
+# [21] "Thailand"             "Turkey"               "Turkmenistan"         "Uganda"               "United Arab Emirates"
+# [26] "Venezuela"            "Vietnam"              "Yemen"                "Zimbabwe"       
+
+
+# PROPOSTA 2: RETIRAR AS SUB-CATEGORIAS DE PRODUTOS COM MAIORES LUCROS NEGATIVOS -----------------------------------------------------
+
+lucro_categoria <- dados %>% group_by(category) %>% summarise(lucro_total = sum(profit, na.rm = TRUE))
+# São três as categorias de vendas da empresa:
+# FURNITURE: lucro de 285.204,7
+# OFFICE SUPPLIES: lucro de 518.473,8
+# TECHNOLOGY: 663.370,0
+
+# Quais categorias dão mais lucro negativo por transação?
+dados %>% filter(profit < 0) %>% count(category)
+dados %>% select(category) %>% count(category)
+# 1 Furniture        3117
+# 2 Office Supplies  7003
+# 3 Technology       2424
+
+lucro_sub_categoria <- dados %>% group_by(sub_category) %>% summarise(lucro_total = sum(profit, na.rm = TRUE))
+lucro_sub_categoria
+# São 17 categorias de vendas no total: 16 dão lucro e uma não dá lucro. A que mais dá lucro é accessories e a
+# que dá lucro negativo é tables (-64.083).
+
+dados %>% filter(sub_category == "Accessories") %>% View()
+
+dados %>% filter(sub_category != "Tables")
+
+dados %>% filter(sub_category == "Tables") %>% View() # Não comercializar mais a subcategoria TABLES, pois ao longo dos quatro anos
+# as 861 transações realizadas da subcategoria redundaram em um lucro total negativo
+
+dados %>% filter(sub_category == "Tables" & profit < 0) %>% View()
+
+
+dados %>% filter(sub_category != "Tables") %>% select(profit) %>% sum(na.rm = TRUE)
+# O lucro sem a comercialização da sub categoria Tables teria sido de 1.531.132, ou 4,4% superior ao que foi verificado.
+
+# Qual região tem o custo de embarque mais elevado?
+
+custo_embarque <- dados %>% group_by(region) %>% summarise(custo_embarque = sum(shipping_cost, na.rm = TRUE)) %>% arrange(desc(custo_embarque))
+
+# Qual região tem maior lucro?
+
+lucro_regiao <- dados %>% group_by(region) %>% summarise(lucro_regiao = sum(profit, na.rm = TRUE)) %>% arrange(desc(lucro_regiao))
+lucro_regiao
+
+# A região central é a que apresenta maior custo de embarque, mas também é a que apresenta maior lucro.
+# A correlação entre lucro e custo de embarque é alta: 0,96.
+
+correl_lucro_embarque <- as.data.frame(cbind(custo_embarque, lucro_regiao)) %>% select(-region)
