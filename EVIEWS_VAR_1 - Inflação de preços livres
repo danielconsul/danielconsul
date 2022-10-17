@@ -1,0 +1,154 @@
+'Este programa visa desenvolver um modelo VAR que calcula projeções da inflação de preços livres.
+
+'Este não é um modelo muito prático, é o mais simples possível. O número de defasagens é escolhido pelo usuário, por exemplo.
+
+'Modelos VAR usam variáveis endógenas.
+
+'O modelo VAR gera projeções para a inflação de preços livres. Essas projeções, em conjunto com as projeções de inflação de preços administrados, resultam nas projeções para o IPCA cheio.
+
+'Referência principal: Box do Relatório de Inflação de setembro de 2012, "Revisão dos Modelos de Vetores Autorregressivos com Fundamentação Econômica – 2012".
+
+'Referências adicionais: os modelos VAR estimados pelo BCB foram abordados anteriormente nos boxes “Vetores Auto-Regressivos” (Relatório de Inflação de junho de '2004), “Modelos de Vetores Auto-Regressivos” (Relatório de Inflação de março de 2008) e “Modelos de Vetores Autorregressivos” (Relatório de Inflação de junho de 2010).
+
+'Utilização de amostras que são adicionadas de uma observação à medida que se avança no tempo. O tamanho da janela de estimação aumenta à medida que o tempo passa.
+
+'Horizontes preditivos: 1 a 24.
+
+'Os dados estão disponíveis até 2020m12. Com o horizonte preditivo máximo de 24 meses, serão feitas projeções até 2022m12.
+
+'Dados inseridos manualmente, havendo necessidade de editar o programa.
+
+'----------------------------------------------------------------------------------------------------
+
+mode quiet
+
+smpl @all 'Os dados são do período julho de 1994 a dezembro de 2020. Pretende-se, contudo, fazer previsões 24 meses a frente.
+
+scalar lags = 1 'Escolha do número de defasagens do modelo VAR. Depois isso será automatizado por um programa melhor com defasagens escolhidas via critérios de informação.
+
+'Variável a ser prevista:
+string end0 = "ipca_livres"
+
+'Demais variáveis endógenas:
+string end1 = "ipca_administrados"
+string end2 = "v_dolar_1"
+string end3 = "juro_real_6"
+
+'Informa que não há variáveis exógenas:
+%extras = " "
+
+'Número de variáveis endógenas do modelo VAR (ipca_livres, ipca_administrados, v_dolar_1, juro_real_6):
+scalar n_end = 4
+
+'Definição da amostra de estimação inicial.
+'Definição da amostra de teste inicial (comparação entre valores projetados e observados).
+'A primeira janela de estimação começa em %lim_inf_first e termina em %_lim_sup_first.
+%lim_inf_first = "1999m06"
+%lim_sup_first = "2010m12"
+
+'A última janela de estimação começa em %lim_inf_last e termina em%lim_sup_last.
+%lim_inf_last = "1999m06"
+%lim_sup_last = "2020m12"
+
+'O workfile termina na observação %lim_sup:
+%lim_sup = "2023m12" '2023m12 é o limite máximo do workfile, mas o período máximo para o qual haverá projeções é 2022m12: 2020m12 + horizonte de projeções de 24 meses.
+
+'Fixa o parâmetro que define o horizonte preditivo máximo:
+scalar horizon = 24
+
+'O número de execuções do programa é...
+scalar a = @dtoo(%lim_sup_first) 'Transforma a data em texto para o número natural corresponde: date-to-observation. Ou seja, %lim_sup_first é igual a 2010m12. O scalar a retorna o valor de 198, que é a posição que o mês 2010m12 ocupa no recorte cronológico.
+scalar b = @dtoo(%lim_sup_last)
+scalar col = b - a + 1
+
+'Essa parte do programa estima o modelo VAR que o usuário escolheu para fazer projeções da taxa de inflação de preços livres.
+'O procedimento executado é o seguinte:
+'1) Fixa a amostra para estimação do modelo;
+'2) Estima o modelo com o número de defasagens desejado (como escolhemos acima, 1);
+'3) Gera previsões para o período que se inicia no mês imediatamente porterior ao final da amostra de estimação (2011m01).
+'4) Volta para o passo 1 colocando mais uma observação na amostra.
+
+smpl %lim_inf_first %lim_sup 'Ajusta a amostra do modelo, de 1999m06 a 2023m12.
+
+'Cria as séries com os erros de projeção para 1 a 24 passou à frente.
+'Cria as séries com as projeções para 1 a 24 passos à frente.
+'Os horizontes de projeção 1 a 24 são indexados pelo índice h no loop de FOR.
+
+for !h = 1 to horizon 'Numeric control variable que vai de 1 a 24, pois horizon foi definido acima como 24 (projeções dois anos, 24 meses, à frente).
+	delete(noerr) erro_var{!h}
+	delete(noerr) proj_var_{!h}
+	series erro_var_{!h} 'Cria 24 séries erro_var_1 ... erro_var_24
+	series proj_var_{!h} 'Cria 24 séries proj_var_1 ... proj_var_24
+next
+
+'Cria as séries com as projeções para os próximos 12 passos (resultado acumulado; inflação para os próximos 12 meses).
+delete(noerr) proj_var_12ac
+series proj_var_12ac
+
+for !i = 1 to col 'O modelo será executo col vezes. Lembrando que col = b - a + 1 = 121
+
+'Ajusta a amostra de estimação:
+	smpl %lim_inf_first %lim_sup_first + !i - 1 'Amostra de 1999m06 a 2010m12 mais um passo à frente até 2023m12
+
+'Estima o modelo VAR com o número escolhido de defasagens e obtém as projeções:
+	var var_escolhido.ls 1 {lags} {end0} {end1} {end2} {end3} @ c {%extras}
+'O nome do modelo é var_escolhido e foi estimado via mínimos quadrados. O número de lags = 1 (1 até [{lags}=1]) foi definido acima com a criação do scalar lags. As variáveis do tipo string à esquerda de @ são as variáveis endógenas do modelo. À direita de @ está a constante (sempre exógena) e as demais variáveis exógenas contidas na control variables %extras. Essa control variable está vazia.
+	var_escolhido.makemodel(vv) ''vv é o nome do modelo.
+	smpl %lim_sup_first + !i %lim_sup 'Escolhe a amostra de projeção, isto é, de 2010m12 + 1 (2011m01) até 2023m12, avançando de um mês em um mês.
+	vv.solve 'Projeta/resolve o modelo vv
+	rename {end0}_0 y_f{!i} 'Renomeia {end0}_0 para y_f{!i}
+
+'Cálculo das projeções e dos erros de previsão. Os resultados são armazenados nas séries erro_var_XX:
+	for !h = 1 to horizon 'horizon = 24
+		scalar aux = !h-1 '1-1, 2-1, 3-1, 4-1, 5-1...
+		proj_var_{!h}(a + !i + aux) = y_f{!i}(a + !i + aux) 'proj_var_1, proj_var_2...
+		erro_var_{!h}(a + !i + aux) = ({end0}(a + !i + aux) - proj_var_{!h}(a + !i + aux))^2 'Erro quadrático médio da variável de interesse ipca_livre: (valor observado - valor projetado) ao quadrado
+'(a = 198 = 2010m12) + (!i = 1 to col > 1 até 121) + (aux = !h - 1)
+	next 'Fecha o loop de FOR indexado por h, que "varre"os horizontes preditivos. O máximo é 24 meses (horizon = 24).
+
+	'Cálculo das projeções para a inflação acumulada nos próximo 12 meses.
+	proj_var_12ac(a + !i) = 0
+	for !m = 1 to 12
+	proj_var_12ac(a + !i) = (1 + proj_var_12ac(a + !i)/100)*(1 + y_f{!i}(a + !i + (!m - 1))/100) 'a = 2010m12 + !i = 1 to col (= 121)
+	proj_var_12ac(a + !i) = (proj_var_12ac(a + !i) - 1)*100
+	next 'Fechamento do loop de FOR indexado por !m = 1 to 12 para cálculo da inflação acumulada em 12 meses.
+
+next 'Fecha o loop que "varre" a amostra de teste, que representa a passagem do tempo. Esse loop é indexado por i (120 meses de projeção).
+
+'Cálculo dos erros quadráticos médios:
+
+matrix(1, 4) erro_var_escolhido 'Cria uma matriz de uma linha e quatro colunas com o nome de erro_var_escolhido
+
+smpl %lim_sup_first + 1 %lim_sup 'Considera o período amostral de 2011m01 a 2023m12
+
+erro_var_escolhido(1,1) = @mean(erro_var_1)
+erro_var_escolhido(1,2) = @mean(erro_var_6)
+erro_var_escolhido(1,3) = @mean(erro_var_12)
+erro_var_escolhido(1,4) = @mean(erro_var_24)
+
+table(2,5) result_var
+setcell(result_var, 1, 2, "1", "c") 'Na posição linha 1 coluna 2 da tabela escrever "1" centralizado ("c")
+setcell(result_var, 1, 3, "6", "c")
+setcell(result_var, 1, 4, "12", "c")
+setcell(result_var, 1, 5, "24", "c")
+setcell(result_var, 2, 1, "VAR", "c")
+
+result_var.setlines(a1:a1) + o
+result_var.setlines(b1:e1) + o
+result_var.setlines(a2:a2) + o
+result_var.setlines(b2:e2) + o
+
+for !coluna = 1 to 4	
+	setcell(result_var, 2, !coluna+1, erro_var_escolhido(1,!coluna), 3)
+next  'Fechamento do loop de FOR indexado por coluna.
+
+smpl @all
+
+'Apaga objetos desnecessários:
+delete a
+delete b
+delete aux
+delete col
+delete *_0
+delete vv
+delete y_*
