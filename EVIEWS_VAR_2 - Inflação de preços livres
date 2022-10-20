@@ -25,6 +25,15 @@ mode quiet
 
 smpl @all
 
+'Copiando os objetos/variáveis de interesse para a folha VAR2 do workfile.
+copy(o) Dados\ipca_livres VAR2\ipca_livres
+copy(o) Dados\ipca_administrados VAR2\ipca_administrados
+copy(o) Dados\v_dolar_1 VAR2\v_dolar_1
+copy(o) Dados\v_dolar_4 VAR2\v_dolar_4
+copy(o) Dados\juro_real_6 VAR2\juro_real_6
+copy(o) Dados\juro_real_5 VAR2\juro_real_5
+copy(o) Dados\igpm VAR2\igpm
+
 'Escolha do número de defasagens dos modelos VAR.
 scalar lags = 1
 
