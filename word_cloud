@@ -1,0 +1,30 @@
+library(tm)
+library(wordcloud)
+
+# É importante fazer uma "limpa" no texto no próprio Microsoft Word: colocar as palavras em minúsculo,
+# remover vírgulas, pontos... (substituir por espaços em branco), excluir proposições (apenas palavras inteiras).
+
+# Carregar o arquivo bloco de notas .txt: import dataset > from text (readr) > desmarcar a opção "first rows as names".
+
+
+cloud <- discurso_1$X1
+
+docs <- Corpus(VectorSource(cloud))
+
+dtm <- TermDocumentMatrix(docs) 
+matrix <- as.matrix(dtm) 
+words <- sort(rowSums(matrix), decreasing = TRUE) 
+df <- data.frame(word = names(words), freq = words)
+
+set.seed(1234)
+
+# Nuvem de palavras mais simples:
+wordcloud(words = df$word, freq = df$freq, min.freq = 40, 
+          max.words = 100, random.order = FALSE, rot.per = 0.4, colors=brewer.pal(8, "Dark2"))
+
+#Esse pacote aqui gera uma nuvem de palavras mais bonita:
+library(wordcloud2)
+
+wordcloud2(data = df, size = 1.5, color = 'random-dark')
+wordcloud2(data = df, size = 1.5, color = 'random-light')
+wordcloud2(data = df, size = 0.9, shape = 'pentagon')
