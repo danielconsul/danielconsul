@@ -1,0 +1,339 @@
+'Programa que calcula projeções da inflação de preços livres por meio de VÁRIOS modelos VAR.
+
+'Os modelos VAR trabalham com conjuntos diferentes de variáveis endógenas. Esses conjuntos são escolhidos pelo usuário. 
+'A escolha é feita por meio de um objeto do tipo "table".
+'Esse objeto se chama VARCONJ.
+'Obs1 => o número máximo de variáveis endógenas em cada VAR é 6!
+'Obs2 => o número máximo de variáveis exógenas em cada VAR é 6!
+'Obs3 => o número máximo de modelos VAR é 12!
+'Obs4 => a primeira variável na lista de endógenas é aquela para a qual desejamos calcular projeções! (no exemplo do BCB, é a inflação de preços livres).
+
+'===>>>> O número de defasagens é escolhido pelo critério de Schwartz.
+
+'===>>>> Outra novidade: resultados sem e com ajustamento sazonal (dummies determinísticas).
+
+'===>>>> Novidade com relação a técnicas de programação: o loop de for pode ser controlado por uma variável do tipo string!
+
+'Os modelos VAR geram previsões para a inflação de preços livres que, combinadas às projeções da inflação de preços administrados (obtidas de forma independente através de modelos auxiliares ou simplesmente tomando as projeções divulgadas pelo BCB), compõem as previsões da inflação plena mensurada pelo Índice Nacional de Preços ao Consumidor Amplo (IPCA).
+'Referência principal: Box do Relatório de Inflação de setembro de 2012, "Revisão dos Modelos de Vetores Autorregressivos com Fundamentação Econômica – 2012".
+'Referências adicionais: os modelos VAR estimados pelo BCB foram abordados anteriormente nos boxes “Vetores Auto-Regressivos” (Relatório de Inflação de junho de '2004), “Modelos de Vetores Auto-Regressivos” (Relatório de Inflação de março de 2008) e “Modelos de Vetores Autorregressivos” (Relatório de Inflação de junho de 2010).
+
+'Utilização de amostras que são adicionadas de uma observação à medida que se avança no tempo. O tamanho da janela de estimação aumenta à medida que o tempo passa.
+
+'Horizontes preditivos: 1 a 24.
+
+'Dados inseridos manualmente, havendo necessidade de editar o programa.
+
+'----------------------------------------------------------------------------------------------------
+
+mode quiet
+
+smpl @all
+
+'Copiando os objetos/variáveis de interesse para a folha VAR2 do workfile.
+copy(o) Dados\ipca_livres VAR4\ipca_livres
+copy(o) Dados\ipca_administrados VAR4\ipca_administrados
+copy(o) Dados\v_dolar_1 VAR4\v_dolar_1
+copy(o) Dados\v_dolar_4 VAR4\v_dolar_4
+copy(o) Dados\juro_real_6 VAR4\juro_real_6
+copy(o) Dados\juro_real_5 VAR4\juro_real_5
+copy(o) Dados\igpm VAR4\igpm
+
+'Escolha do número máximo de defasagens dos modelos VAR.
+scalar maxdef = 4
+
+'Definição da amostra de estimação inicial.
+'Definição da amostra de teste inicial (comparação entre valores projetados e observados).
+'A primeira janela de estimação começa em %lim_inf_first e termina em %lim_sup_first.
+%lim_inf_first = "1999m06"
+%lim_sup_first = "2010m12"
+'A última janela de estimação começa em %lim_inf_last e termina em %lim_sup_last .
+%lim_inf_last = "1999m06"
+%lim_sup_last = "2020m12"
+
+'O workfile termina na observação %lim_sup:
+%lim_sup = "2023m12"
+
+'Fixa o parâmetro que define o horizonte preditivo máximo:
+scalar horizon = 24
+
+'O número de execuções do programa é...
+scalar a = @dtoo(%lim_sup_first)
+scalar b = @dtoo(%lim_sup_last)
+scalar col = b - a + 1
+
+'Leitura do número de modelos VAR a ser testado pelo usuário.
+string num = varconj(1, 1) 'Posição (1, 1) da matriz varconj mostra o número de modelos VAR a ser testados: 3.
+scalar N = @val(num)
+
+'Cria as séries com os erros de projeção para 1 a 24 passos à frente.
+'Cria as séries com as projeções para 1 a 24 passos à frente.
+'Os horizontes de projeção são indexados pelo índice h.
+for !h = 1 to horizon 
+	delete(noerr) erro_var_{!h}
+	delete(noerr) proj_var_{!h}
+	series erro_var_{!h}
+	series proj_var_{!h}
+next
+
+for %sazonalidade nsa sa 'NOVIDADE! loop de FOR controlado por objetos do tipo string! nsa = sem ajuste sazonal; sa = com ajuste sazonal
+
+	'Cria matrizes que guardarão as projeções feitas por cada modelo para cada horizonte prospectivo.
+	'As projeções são obtidas usando ou não ajustamento sazonal.
+	'Trata-se de matrizes com 24 colunas cada uma.
+	'A primeira linha informa as projeções calculadas na data equivalente à observação a, a segunda linha informa as projeções calculadas na data equivalente à observação a + 1 e assim por diante.
+	for !mod = 1 to N '1 a N = 3
+		delete(noerr) proj_mod{!mod}_{%sazonalidade}
+		matrix(col, 24) proj_mod{!mod}_{%sazonalidade} 'proj_mod_1_sa, proj_mod_1_nsa...
+	next
+
+	'Cria matrizes que guardarão os erros de projeção cometidos por cada modelo para cada horizonte prospectivo.
+	'As projeções são obtidas usando ou não ajustamento sazonal.
+	'Trata-se de matrizes com 24 colunas cada uma.
+	'A primeira coluna informa a data na qual as projeções foram calculadas.
+	'A posição dos erros segue o mesmo padrão das projeções.
+	for !mod = 1 to N '1 a N = 3
+		delete(noerr) erro_mod{!mod}_{%sazonalidade}	
+		matrix(col, 24) erro_mod{!mod}_{%sazonalidade}
+	next
+
+	'Cria matriz que guardará o número ótimo de defasagens para cada modelo VAR e para cada instante de tempo entre a + 1 e a + col.
+	'A matriz tem col linhas e N colunas.
+	'Haverá uma matriz para cada caso (sem e com ajustamento sazonal).
+	delete(noerr) optlags_{%sazonalidade}
+	matrix(col, N) optlags_{%sazonalidade} 'optlags_nsa e optlags_sa
+'121 linhas e 3 colunas (uma coluna para cada modelo VAR)
+
+	'Cria matrizes que guardarão os valores assumidos pelo critério de informação para cada modelo VAR, para cada instante de tempo entre a + 1 e a + col e para cada número de defasagens.
+	'A matriz tem col linhas e maxdef colunas.
+	'Haverá matrizes para os dois casos (sem e com ajustamento sazonal).
+	for !mod = 1 to N
+		delete(noerr) varlags_mod{!mod}_{%sazonalidade}
+		matrix(col, maxdef) varlags_mod{!mod}_{%sazonalidade} '121 linhas e maxdef = 4 colunas. A linha com menor valor indica a defasagem escolhida via critério de Schwarz.
+	next
+
+	'Essa parte do programa estima cada um dos modelos VAR que o usuário escolhe para fazer projeções da inflação dos preços livres.
+	'O procedimento executado com cada VAR é o seguinte:
+	'1) fixa a amostra para estimação do modelo.
+	'2) encontra o numero ótimo de defasagens.
+	'3) estima o modelo com o número ótimo de defasagens.
+	'4) gera previsões para o período que se inicia no mês imediatamente posterior ao final da amostra de estimação. A base é o modelo estimado no passo anterior.
+	'5) volta para o passo 1 colocando mais uma observação na amostra.
+
+	for !mod = 1 to N
+
+		'Leitura do número de variáveis endógenas do modelo.
+		string num_end = varconj(!mod + 1, 2) 'O número de variáveis endógenas é lido como uma "palavra".
+		scalar N_end = @val(num_end) 'A "palavra" é convertida para o número correspondente.
+		if ((N_end <= 1) or (N_end >= 7)) then  
+			%error = "O número de variáveis endógenas do modelo " + @str(!mod) + " é inválido!" 'Testa para VAR 1, 2 e 3
+			@uiprompt(%error)
+			stop
+		endif
+
+		'Leitura das variáveis endógenas do modelo.
+		'Copia as séries correspondentes às variáveis definidas acima para a folha "VAR4" do workfile.
+		'Forma uma lista de variáveis endógenas.
+		string lista = " "
+		for !z = 1 to N_end
+			string end{!z} = varconj(!mod + 1,!z + 2) 'Lê o nome da z-ésima variável endógena
+			string name = end{!z} 
+			copy(o) Dados\{name} VAR4\{name} 'Copia a série temporal cujo nome acabou de ser lido.
+			lista = lista + name + " " 'Atualiza a lista de variáveis endógenas.
+		next
+
+		'Leitura do número de variáveis exógenas do modelo.
+		string num_exo = varconj(!mod + 1, 9)
+		scalar N_exo = @val(num_exo)
+		if ((N_exo < 0) or (N_exo >= 7)) then  
+			%error = "O número de variáveis exógenas do modelo " + @str(!mod) + " é inválido!"
+			@uiprompt(%error)
+			stop
+		endif
+
+		'Executar a seqüência de comandos abaixo se não houver ajustamento sazonal. 
+		'Se não há ajustamento sazonal, então a lista ao menos começa com o intercepto.
+		if  %sazonalidade = "nsa" then
+			if (N_exo = 0) then  
+				string lista_exo = "c"
+			endif
+
+			'Se há variáveis exógenas, então a lista deve incorporá-las.
+			if ((N_exo >= 1) and (N_exo <= 6)) then  
+				'Leitura das variáveis exógenas do modelo.
+				'Copia as séries correspondentes às variáveis definidas acima para a folha "VAR3" do workfile.
+				'Forma lista de variáveis enxógenas.
+				string lista_exo = "c "
+				for !z = 1 to N_exo
+					string exo{!z} = varconj(!mod + 1,!z + 9) 'Lê o nome da z-ésima variável exógena
+					string name = exo{!z} 
+					copy(o) Dados\{name} VAR4\{name} 'Copia a série temporal cujo nome acabou de ser lido.
+					lista_exo = lista_exo + name + " " 'Atualiza a lista de variáveis exógenas.
+				next
+			endif
+		endif
+
+'Executa a seqüência de comandos abaixo se houver ajustamento sazonal. 
+'Se há ajustamento sazonal, então a lista ao menos começa com o intercepto e as dummies sazonais.
+		if  %sazonalidade = "sa" then
+			if (N_exo = 0) then  
+				string lista_exo = "c @seas(2) @seas(3) @seas(4) @seas(5) @seas(6) @seas(7) @seas(8) @seas(9) @seas(10) @seas(11) @seas(12) "
+			endif
+
+'Se há variáveis exógenas, então a lista deve incorporá-las.
+			if ((N_exo >= 1) and (N_exo <= 6)) then  
+				'Leitura das variáveis exógenas do modelo.
+				'Copia as séries correspondentes às variáveis definidas acima para a folha "VAR4" do workfile.
+				'Forma lista de variáveis enxógenas.
+				string lista_exo = "c @seas(2) @seas(3) @seas(4) @seas(5) @seas(6) @seas(7) @seas(8) @seas(9) @seas(10) @seas(11) @seas(12) "
+
+			for !z = 1 to N_exo
+					string exo{!z} = varconj(!mod + 1,!z + 9) 'Lê o nome da z-ésima variável exógena
+					string name = exo{!z} 
+					copy(o) Dados\{name} VAR4\{name} 'Copia a série temporal cujo nome acabou de ser lido.
+					lista_exo = lista_exo + name + " " 'Atualiza a lista de variáveis exógenas.
+			next
+			endif
+		endif
+
+		for !i = 1 to col
+
+			!mincrit = 1e12  'Ajusta o valor mínimo inicial do critério de informação em um patamar extremamente elevado.		
+		
+			'Ajusta a amostra de estimação.
+			smpl %lim_inf_first %lim_sup_first + !i -1
+
+			'Escolha do número ótimo de defasagens.
+			for !lag = 1 to maxdef 
+
+				'Estima o modelo VAR com !lag defasagens.
+				var mod_var.ls 1 {!lag} {lista} @ {lista_exo}
+
+'----------------------------------------------------------------------------------------------------
+'Obs: como estimar um modelo VAR...
+				'Estimate VAR specification.
+				'Syntax: var_name.ls(options) lag_pairs endog_list [@ exog_list]
+				'ls estimates an unrestricted VAR using equation-by-equation OLS. You must specify the order of the VAR (using one or more pairs of lag intervals), and then provide a list of series or groups to be used as endogenous variables. You may include exogenous variables such as trends and seasonal dummies in the VAR by including an “@-sign” followed by a list of series or groups. A constant is automatically added to the list of exogenous variables; to estimate a specification without a constant, you should use the option “noconst”.
+'----------------------------------------------------------------------------------------------------
+
+				'Calcula o valor assumido pelo critério de informação.
+		      	!crit = mod_var.@schwarz
+			
+				'Armazena o resultado na matriz varlags_mod{!mod}_{%sazonalidade}
+				varlags_mod{!mod}_{%sazonalidade}(!i, !lag) = !crit
+'varlags_mod_1_sa, varlags_mod_1_nsa...
+					      		
+				'Determinação do menor valor assumido pelo critério de informação escolhido; escolha do melhor VAR.
+				if !crit < !mincrit then
+					!mincrit = !crit
+			   		!best_lag = !lag 'Armazena o melhor número de defasagens do modelo VAR.
+				endif	
+
+				delete mod_var
+
+			next 'Fecha o loop responsável por procurar o melhor número de defasagens dos modelos VAR. Esse loop é indexado por !lag.
+
+			'Salva o número ótimo de defasagens para cada modelo VAR e para cada instante de tempo entre lim_sup_first e lim_sup_last.
+			'O número ótimo depende da presença de ajustamento sazonal.
+			optlags_{%sazonalidade}(!i, !mod) = !best_lag
+				
+			'Estima o modelo VAR com o número ótimo de defasagens e obtém as projeções.
+			var mod_var.ls 1 {!best_lag} {lista} @ {lista_exo}
+			mod_var.makemodel(vv)
+			smpl %lim_sup_first + !i %lim_sup
+			vv.solve
+			rename {end1}_0 y_f{!i}
+
+			'Cálculo das projeções e dos erros de previsão.
+			for !h = 1 to horizon
+				proj_var_{!h}(a + !i + !h-1) = y_f{!i}(a + !i + !h-1) 'Projeção.
+				erro_var_{!h}(a + !i + !h-1) = ({end1}(a + !i + !h-1) - proj_var_{!h}(a + !i + !h-1))^2 'Erro.
+			next 'Fecha o loop de for indexado por h, que "varre" os horizontes preditivos.
+
+			'Armazenamento das projeções e dos erros de previsão em matrizes.
+			for !h = 1 to horizon
+				proj_mod{!mod}_{%sazonalidade}(!i, !h) = proj_var_{!h}(a + !i + !h-1)
+				erro_mod{!mod}_{%sazonalidade}(!i, !h) = erro_var_{!h}(a + !i + !h-1)
+			next 'Fecha o loop de for indexado por h, que "varre" os horizontes preditivos.
+
+			delete y_*
+
+		next 'Fecha o loop que "varre" a amostra de teste ou, de outra forma, que representa a passagem do tempo. Esse loop é indexado por i.
+
+		'CÁLCULO DOS ERROS MÉDIOS QUADRÁTICOS:
+	
+		matrix(1, 4) result_mod{!mod}_{%sazonalidade} = na
+				
+		smpl %lim_sup_first + 1 %lim_sup
+		
+		result_mod{!mod}_{%sazonalidade}(1,1) = @mean(erro_var_1)
+		result_mod{!mod}_{%sazonalidade}(1,2) = @mean(erro_var_6)
+		result_mod{!mod}_{%sazonalidade}(1,3) = @mean(erro_var_12)
+		result_mod{!mod}_{%sazonalidade}(1,4) = @mean(erro_var_24)
+
+	next 'Fecha o loop que "varre" os modelos VAR que devem ser testados. Esse loop é indexado por mod.
+
+	next 'Fecha o loop que "varre" as alternativas sem e com ajustamento sazonal. Esse loop é indexado pelo string sazonalidade.
+
+delete(noerr) result_var
+table(2*N + 1, 6) result_var
+setcell(result_var, 1, 3, "1", "c")
+setcell(result_var, 1, 4, "6", "c")
+setcell(result_var, 1, 5, "12", "c")
+setcell(result_var, 1, 6, "24", "c")
+for !mod = 1 to N
+	setcell(result_var, !mod + 1, 2, "var" + @str(!mod), "c")
+	setcell(result_var, !mod + N + 1, 2, "var" + @str(!mod), "c")
+next
+setcell(result_var, 2, 1, "nsa", "c")
+setcell(result_var, N + 2, 1, "sa", "c")
+
+for !mod =  1 to N
+	for !coluna = 1 to 4	
+		setcell(result_var, !mod + 1, !coluna + 2, result_mod{!mod}_nsa(1, !coluna), 3)
+	next
+next
+
+for !mod =  1 to N
+	for !coluna = 1 to 4	
+		setcell(result_var, !mod + N + 1, !coluna + 2, result_mod{!mod}_sa(1, !coluna), 3)
+	next
+next
+
+result_var.setlines(a1:f1) + o
+
+string s1 = @str(2*N + 1)
+string s2 = @str(N + 1)
+result_var.setlines(a1:a{s1}) + o
+result_var.setlines(b1:b{s1}) + o
+result_var.setlines(c1:c{s1}) + o
+result_var.setlines(d1:d{s1}) + o
+result_var.setlines(e1:e{s1}) + o
+result_var.setlines(f1:f{s1}) + o
+result_var.setlines(a2:f{s2}) + o
+delete s1
+delete s2
+
+smpl @all
+
+'Apaga objetos desnecessários
+delete a
+delete b
+delete col
+delete *_0
+delete vv
+delete y_*
+delete end*
+delete lista*
+delete mod_var
+delete n
+delete n_end
+delete n_exo
+delete name
+delete num
+delete num_end
+delete num_exo
+delete erro_var_*
+delete proj_var_*
+delete maxdef
+delete horizon
