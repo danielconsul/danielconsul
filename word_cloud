@@ -3,6 +3,7 @@ library(wordcloud)
 
 # É importante fazer uma "limpa" no texto no próprio Microsoft Word: colocar as palavras em minúsculo,
 # remover vírgulas, pontos... (substituir por espaços em branco), excluir proposições (apenas palavras inteiras).
+# Se o dataframe com a contagem de palavras selecionar alguma palavra seguida de vírgula (ex: batata,) usar fruits <- str_replace(fruits, ",$", "") para retirar a vírgula.
 
 # Carregar o arquivo bloco de notas .txt: import dataset > from text (readr) > desmarcar a opção "first rows as names".
 
