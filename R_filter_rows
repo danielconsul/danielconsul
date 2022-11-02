@@ -19,12 +19,12 @@ dados %>% filter(str_detect(Species, "^set")) #linhas que começam com set
 
 dados %>% filter(str_detect(Species, "[vr]")) #contém v ou r
 
-#XERCÍCIO:
+# Filtrando linhas a partir de certos strings:
 
-tabela1 <- dados %>% filter(str_detect(Species, "^ver")) #começa com ver
+iris %>% filter(str_detect(Species, "^vir|^se")) # Filtra todas as linhas cuja coluna Species começa com "vir" ou "se"
 
-tabela2 <- dados %>% filter(str_detect(Species, "ca$")) #termina com ca
-
-#juntando as tabelas:
-
-tabela3 <- bind_rows(tabela1, tabela2)
+mtcars %>% 
+  rownames_to_column("type") %>% 
+  filter(str_detect(type, 'Toyota')) # Filtra todas as linhas cuja coluna type possui o nome Toyota.
+  
+  USArrests %>% rownames_to_column("State") %>% filter(str_detect(State, "New"))
