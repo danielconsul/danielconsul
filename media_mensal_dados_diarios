@@ -10,10 +10,10 @@ dados$dia <- as.Date(dados$dia, tryFormats = "%d/%m/%Y")
 dados$mes <- month(dados$dia) # Extrai o mês da coluna dia
 dados$ano <- year(dados$dia) # Extrai o ano da coluna dia
 
-# Cria um data frame com a média mensal a partir dos dados diários da variável embi:
+# Cria um data frame com a média mensal a partir dos dados diários da variável "embi":
 media <- aggregate(embi ~ mes + ano, dados, mean)
 
-# Substitui o vetor mes extraído por um vetor de datas de mesmo nome:
+# Substitui o vetor "mes" extraído por um vetor de datas de mesmo nome:
 media$mes <- seq(as.Date('2016/01/01', "%Y/%m/%d"), as.Date('2022/10/01', "%Y/%m/%d"), by = "months") 
 
 # Exclui a coluna desnecessária:
