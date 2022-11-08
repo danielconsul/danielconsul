@@ -1,0 +1,14 @@
+library(tidyverse)
+
+graph_atualiz$MES <- seq(as.Date('2017/10/01', "%Y/%m/%d"), as.Date('2022/10/01', "%Y/%m/%d"), by = "months") 
+
+# JUNTANDO DOIS GRÁFICOS EM UM GRÁFICO SÓ.
+# PROBLEMA: a escala dos dois eixos y ficou de mesmo tamanho.
+
+ggplot(graph_atualiz, aes(x = MES)) +
+  geom_line(aes(y = DIF_JUROS,
+                colour = "DIFERENCIAL DE JUROS (eixo direito)"), size = 1) +
+  geom_line(aes(y = VAR_CAMBIAL_ANUAL,
+                colour = "VARIAÇÃO CAMBIAL ANUAL (eixo esquerdo)"), size = 1) + ylab(" ") + xlab(" ") +
+  theme_light() + theme(legend.position = "bottom") + labs(colour = " ") +
+  scale_y_continuous(sec.axis = sec_axis(~ . * 1)) # Essa função manipula a escala do eixo y secundário em relação ao eixo y primário.
