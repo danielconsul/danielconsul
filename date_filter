@@ -1,0 +1,15 @@
+library(tidyverse)
+library(lubridate)
+
+# Filtrando linhas por meses:
+
+marco <- modelo_mensal %>% filter(str_detect(data, "-03-")) # filtra todos os meses de março
+junho <- modelo_mensal %>% filter(str_detect(data, "-06-")) # filtra todos os meses de junho
+setembro <- modelo_mensal %>% filter(str_detect(data, "-09-")) # filtra todos os meses de setembro
+dezembro <- modelo_mensal %>% filter(str_detect(data, "-12-")) # filtra todos os meses de dezembro
+
+modelo_mensal <- bind_rows(marco, junho, setembro, dezembro) # empilhar/agrupa os quatro dataframes acima
+
+modelo_mensal$data <- as.Date(modelo_mensal$data, tryFormats = "%y-%m-%d") # classifica como "data" a coluna data
+
+modelo_mensal <- modelo_mensal[order(as.Date(modelo_mensal$data, format="%m/%d/%Y")),] # ordena cronologiamente
