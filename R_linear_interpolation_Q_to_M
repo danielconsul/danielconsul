@@ -1,0 +1,10 @@
+# INTERPOLAÇÃO LINEAR DE DADOS TRIMESTRAIS PARA MENSAIS -----------------------------------------------------------
+
+# O dataframe "pii" possui dados trimestrais (2001.T1 a 2022.T2) da posição internacional de investimentos do Brasil.
+
+pii <- subset(pii, "trimestre" > "2001 Q4") # Ajusta a variável de datas; trimestres, neste caso
+
+monthly <- seq(pii$trimestre[1], tail(pii$trimestre, 1), by = "month") # Cria o vetor de datas mensais
+
+pii2 <- data.frame(trimestre = monthly, pii2 = approx(pii, method = "linear", xout = monthly)$y)
+# A função "approx" combinada com o método "linear" cria o novo dataframe "pii2" com a interpolação linear dos dados.
