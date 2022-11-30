@@ -1,6 +1,6 @@
 # INTERPOLAÇÃO LINEAR DE DADOS TRIMESTRAIS PARA MENSAIS -----------------------------------------------------------
 
-# O dataframe "pii" possui dados trimestrais (2001.T1 a 2022.T2) da posição internacional de investimentos do Brasil.
+# O dataframe "pii" possui dados trimestrais (2001.T4 a 2022.T2) da posição internacional de investimentos do Brasil.
 
 pii <- subset(pii, "trimestre" > "2001 Q4") # Ajusta a variável de datas; trimestres, neste caso
 
