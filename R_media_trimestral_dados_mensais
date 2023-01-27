@@ -1,0 +1,15 @@
+library(tidyverse)
+library(lubridate)
+
+int_res$mes <- as.Date(int_res$mes, tryFormats = "%d/%m/%Y") # Transforma a coluna das datas no formato .Date
+
+int_res$ano <- year(int_res$mes) # Extrai o ano da coluna mes
+int_res$trimestre <- quarter(int_res$mes) # Extrai o trimestre da coluna mes
+
+media <- aggregate(int_res ~ trimestre + ano, int_res, mean) # Cria o novo df com a média trimestral
+
+
+media$trimestre <- seq(as.Date('1998/01/01', "%Y/%m/%d"), as.Date('2022/12/01', "%Y/%m/%d"), by = "quarters")
+# Cria o vetor coluna com os trimestres
+
+media <- media %>% select(-ano) # Exclui variável desnecessária
