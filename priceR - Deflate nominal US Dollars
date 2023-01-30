@@ -1,0 +1,8 @@
+library(priceR)
+
+oil$real <- adjust_for_inflation(oil$oil_price, oil$mes, "US", to_date = "2021-12-01")
+
+# Preços de dezembro de 2021. Se to_date = 2021, o deflacionamento é feito com dados do mês de janeiro.
+# oil_price é o vetor de valores nominais.
+# oil_mes é o vetor de datas.
+# oil$real cria um novo vetor com os valores deflacionados a preços de dezembro de 2021.
