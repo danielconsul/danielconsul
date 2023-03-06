@@ -1,5 +1,7 @@
 library(priceR)
 
+oil$mes <-  as.Date(oil$mes, tryFormats = "%d/%m/%Y")
+
 oil$real <- adjust_for_inflation(oil$oil_price, oil$mes, "US", to_date = "2021-12-01")
 
 # Preços de dezembro de 2021. Se to_date = 2021, o deflacionamento é feito com dados do mês de janeiro.
