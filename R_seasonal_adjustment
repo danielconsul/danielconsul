@@ -1,0 +1,24 @@
+# SAZONALIDADE OIL ------------------------------------------------------------------------------------------------
+library(seasonal)
+
+oil_ts <- ts(oil$oil_real, start = c(2000, 1), end = c(2022, 12), frequency = 12) # Criando uma série do tipo Time Series
+
+ggsubseriesplot(oil_ts) # O gráfico da série não parece demonstrar grandes problemas de sazonalidade
+
+oil_sa <- seas(oil_ts) # Criando a série dessazonalizada
+
+final(oil_sa) # Retorna a série ajustada
+
+plot(oil_sa) # Plota as séries não ajustada e ajustada sazonalmente
+
+summary(oil_sa) # Exibe uma visão geral do modelo.
+# Esse próprio modelo afirma que a série não deveria ser objeto de ajuste sazonal, pois não demonstra significativos
+# picos sazonais: "- Series should not be a candidate for seasonal adjustment because the spectrum of the prior
+# adjusted series (Table B1) has no visually significant seasonal peaks".
+
+monthplot(oil_sa) # Mostra o gráfico sazonal e do componente SI (Seasonal irregular).
+# O componente SI, expresso em porcentagem, é computado para cada mês do ano.
+
+monthplot(oil_sa, choice = "irregular") # Plota o componente irregular
+
+identify(oil_sa) # The identify method can be used to select or deselect outliers by point and click.
