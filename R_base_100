@@ -1,0 +1,5 @@
+gov_exp$mes <-  as.Date(gov_exp$mes, tryFormats = "%d/%m/%Y")
+
+gov_exp$base100 <- gov_exp$gov_exp_real / gov_exp$gov_exp_real[gov_exp$mes == "2010-01-01"] * 100
+
+# Cria uma nova coluna (variável) de nome "base100" no dataframe "gov_exp" com a variável "gov_exp_real" com base 100 em janeiro de 2010.
