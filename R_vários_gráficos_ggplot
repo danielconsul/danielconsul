@@ -1,0 +1,21 @@
+library(ggplot2)
+library(cowplot)
+
+# Gerando dados de exemplo
+set.seed(123)
+df1 <- data.frame(x = 1:10, y = rnorm(10))
+df2 <- data.frame(x = 1:10, y = rnorm(10))
+df3 <- data.frame(x = 1:10, y = rnorm(10))
+df4 <- data.frame(x = 1:10, y = rnorm(10))
+
+# Criando os quatro gráficos
+plot1 <- ggplot(df1, aes(x, y)) + geom_point() + ggtitle("Gráfico 1")
+plot2 <- ggplot(df2, aes(x, y)) + geom_line() + ggtitle("Gráfico 2")
+plot3 <- ggplot(df3, aes(x, y)) + geom_bar(stat = "identity") + ggtitle("Gráfico 3")
+plot4 <- ggplot(df4, aes(x, y)) + geom_area() + ggtitle("Gráfico 4")
+
+# Juntando os quatro gráficos
+grid_plot <- plot_grid(plot1, plot2, plot3, plot4, ncol = 2)
+
+# Visualizando o gráfico
+grid_plot
