@@ -1,0 +1,12 @@
+library(tidyverse)
+
+dados %>% ggplot() + geom_area(mapping = aes(x = Ano, y = SP), fill = "lightblue", colour = "black") + theme_classic() + ylim(0, 12) +
+  xlim(1947, 2020) + xlab(NULL) + ylab(NULL) + geom_hline(aes(yintercept = 4.2), colour = "black", size = 1) +
+  labs(title = "Investimento do setor público consolidado \n % do PIB (1947 - 2021)",
+       caption = "Exclui empresas Estatais subnacionais. \n Fonte: Observatório da Política Fiscal/FGV.") +
+  theme(plot.title= element_text(hjust=0.5)) + geom_text(
+    x = 2014, 
+    y = 5.0, 
+    label= "Meta para 2030 - 4.2% do PIB",
+    colour= "black"
+  ) + scale_x_continuous(breaks = seq(1947, 2021, 4)) + scale_y_continuous(breaks = seq(0, 12.5, 1.5))
