@@ -1,0 +1,46 @@
+# Fazendo 1000 simulações do multiplicador monetário:
+
+df <- data.frame(
+  c = seq(0.01, 0.9, length.out = 1000),
+  d = 1 - seq(0.01, 0.9, length.out = 1000),
+  r = runif(1000, 0.1, 0.4)
+)
+
+df$m <- 1 / (df$c + df$d * df$r)
+
+ggplot(df, aes(x = c, y = m, color = m)) +
+  geom_line(linewidth = 1, group = 1) +
+  scale_color_viridis_c() +
+  labs(
+    x = "Proporção PMPP/M1",
+    y = "Multiplicador monetário",
+    color = " "
+  ) +
+  theme_classic() +
+  theme(legend.position = "bottom") +
+  annotate("text", x = 0.8, y = 5.5, label = "'c' varia entre 0.01 e 0.9 \n 'r' varia entre 0.1 e 0.4") +
+  annotate("rect", xmin = 0.65, xmax = 0.95, ymin = 5.2, ymax = 5.8, alpha = 0.2) + ylim(0, 6)
+
+
+ggplot(df, aes(x = d, y = m, color = m)) +
+  geom_line(linewidth = 1, group = 1) +
+  scale_color_viridis_c() +
+  labs(
+    x = "Proporção DV/M1",
+    y = "Multiplicador monetário",
+    color = " "
+  ) +
+  theme_classic() +
+  theme(legend.position = "bottom") +
+  annotate("text", x = 0.2, y = 5.5, label = "'c' varia entre 0.1 e 0.9 \n 'r' varia entre 0.01 e 0.4 \n 'd' é a diferença de 'c'") +
+  annotate("rect", xmin = 0.05, xmax = 0.35, ymin = 5, ymax = 6, alpha = 0.2) + ylim(0, 6)
+
+# GRÁFICO 3D ------------------------------------------------------------------------------------------------------
+
+plot_ly(x = df$c, y = df$d, z = df$m, mode = "scatter3d") %>% 
+  layout(scene = list(xaxis = list(title = "PMPP/M1"), yaxis = list(title = "DV/M1"),
+                      zaxis = list(title = "Multiplicador monetário")))
+
+plot_ly(x = df$r, y = df$d, z = df$m, mode = "scatter3d") %>% 
+  layout(scene = list(xaxis = list(title = "R/DV"), yaxis = list(title = "DV/M1"),
+                      zaxis = list(title = "Multiplicador monetário")))
