@@ -1,0 +1,9 @@
+# GRÁFICO 3D ------------------------------------------------------------------------------------------------------
+
+plot_ly(x = df$c, y = df$d, z = df$m, mode = "scatter3d") %>% 
+  layout(scene = list(xaxis = list(title = "PMPP/M1"), yaxis = list(title = "DV/M1"),
+                      zaxis = list(title = "Multiplicador monetário")))
+
+plot_ly(x = df$r, y = df$d, z = df$m, mode = "scatter3d") %>% 
+  layout(scene = list(xaxis = list(title = "R/DV"), yaxis = list(title = "DV/M1"),
+                      zaxis = list(title = "Multiplicador monetário")))
