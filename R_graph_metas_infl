@@ -10,10 +10,10 @@ metas_infl %>% ggplot() +
 
 
 metas_infl %>% ggplot(aes(x = Ano, y = desv_meta)) +
-  geom_col(stat = "count", aes(fill = cump_meta)) +
+  geom_col(stat = "count", aes(fill = cump_meta)) + #cump_meta é uma variável que mostra se o país cumpriu ou não a meta
   geom_line(aes(x = Ano, y = interv_meta), size = 1, linetype = "twodash") + ylim(-3, 10) +
   geom_line(aes(x = Ano, y = interv_meta*(-1)), size = 1, linetype = "twodash") +
-  labs(x = " ", y = " ", fill = " ") +
+  labs(x = " ", y = " ", fill = " ") + # fill para tirar o nome da legenda
   scale_fill_manual(values = c("CUMPRIU" = "darkblue", "NÃO CUMPRIU" = "lightgreen"),
                     labels = c("CUMPRIU" = "CUMPRIU A META", "NÃO CUMPRIU" = "NÃO CUMPRIU A META"),
                     breaks = c("CUMPRIU", "NÃO CUMPRIU")) + theme_pander() +
