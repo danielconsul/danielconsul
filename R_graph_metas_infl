@@ -1,0 +1,21 @@
+metas_infl %>% ggplot() + 
+  geom_ribbon(aes(x = Ano, ymin = lim_inf, ymax = lim_sup), fill = "lightblue", alpha = 2) +
+  geom_line(mapping = aes(x = Ano, y = lim_inf), size = 1.2, linetype = "twodash") + 
+  geom_line(mapping = aes(x = Ano, y = lim_sup), size = 1.2, linetype = "twodash") + 
+  geom_line(mapping = aes(x = Ano, y = meta_inf), size = 1.3) +
+  geom_line(mapping = aes(x = Ano, y = infl, color = "Inflação efetiva"), size = 1.5) +
+  theme_pander() + labs(x = " ", y = " ", color = " ") +
+  scale_color_manual(values = c("Inflação efetiva" = "red")) +
+  theme(legend.position = "bottom")
+
+
+metas_infl %>% ggplot(aes(x = Ano, y = desv_meta)) +
+  geom_col(stat = "count", aes(fill = cump_meta)) +
+  geom_line(aes(x = Ano, y = interv_meta), size = 1, linetype = "twodash") + ylim(-3, 10) +
+  geom_line(aes(x = Ano, y = interv_meta*(-1)), size = 1, linetype = "twodash") +
+  labs(x = " ", y = " ", fill = " ") +
+  scale_fill_manual(values = c("CUMPRIU" = "darkblue", "NÃO CUMPRIU" = "lightgreen"),
+                    labels = c("CUMPRIU" = "CUMPRIU A META", "NÃO CUMPRIU" = "NÃO CUMPRIU A META"),
+                    breaks = c("CUMPRIU", "NÃO CUMPRIU")) + theme_pander() +
+  theme(legend.position = "bottom") + scale_y_continuous(n.breaks = 8) +
+  scale_x_continuous(n.breaks = 8)
