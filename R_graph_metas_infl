@@ -1,4 +1,18 @@
-metas_infl %>% ggplot() + 
+library(tidyverse)
+library(ggthemes)
+
+metas_infl$Ano <- seq(from = 1999, to = 2025)
+
+graph_1 <- metas_infl %>% ggplot() + 
+  geom_ribbon(aes(x = Ano, ymin = lim_inf, ymax = lim_sup), fill = "lightblue", alpha = 2) +
+  geom_line(mapping = aes(x = Ano, y = lim_inf), size = 1.2, linetype = "twodash") + 
+  geom_line(mapping = aes(x = Ano, y = lim_sup), size = 1.2, linetype = "twodash") + 
+  geom_line(mapping = aes(x = Ano, y = meta_inf), size = 1.3) +
+  theme_pander() + labs(x = " ", y = " ")
+
+ggsave("graph_1.png", dpi = 500) #dpi mais elevado melhora a qualidade do gráfico
+
+graph_2 <- metas_infl %>% ggplot() + 
   geom_ribbon(aes(x = Ano, ymin = lim_inf, ymax = lim_sup), fill = "lightblue", alpha = 2) +
   geom_line(mapping = aes(x = Ano, y = lim_inf), size = 1.2, linetype = "twodash") + 
   geom_line(mapping = aes(x = Ano, y = lim_sup), size = 1.2, linetype = "twodash") + 
@@ -8,14 +22,31 @@ metas_infl %>% ggplot() +
   scale_color_manual(values = c("Inflação efetiva" = "red")) +
   theme(legend.position = "bottom")
 
+ggsave("graph_2.png", dpi = 500)
 
-metas_infl %>% ggplot(aes(x = Ano, y = desv_meta)) +
-  geom_col(stat = "count", aes(fill = cump_meta)) + #cump_meta é uma variável que mostra se o país cumpriu ou não a meta
+
+graph_3 <- metas_infl %>% ggplot(aes(x = Ano, y = desv_meta)) +
+  geom_col(stat = "count", aes(fill = cump_meta)) +
   geom_line(aes(x = Ano, y = interv_meta), size = 1, linetype = "twodash") + ylim(-3, 10) +
   geom_line(aes(x = Ano, y = interv_meta*(-1)), size = 1, linetype = "twodash") +
-  labs(x = " ", y = " ", fill = " ") + # fill para tirar o nome da legenda
+  labs(x = " ", y = " ", fill = " ") + #fill altera/tira o título da legenda
   scale_fill_manual(values = c("CUMPRIU" = "darkblue", "NÃO CUMPRIU" = "lightgreen"),
                     labels = c("CUMPRIU" = "CUMPRIU A META", "NÃO CUMPRIU" = "NÃO CUMPRIU A META"),
                     breaks = c("CUMPRIU", "NÃO CUMPRIU")) + theme_pander() +
   theme(legend.position = "bottom") + scale_y_continuous(n.breaks = 8) +
   scale_x_continuous(n.breaks = 8)
+
+ggsave("graph_3.png", dpi = 500)
+
+
+graph_4 <- metas_infl_2 %>% ggplot() +
+  geom_col(aes(x = Ano, y = desv_meta, fill = cump_meta)) +
+  geom_line(aes(x = Ano, y = interv_meta, group = 1), size = 1, linetype = "twodash") +
+  geom_line(aes(x = Ano, y = interv_meta*(-1), group = 1), size = 1, linetype = "twodash") +
+  labs(x = " ", y = " ", fill = " ") +
+  scale_fill_manual(values = c("CUMPRIU" = "darkblue", "NÃO CUMPRIU" = "lightgreen", "PROJEÇÃO" = "red"),
+                    labels = c("CUMPRIU" = "CUMPRIU A META", "NÃO CUMPRIU" = "NÃO CUMPRIU A META", "PROJEÇÃO" = "PROJEÇÃO"),
+                    breaks = c("CUMPRIU", "NÃO CUMPRIU", "PROJEÇÃO")) + theme_pander() +
+  theme(legend.position = "bottom")
+
+ggsave("graph_4.png", dpi = 500)
