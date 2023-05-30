@@ -1,0 +1,19 @@
+library(tidyverse)
+library(ggthemes)
+
+dados$MONTH <- seq(as.Date('2003/01/01', "%Y/%m/%d"), as.Date('2022/12/01', "%Y/%m/%d"), by = "months")
+
+dados_1 <- stack(dados, select = (2:9)) #agrupando os dados
+
+month <- seq(as.Date('2003/01/01', "%Y/%m/%d"), as.Date('2022/12/01', "%Y/%m/%d"), by = "months")
+
+dados_1$month <- rep(month, 8)
+
+
+dados_1 %>% ggplot(aes(x = month, y = values)) + geom_line(color = "black") +
+  xlab(NULL) + ylab(NULL) + theme_bw() +
+  facet_wrap(~ ind, strip.position = "top", nrow = 2, ncol = 4, scales = "free_y") +
+  scale_y_continuous(labels = function(x) sprintf("%.1f", x)) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+ggsave("graph_1.png", dpi = 500)
