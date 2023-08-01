@@ -1,11 +1,13 @@
 library(tidyverse)
 
-int_res$mes <- as.Date(int_res$mes, tryFormats = "%d/%m/%Y") # Transforma a coluna das datas no formato .Date
+# int_res é o nome do df
+int_res$mes <- as.Date(int_res$mes, tryFormats = "%d/%m/%Y") # Ajustando para formato "data"
 
-int_res$ano <- year(int_res$mes) # Extrai o ano da coluna mes
-int_res$trimestre <- quarter(int_res$mes) # Extrai o trimestre da coluna mes
+int_res$ano <- year(int_res$mes) # Extrai o ano da variável "mes"
+int_res$trimestre <- quarter(int_res$mes) # Extrai o trimestre da variável "mes"
 
 media <- aggregate(int_res ~ trimestre + ano, int_res, mean) # Cria o novo df com a média trimestral
+# int_res é o nome da variável que será feita a média trimestral
 
 
 media$trimestre <- seq(as.Date('1998/01/01', "%Y/%m/%d"), as.Date('2022/12/01', "%Y/%m/%d"), by = "quarters")
