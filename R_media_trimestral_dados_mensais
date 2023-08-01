@@ -1,5 +1,4 @@
 library(tidyverse)
-library(lubridate)
 
 int_res$mes <- as.Date(int_res$mes, tryFormats = "%d/%m/%Y") # Transforma a coluna das datas no formato .Date
 
