@@ -1,0 +1,15 @@
+# AJUSTE DADOS ----------------------------------------------------------------------------------------------------
+
+# The series embi, fed_rate, and selic are of daily frequency. But the days are different, because of holidays and
+# weekends, considering Brazil and United States. The function inner_join creates a new dataframe that contains
+# only the daily observations that are commom among the three series.
+
+selic$dia <- as.Date(selic$dia, tryFormats = "%Y/%m/%d") # formata Date
+
+fed_rate$dia <- as.Date(fed_rate$dia, tryFormats = "%Y/%m/%d") # formata Date
+
+embi$dia <- as.Date(embi$dia, tryFormats = "%d/%m/%Y") # formata Date
+
+dif_juro <- inner_join(embi, fed_rate, by = "dia") %>% inner_join(selic, by = "dia")
+
+write.csv(dif_juro, "dif_juro.csv")
