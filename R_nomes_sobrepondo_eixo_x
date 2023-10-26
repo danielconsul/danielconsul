@@ -1,0 +1,4 @@
+labels = label_wrap(n)
+labels = label_wrap(10)
+
+# Ajuste de nomes se sobrepondo no eixo X de gráficos do ggplot.
