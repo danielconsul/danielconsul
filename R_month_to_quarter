@@ -1,0 +1,13 @@
+
+# Importando os dados como séries temporais:
+data.raw <- ts(read.csv2('arquivo04.csv')[, -1],
+               start = c(2002, 3), freq = 12)
+
+# Trimestralizando:
+dados <- aggregate(data.raw, nfrequency = 4, mean) # Trimestralizando pela média de três meses
+
+dados <- aggregate(data.raw, nfrequency = 4, mean) # Trimestralizando pela mediana de três meses
+
+dados <- aggregate(data.raw, nfrequency = 4) # Trimestralizando pela soma de três meses
+
+# nfrequency deve ser um divisor da frequência de x. Vale para dados mensais: 12/4 = 3.
