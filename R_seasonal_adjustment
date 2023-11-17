@@ -1,5 +1,6 @@
 # SAZONALIDADE OIL ------------------------------------------------------------------------------------------------
 library(seasonal)
+library(forecast)
 
 oil_ts <- ts(oil$oil_real, start = c(2000, 1), end = c(2022, 12), frequency = 12) # Criando uma série do tipo Time Series
 
