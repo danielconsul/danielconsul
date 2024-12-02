@@ -39,3 +39,5 @@ hiato_bcb <- rio::import(
     )
 
 # https://www.bcb.gov.br/content/ri/relatorioinflacao/202303/ri202303anp.xlsx
+# Esses dados são de março de 2023. Para outro RI, ajustar o link.
+# Exemplo: para setembro de 2024 → https://www.bcb.gov.br/content/ri/relatorioinflacao/202409/ri202409anp.xlsx
