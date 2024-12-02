@@ -1,0 +1,41 @@
+# IFI
+
+hiato_ifi <- rio::import(
+  file = paste0(
+    "https://www12.senado.leg.br/ifi/dados/arquivos/estimativas-do-hiato-do",
+    "-produto-ifi/@@download/file/Hiato%20do%20Produto%20IFI.xlsx"
+    ),
+  format = "xlsx",
+  setclass = "tibble",
+  sheet = "Hiato do Produto",
+  skip = 1
+  ) |>
+  dplyr::mutate(
+    data = tsibble::yearquarter(`Trim-Ano`),
+    hiato = `Hiato` * 100,
+    .keep = "none"
+  )
+
+# https://www12.senado.leg.br/ifi/dados/arquivos/estimativas-do-hiato-do-produto-ifi/@@download/file/Hiato%20do%20Produto%20IFI.xlsx
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+# BC
+
+hiato_bcb <- rio::import(
+  file = paste0(
+    "https://www.bcb.gov.br/content/ri/relatorioinflacao/",
+    "202303/ri202303anp.xlsx"
+    ),
+  format = "xlsx",
+  setclass = "tibble",
+  sheet = "Graf 2.2.4",
+  skip = 8
+    ) |>
+  dplyr::mutate(
+    data = tsibble::yearquarter(`Trimestre`),
+    hiato = `Hiato`,
+    .keep = "none"
+    )
+
+# https://www.bcb.gov.br/content/ri/relatorioinflacao/202303/ri202303anp.xlsx
