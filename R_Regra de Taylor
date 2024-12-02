@@ -1,0 +1,144 @@
+
+# Pacotes -----------------------------------------------------------------
+
+library(rbcb)
+library(dplyr)
+library(tsibble)
+library(tidyr)
+library(rio)
+library(purrr)
+library(systemfit)
+library(ggplot2)
+
+
+# Coleta e tratamento dos dados -------------------------------------------
+
+# Selic acumulada no mês anualizada base 252 - Freq. mensal - Unid. % a.a.
+selic <- rbcb::get_series(code = c("selic" = 4189), start_date = "1999-01-01") |>
+  # Trimestralizar a série (média)
+  dplyr::group_by(data = tsibble::yearquarter(date)) |>
+  dplyr::summarise(selic = mean(selic))
+
+
+# Criar desvio entre inflação esperada e meta de inflação
+# Coleta expectativa acumulada em 12 meses do IPCA - FOCUS
+ipca_exp_12m <- rbcb::get_twelve_months_inflation_expectations(
+  indic = "IPCA",
+  end_date = Sys.Date()
+  ) |>
+  # Trimestraliza expectativa (média)
+  dplyr::filter(base == 0, smoothed == "S") |>
+  dplyr::group_by(data = tsibble::yearquarter(date)) |>
+  dplyr::summarise(ipca_exp_12m = mean(median, na.rm = TRUE), .groups = "drop")
+
+# Meta para a inflação - CMN - Freq. anual - %
+meta_inflacao <- rbcb::get_series(
+  code = c("meta" = 13521),
+  start_date = "1999-01-01",
+  end_date = Sys.Date() + 10*365
+  ) |>
+  # Repete cada linha 4 vezes
+  tidyr::uncount(4) |>
+  # Cria vetor de datas trimestrais
+  dplyr::mutate(
+    data = seq(
+      from = dplyr::first(date),
+      by = "quarter",
+      length.out = length(date)
+      ) |>
+      tsibble::yearquarter(),
+    meta = meta,
+    .keep = "none"
+  )
+
+# Importar o hiato do produto
+# Importa via IFI
+hiato_ifi <- rio::import(
+  file = paste0(
+    "https://www12.senado.leg.br/ifi/dados/arquivos/estimativas-do-hiato-do",
+    "-produto-ifi/@@download/file/Hiato%20do%20Produto%20IFI.xlsx"
+    ),
+  format = "xlsx",
+  setclass = "tibble",
+  sheet = "Hiato do Produto",
+  skip = 1
+  ) |>
+  dplyr::mutate(
+    data = tsibble::yearquarter(`Trim-Ano`),
+    hiato = `Hiato` * 100,
+    .keep = "none"
+  )
+
+# Importa via BC
+hiato_bcb <- rio::import(
+  file = paste0(
+    "https://www.bcb.gov.br/content/ri/relatorioinflacao/",
+    "202303/ri202303anp.xlsx"
+    ),
+  format = "xlsx",
+  setclass = "tibble",
+  sheet = "Graf 2.2.4",
+  skip = 8
+    ) |>
+  dplyr::mutate(
+    data = tsibble::yearquarter(`Trimestre`),
+    hiato = `Hiato`,
+    .keep = "none"
+    )
+
+# Reunir os dados ----
+dados_reg <- purrr::reduce(
+  .x = list(selic, ipca_exp_12m, meta_inflacao, hiato_bcb),
+  .f = dplyr::full_join,
+  by = "data"
+  ) |>
+  dplyr::arrange(data) |>
+  dplyr::mutate(
+    selic_lag1 = dplyr::lag(selic, 1),
+    selic_lag2 = dplyr::lag(selic, 2),
+    meta_lead4 = dplyr::lead(meta, 4),
+    desvio = ipca_exp_12m - meta_lead4,
+    hiato_lag1 = dplyr::lag(hiato, 1)
+  ) |>
+  tidyr::drop_na() |>
+  as.data.frame()
+
+
+# Estimar o modelo --------------------------------------------------------
+
+# Estimação
+eq_taylor <- systemfit::systemfit(
+  formula = selic ~ selic_lag1 + selic_lag2 + desvio + hiato_lag1,
+  method = "OLS",
+  data = dados_reg
+  )
+
+# Resultados
+summary(eq_taylor)
+
+# Selic estimada:
+selic_estimada <- dados_reg$selic - residuals(eq_taylor)
+selic_estimada2 <- fitted(eq_taylor)$eq1 %>% as.data.frame()
+
+# Gráfico dos resíduos
+residuos <- dplyr::tibble(
+  data = dados_reg$data,
+  residuos = residuals(eq_taylor)$eq
+)
+residuos |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = as.Date(data), y = residuos) +
+  ggplot2::geom_line() +
+  ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
+
+# Gráfico dos valores estimados da taxa de juros pela Regra de Taylor
+ajuste <- dplyr::tibble(
+  data = dados_reg$data,
+  ajuste = fitted(eq_taylor)$eq1
+  )
+
+ajuste |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = as.Date(data), y = ajuste) +
+  ggplot2::geom_line() +
+  ggplot2::geom_hline(yintercept = 0, linetype = "dashed")
