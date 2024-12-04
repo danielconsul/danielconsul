@@ -1,0 +1,25 @@
+# All that you need in order to download the data is the name of the assets (LFT, LTN, NTN-C, NTN-B, NTN-B Principal, NTN-F).
+
+library(GetTDData)
+
+ntnb <- GetTDData::td_get(asset_codes = "NTN-B")
+ntnb50 <- dplyr::filter(ntnb, asset_code == "NTN-B 150850")
+# NTN-B (Tesouro IPCA com juros semestrais) com vencimento em 2050
+ntnb55 <- dplyr::filter(ntnb, asset_code == "NTN-B 150555")
+# NTN-B (Tesouro IPCA com juros semestrais) com vencimento em 2055
+
+
+ltn <- GetTDData::td_get(asset_codes = "LTN")
+ltn31 <- dplyr::filter(ltn, asset_code == "LTN 010131")
+# LTN (Tesouro prefixado) com vencimento em 2031
+ltn27 <- dplyr::filter(ltn, asset_code == "LTN 010127")
+# LTN (Tesouro Prefixado) com vencimento em 2027
+
+
+lft <- GetTDData::td_get(asset_codes = "LFT")
+lft29 <- dplyr::filter(lft, asset_code == "LFT 010329")
+# LFT (Tesouro Selic) com vencimento em 2029
+
+ntnbp <- GetTDData::td_get(asset_codes = "NTN-B Principal")
+ntnbp45 <- dplyr::filter(ntnbp, asset_code == "NTN-B Principal 150545")
+# NTN-B Principal (Tesouro IPCA) com vencimento em 2045
