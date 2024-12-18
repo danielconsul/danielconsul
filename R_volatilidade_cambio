@@ -1,0 +1,30 @@
+library(rbcb)
+library(ggplot2)
+
+# Taxa de câmbio - Livre - Dólar americano (venda) - diário
+
+# Coletando os dados da série 1 do SGS-BCB:
+original <- get_series(
+  code = c(cambio = 1),
+  start_date = "1999-01-01"
+)
+
+# Criando um novo vetor só ano e mês;
+dados$ano_mes <- format(dados$date, "%Y-%m")
+
+
+# Criando o novo data frame com a variância mensal dos dados diários de câmbio:
+var_mensal <- aggregate(
+  cambio ~ ano_mes,
+  data = dados,
+  FUN = var
+)
+
+# Criando um vetor mensal de datas:
+var_mensal$ano_mes <- seq(as.Date('1999/01/01', "%Y/%m/%d"), as.Date('2024/11/01', "%Y/%m/%d"),
+                          by = "months")
+
+# Criando o gráfico da série:
+var_mensal %>% ggplot() +
+  geom_line(mapping = aes(x = ano_mes, y = cambio), size = 1) + xlab(NULL) + ylab(NULL) +
+  theme_minimal() + scale_x_date(date_breaks = "2 years", date_labels = "%Y")
