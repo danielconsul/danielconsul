@@ -1,0 +1,2 @@
+bolsas_doutorado$def <- deflate(nominal_values =  bolsas_doutorado$doutorado, nominal_dates =  as.Date(bolsas_doutorado$mes),
+        real_date =  "02/2022", index = "ipca")
