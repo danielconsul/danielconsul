@@ -1,0 +1,5 @@
+# Coletando os dados da série 1 do SGS-BCB:
+original <- get_series(
+  code = c(cambio = 1), # "1" é o código da série no SGS-BCB
+  start_date = "1999-01-01"
+)
