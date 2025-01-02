@@ -1,0 +1,32 @@
+library(tidyverse)
+
+graph_vol %>% 
+  ggplot() +
+  # Área e linha para o VIX (primeiro eixo Y)
+  geom_area(mapping = aes(x = ano_mes, y = vix, fill = "Volatilidade VIX (eixo esquerdo)"), alpha = 0.5) +
+  geom_line(mapping = aes(x = ano_mes, y = vix, color = "Volatilidade VIX (eixo esquerdo)"), size = 1) +
+    # Área e linha para o câmbio (transformado para o segundo eixo Y)
+  geom_area(mapping = aes(x = ano_mes, y = cambio * scale_factor,
+                          fill = "Volatilidade Câmbio (eixo direito)"), alpha = 0.5) +
+  geom_line(mapping = aes(x = ano_mes, y = cambio * scale_factor,
+                          color = "Volatilidade Câmbio (eixo direito)"), size = 1) +
+    # Eixo Y principal (sem título)
+  scale_y_continuous(name = NULL,
+                     sec.axis = sec_axis(~ . / scale_factor, name = NULL)) + # Eixo direito sem título
+    # Configurações de cores e preenchimentos com nomes personalizados
+  scale_color_manual(values = c("Volatilidade VIX (eixo esquerdo)" = "black", 
+                                "Volatilidade Câmbio (eixo direito)" = "gray"), 
+                     breaks = c("Volatilidade VIX (eixo esquerdo)", "Volatilidade Câmbio (eixo direito)")) +
+  scale_fill_manual(values = c("Volatilidade VIX (eixo esquerdo)" = "black", 
+                               "Volatilidade Câmbio (eixo direito)" = "gray"), 
+                    breaks = c("Volatilidade VIX (eixo esquerdo)", "Volatilidade Câmbio (eixo direito)")) +
+    # Configurações do tema e rótulos
+  theme_minimal() + 
+  scale_x_date(date_breaks = "2 years", date_labels = "%Y") + 
+  labs(x = NULL, y = NULL, color = " ", fill = " ", caption = "Correlação = 0,4") +  # Nome das legendas
+    # Ajustes no tema
+  theme(legend.position = "bottom",
+        legend.title = element_text(face = "bold"))
+
+
+scale_factor <- 2674.9 # informar ao Chat GPT os valores mínimos e máximos das duas variáveis para ele calcular o scale_factor correto.
