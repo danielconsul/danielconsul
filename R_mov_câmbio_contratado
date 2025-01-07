@@ -1,0 +1,332 @@
+library(tidyverse)
+library(rbcb)
+library(seasonal)
+library(forecast)
+library(scales)
+
+
+# 13967 - Câmbio contratado - Operações no segmento comercial - Saldo (US$ milhões) ---------------
+
+comercial <- get_series(
+  code = c(cambio_comercial = 13967),
+  start_date = "2008-09-01"
+)
+
+# Saldo mensal do câmbio contratado comercial:
+comercial$ano_mes <- format(comercial$date, "%Y-%m")
+
+comercial_mensal <- aggregate(
+  cambio_comercial ~ ano_mes,
+  data = comercial,
+  FUN = "sum"
+)
+
+# Ajuste sazonal:
+comercial_mensal_ts <- ts(comercial_mensal$cambio_comercial,
+                          start=c(2008, 9), frequency = 12)
+
+ggsubseriesplot(comercial_mensal_ts) + theme_minimal() +
+  labs(x = " ", y = " ", title = "Sazonalidade do câmbio contratado comercial") +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  scale_y_continuous(labels = number_format(big.mark = ".", decimal.mark = ","))
+# O gráfico demonstra picos claros de sazonalidade, principalmente em março, abril e maio.
+
+comercial_mensal_sa <- seas(comercial_mensal_ts)
+comercial_mensal$cambio_comercial_sa <- final(comercial_mensal_sa)
+
+monthplot(comercial_mensal_sa)
+# O gráfico demonstra picos claros de sazonalidade, principalmente em março, abril e maio.
+
+# Gráfico da série com e sem ajuste sazonal:
+comercial_mensal$ano_mes <- seq(as.Date('2008/09/01', "%Y/%m/%d"),
+                                as.Date(max(comercial$date)), by = "months")
+
+
+  ggplot(comercial_mensal, aes(x = ano_mes)) +
+    geom_line(aes(y = cambio_comercial, colour = "Câmbio comercial (sem ajuste sazonal)"),
+              size = 1) +
+    geom_line(aes(y = cambio_comercial_sa, colour = "Câmbio comercial (com ajuste sazonal)"),
+              size = 1) +
+    labs(x = " ", y = " ", colour = " ",
+         title = "Câmbio contratado comercial - Saldo mensal em US$ milhões") +
+    theme_minimal() +
+    theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5, face = "bold")) +
+    scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+    scale_color_manual(values = c("Câmbio comercial (sem ajuste sazonal)" = "#000000", 
+                                  "Câmbio comercial (com ajuste sazonal)" = "#d4af37")) +
+    scale_y_continuous(labels = number_format(big.mark = ".", decimal.mark = ","))
+
+  # Volatilidade do câmbio contratado comercial:
+  # Variância mensal dos dados diários
+  
+  vol_mensal_comercial <- aggregate(
+    cambio_comercial ~ ano_mes,
+    data = comercial,
+    FUN = var
+  )
+  
+  vol_mensal_comercial$ano_mes <- seq(as.Date('2008/09/01', "%Y/%m/%d"),
+                                      as.Date(max(comercial$date)),
+                            by = "months")
+
+  # Gráfico da volatilidade mensal:
+  vol_mensal_comercial %>% ggplot() +
+    geom_area(mapping = aes(x = ano_mes, y = cambio_comercial), size = 1) +
+    theme_minimal() + scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+    scale_y_continuous(labels = number_format(big.mark = ".", decimal.mark = ",")) +
+    labs(x = " ", y = "Variância",
+         title = "Volatilidade (variância) mensal do câmbio contratado comercial") +
+    theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+  
+  # Média mensal da volatilidade:
+    media_mensal_comercial <- vol_mensal_comercial %>%
+    mutate(mes = format(as.Date(ano_mes), "%m")) %>%
+    group_by(mes) %>%
+    summarize(media_cambio = mean(cambio_comercial, na.rm = TRUE)) %>%
+    arrange(mes)
+  
+    mes <- c("Janeiro", "Fevereiro", "Março", "Abril", "Maio", 
+                      "Junho", "Julho", "Agosto", "Setembro", 
+                      "Outubro", "Novembro", "Dezembro")
+    media_mensal_comercial$mes <- mes
+    
+    media_mensal_comercial$mes <- factor(media_mensal_comercial$mes, 
+                                         levels = c("Janeiro", "Fevereiro", "Março",
+                                                    "Abril", "Maio", 
+                                                    "Junho", "Julho", "Agosto", "Setembro", 
+                                                    "Outubro", "Novembro", "Dezembro"))
+    
+  # Gráfico da média mensal da volatilidade:
+        media_mensal_comercial %>% ggplot() +
+      geom_col(mapping = aes(x = mes, y = media_cambio)) +
+          scale_y_continuous(labels = number_format(big.mark = ".", decimal.mark = ",")) +
+          labs(x = " ", y = " ",
+               title = "Média mensal da volatilidade do câmbio contratado comercial") +
+          theme_minimal() +
+          theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+        
+# O gráfico mostra uma maior volatilidade do câmbio contratado comercial nos meses de abril e,
+# principalmente, dezembro.
+  
+
+
+# 13970 - Câmbio contratado - Operações no segmento financeiro - Saldo (US$ milhões)  -------
+
+financeiro <- get_series(
+  code = c(cambio_financeiro = 13970),
+  start_date = "2008-09-01"
+  )
+        
+# Saldo mensal do câmbio contratado financeiro:
+        
+financeiro$ano_mes <- format(financeiro$date, "%Y-%m")
+        
+financeiro_mensal <- aggregate(
+  cambio_financeiro ~ ano_mes,
+  data = financeiro,
+  FUN = "sum"
+  )
+        
+# Ajuste sazonal:
+financeiro_mensal_ts <- ts(financeiro_mensal$cambio_financeiro,
+                                  start=c(2008, 9), frequency = 12)
+        
+ggsubseriesplot(financeiro_mensal_ts) + theme_minimal() +
+  labs(x = " ", y = " ", title = "Sazonalidade do câmbio contratado financeiro") +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  scale_y_continuous(labels = number_format(big.mark = ".", decimal.mark = ","))
+# O gráfico demonstra picos claros de sazonalidade, principalmente em dezembro para saídas.
+        
+financeiro_mensal_sa <- seas(financeiro_mensal_ts)
+financeiro_mensal$cambio_financeiro_sa <- final(financeiro_mensal_sa)
+        
+monthplot(financeiro_mensal_sa)
+# O gráfico demonstra picos claros de sazonalidade, principalmente em dezembro para saídas.
+        
+# Gráfico série com e sem ajuste sazonal:
+financeiro_mensal$ano_mes <- seq(as.Date('2008/09/01', "%Y/%m/%d"),
+                                 as.Date(max(financeiro$date)), by = "months")
+        
+        
+ggplot(financeiro_mensal, aes(x = ano_mes)) +
+  geom_line(aes(y = cambio_financeiro, colour = "Câmbio financeiro (sem ajuste sazonal)"),
+            size = 1) +
+  geom_line(aes(y = cambio_financeiro_sa, colour = "Câmbio financeiro (com ajuste sazonal)"),
+            size = 1) +
+  labs(x = " ", y = " ", colour = " ",
+               title = "Câmbio contratado financeiro - Saldo mensal em US$ milhões") +
+  theme_minimal() + 
+  theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5, face = "bold")) +
+  scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+  scale_color_manual(values = c("Câmbio financeiro (sem ajuste sazonal)" = "#000000", 
+                                        "Câmbio financeiro (com ajuste sazonal)" = "#d4af37")) +
+  scale_y_continuous(labels = number_format(big.mark = ".", decimal.mark = ","))
+        
+# Volatilidade do câmbio contratado financeiro:
+# Variância mensal dos dados diários
+        
+vol_mensal_financeiro <- aggregate(
+  cambio_financeiro ~ ano_mes,
+  data = financeiro,
+  FUN = var
+  )
+        
+vol_mensal_financeiro$ano_mes <- seq(as.Date('2008/09/01', "%Y/%m/%d"),
+                                     as.Date(max(financeiro$date)),
+                                     by = "months")
+        
+# Gráfico da volatilidade mensal:
+vol_mensal_financeiro %>% ggplot() +
+  geom_area(mapping = aes(x = ano_mes, y = cambio_financeiro), size = 1) +
+  theme_minimal() + scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+  scale_y_continuous(labels = number_format(big.mark = ".", decimal.mark = ",")) +
+          labs(x = " ", y = "Variância",
+               title = "Volatilidade (variância) mensal dos dados diários do câmbio contratado financeiro") +
+          theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+        
+# Média mensal da volatilidade:
+media_mensal_financeiro <- vol_mensal_financeiro %>%
+          mutate(mes = format(as.Date(ano_mes), "%m")) %>%
+          group_by(mes) %>%
+          summarize(media_cambio = mean(cambio_financeiro, na.rm = TRUE)) %>%
+          arrange(mes)
+        
+mes <- c("Janeiro", "Fevereiro", "Março", "Abril", "Maio", 
+                 "Junho", "Julho", "Agosto", "Setembro", 
+                 "Outubro", "Novembro", "Dezembro")
+
+media_mensal_financeiro$mes <- mes
+        
+media_mensal_financeiro$mes <- factor(media_mensal_comercial$mes, 
+                                             levels = c("Janeiro", "Fevereiro",
+                                                        "Março", "Abril", "Maio", 
+                                                        "Junho", "Julho", "Agosto", "Setembro", 
+                                                        "Outubro", "Novembro", "Dezembro"))
+        
+# Gráfico da média mensal da volatilidade:
+media_mensal_financeiro %>% ggplot() +
+          geom_col(mapping = aes(x = mes, y = media_cambio)) +
+          scale_y_continuous(labels = number_format(big.mark = ".", decimal.mark = ",")) +
+          labs(x = " ", y = " ",
+               title = "Média mensal da volatilidade do câmbio contratado financeiro") +
+          theme_minimal() +
+          theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+        
+# O gráfico mostra uma maior volatilidade do câmbio contratado financeiro em dezembro.
+
+
+
+
+
+
+
+# # 13961 - Movimento de câmbio contratado - Comercial e financeiro - Saldo (US$ milhões) --------
+
+saldo_com_fin <- get_series(
+  code = c(saldo_com_fin = 13961),
+  start_date = "2008-09-01"
+)
+
+# Saldo mensal do câmbio contratado (comercial + financeiro):
+
+saldo_com_fin$ano_mes <- format(saldo_com_fin$date, "%Y-%m")
+
+saldo_com_fin_mensal <- aggregate(
+  saldo_com_fin ~ ano_mes,
+  data = saldo_com_fin,
+  FUN = "sum"
+)
+
+# Ajuste sazonal:
+
+saldo_com_fin_mensal_ts <- ts(saldo_com_fin_mensal$saldo_com_fin,
+                          start=c(2008, 9), frequency = 12)
+
+ggsubseriesplot(saldo_com_fin_mensal_ts) + theme_minimal() +
+  labs(x = " ", y = " ", title = "Sazonalidade do câmbio contratado comercial e financeiro") +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  scale_y_continuous(labels = number_format(big.mark = ".", decimal.mark = ","))
+# O gráfico demonstra picos claros de sazonalidade, principalmente em dezembro.
+
+saldo_com_fin_mensal_sa <- seas(saldo_com_fin_mensal_ts)
+saldo_com_fin_mensal$saldo_com_fin_sa <- final(saldo_com_fin_mensal_sa)
+
+monthplot(saldo_com_fin_mensal_sa)
+# O gráfico demonstra picos claros de sazonalidade, principalmente em dezembro.
+
+# Gráfico série com e sem ajuste sazonal:
+
+saldo_com_fin_mensal$ano_mes <- seq(as.Date('2008/09/01', "%Y/%m/%d"),
+                                as.Date(max(saldo_com_fin$date)), by = "months")
+
+
+ggplot(saldo_com_fin_mensal, aes(x = ano_mes)) +
+  geom_line(aes(y = saldo_com_fin,
+                colour = "Câmbio contratado (comercial e financeiro sem ajuste sazonal)"),
+            size = 1) +
+  geom_line(aes(y = saldo_com_fin_sa,
+                colour = "Câmbio contratado (comercial e financeiro com ajuste sazonal)"),
+            size = 1) +
+  labs(x = " ", y = " ", colour = " ",
+       title = "Câmbio contratado comercial e financeiro - Saldo mensal em US$ milhões") +
+  theme_minimal() +
+  theme(legend.position = "bottom", plot.title = element_text(hjust = 0.5, face = "bold")) +
+  scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+  scale_color_manual(values =c("Câmbio contratado (comercial e financeiro sem ajuste sazonal)" =
+                                 "#000000", 
+                                "Câmbio contratado (comercial e financeiro com ajuste sazonal)" =
+                                 "#d4af37")) +
+  scale_y_continuous(labels = number_format(big.mark = ".", decimal.mark = ","))
+
+# Volatilidade do câmbio contratado comercial e financeiro:
+# Variância mensal dos dados diários
+
+vol_mensal_saldo <- aggregate(
+  saldo_com_fin ~ ano_mes,
+  data = saldo_com_fin,
+  FUN = var
+)
+
+vol_mensal_saldo$ano_mes <- seq(as.Date('2008/09/01', "%Y/%m/%d"),
+                                as.Date(max(saldo_com_fin$date)),
+                                by = "months")
+
+
+# Gráfico da volatilidade mensal:
+vol_mensal_saldo %>% ggplot() +
+  geom_area(mapping = aes(x = ano_mes, y = saldo_com_fin), size = 1) +
+  theme_minimal() + scale_x_date(date_breaks = "2 years", date_labels = "%Y") +
+  scale_y_continuous(labels = number_format(big.mark = ".", decimal.mark = ",")) +
+  labs(x = " ", y = "Variância",
+       title = "Volatilidade (variância) mensal do saldo do câmbio contratado comercial e financeiro") +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+
+# Média mensal da volatilidade:
+media_mensal_saldo <- vol_mensal_saldo %>%
+  mutate(mes = format(as.Date(ano_mes), "%m")) %>%
+  group_by(mes) %>%
+  summarize(media_cambio = mean(saldo_com_fin, na.rm = TRUE)) %>%
+  arrange(mes)
+
+mes <- c("Janeiro", "Fevereiro", "Março", "Abril", "Maio", 
+         "Junho", "Julho", "Agosto", "Setembro", 
+         "Outubro", "Novembro", "Dezembro")
+
+media_mensal_saldo$mes <- mes
+
+media_mensal_saldo$mes <- factor(media_mensal_comercial$mes, 
+                                     levels = c("Janeiro", "Fevereiro", "Março", "Abril", "Maio", 
+                                                "Junho", "Julho", "Agosto", "Setembro", 
+                                                "Outubro", "Novembro", "Dezembro"))
+
+# Gráfico da média mensal da volatilidade:
+media_mensal_saldo %>% ggplot() +
+  geom_col(mapping = aes(x = mes, y = media_cambio)) +
+  scale_y_continuous(labels = number_format(big.mark = ".", decimal.mark = ",")) +
+  labs(x = " ", y = " ", 
+       title = "Média mensal da volatilidade do saldo do câmbio contratado comercial e financeiro") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+
+# O gráfico mostra uma maior volatilidade do saldo do
+# câmbio contratado comercial e financeiro em dezembro.
