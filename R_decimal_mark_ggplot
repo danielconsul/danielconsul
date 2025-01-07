@@ -1,0 +1,5 @@
+library(scales)
+
+...
+ +
+    scale_y_continuous(labels = number_format(big.mark = ".", decimal.mark = ","))
