@@ -1,0 +1,133 @@
+library(vars)
+library(fabletools)
+library(ggplot2)
+library(urca)
+
+
+# Dados -------------------------------------------------------------------
+
+
+# Carrega conjunto de dados
+data(Canada)
+dados <- Canada[, c("prod", "e", "U", "rw")]
+Canada
+
+# Exploração --------------------------------------------------------------
+
+
+# Estatísticas descritivas
+summary(dados)
+
+# Visualização de dados
+dados |> 
+  fabletools::as_tsibble() |> 
+  fabletools::autoplot() +
+  ggplot2::facet_wrap(facets = ~key, scales = "free") +
+  ggplot2::theme(legend.position = "none")
+
+# Pelos gráficos é possível inferir que as séries são não estacionárias.
+
+# Modelagem ---------------------------------------------------------------
+
+# Seleção de defasagens VAR por critérios de informação
+lags_ic <- vars::VARselect(y = dados , lag.max = 8, type = "both")$selection
+lags_ic
+
+# Teste de cointegração de Johansen
+urca::ca.jo(x = dados, type = "trace", ecdet = "trend", K = 3) |> 
+  summary()
+
+# Modelo VEC
+teste_cointegracao1 <- urca::ca.jo(
+  x = dados[, c("rw", "prod", "e", "U")], # A ordem importa
+  type = "trace",
+  ecdet = "trend",
+  K = 3 # lar order
+)
+
+summary(teste_cointegracao1) # posto r = 1
+
+modelo_vec <- urca::cajorls(z = teste_cointegracao1, r = 1)
+modelo_vec
+# ect1 é a relação de cointegração
+
+# Estimativas do modelo
+alpha <- coef(modelo_vec$rlm)[1, ] # acessa os coeficientes alpha, associados à relação de
+# cointegração ect1
+beta <- modelo_vec$beta # acessa os coeficientes beta
+
+
+
+# Restrições --------------------------------------------------------------
+
+# Teste de cointegração
+teste_cointegracao2 <- urca::ca.jo(
+  x = dados[, c("prod", "e", "U", "rw")],
+  type = "trace", 
+  ecdet = "trend",
+  K = 3
+)
+
+summary(teste_cointegracao2) # r = 1
+
+# É preciso identificar (1/2)K(K-1) restrições do modelo SVEC:
+# K = número de variáveis
+# 0.5*4*(4-1) = 0.5*4*3 = 6
+
+# O efeito de curto prazo tem base no posto de cointegração.
+
+# Restrições para o SVEC
+SR <- matrix(NA, nrow = 4, ncol = 4) # restrições de curto prazo
+SR[4, 2] <- 0
+LR <- matrix(NA, nrow = 4, ncol = 4) # restrições de longo prazo
+LR[1, 2:4] <- 0
+LR[2:4, 4] <- 0
+
+# Lembrando que o ordenamento é: prod, e, U, rw:
+
+# MATRIZ DE CURTO PRAZO SR:
+
+#       [prod] [e] [U] [rw]
+# [prod]  NA   NA   NA   NA
+# [e]     NA   NA   NA   NA
+# [U]     NA   NA   NA   NA
+# [rw]    NA    0   NA   NA # e não tem impacto contemporâneo sobre rw
+
+# MATRIZ DE LONGO PRAZO LR:
+# 
+#        [prod] [e] [U] [rw]
+# [prod]   NA    0    0    0  # e, U e rw não têm impacto contemporâneo sobre prod.
+# [e]      NA   NA   NA    0  # rw não tem impacto contemporâneo sobre e.
+# [U]      NA   NA   NA    0  # rw não tem impacto contemporâneo sobre U.
+# [rw]     NA   NA   NA    0  # rw não tem impacto contemporâneo sobre rw.
+
+# Variáveis NA têm suas relações contemporâneas livres para serem estimadas.
+
+# Modelo SVEC
+modelo_svec <- vars::SVEC(
+  x = teste_cointegracao2, 
+  LR = LR,
+  SR = SR, 
+  r = 1,
+  lrtest = FALSE,
+  boot = TRUE, 
+  runs = 100
+)
+
+# Resultados do modelo
+modelo_svec
+
+#   Estimated contemporaneous impact matrix: (EFEITOS DE CURTO PRAZO)
+#         prod        e         U      rw
+# prod  0.58402  0.07434 -0.152578 0.06900
+# e    -0.12029  0.26144 -0.155096 0.08978
+# U     0.02526 -0.26720  0.005488 0.04982
+# rw    0.11170  0.00000  0.483771 0.48791
+
+
+# Estimated long run impact matrix: (EFEITOS DE LONGO PRAZO)
+#         prod       e       U rw
+# prod  0.7910  0.0000  0.0000  0
+# e     0.2024  0.5769 -0.4923  0
+# U    -0.1592 -0.3409  0.1408  0
+# rw   -0.1535  0.5961 -0.2495  0
