@@ -1,0 +1,34 @@
+# Teste de Cointegração de Johansen pelo Máximo Autovalor
+teste_cointegracao <- urca::ca.jo(
+  x = dados[-1], 
+  type = "eigen", # Teste do Máximo Autovalor
+  K = ifelse(lags_ci < 2, 2, lags_ci), # O mínimo de defasagens é 2
+  ecdet = "const" # inclui uma constante
+)
+
+# HIPÓTESE NULA: existem r* vetores de cointegração
+# HIPÓTESE ALTERNATIVA: existem r* + 1 vetores
+
+# Análise de resultados
+summary(teste_cointegracao)
+teste_cointegracao # estatísticas do teste
+
+# Análise a 5%:
+
+# Values of test statistic and critical values of test:
+#   
+#            test 10pct  5pct  1pct
+# r <= 4 |  1.64  7.52  9.24 12.97
+# r <= 3 | 10.65 13.75 15.67 20.20
+# r <= 2 | 13.09 19.77 22.00 26.81 # 13.09 < 22 # Não rejeita r <= 2. USAR r = 1
+# r <= 1 | 24.38 25.56 28.14 33.24 # 24.38 < 28.14 # Não rejeita r <= 1. USAR r = 1
+# r = 0  | 38.97 31.66 34.40 39.79 # 38.97 > 34.40 # Rejeita r = 0 # Existem r* + 1 vetores
+
+# Test > 5pct = rejeita a hipótese nula
+# Test < 5pct = não rejeita a hipótese nula
+
+# O posto não é igual a zero. (Rejeita H0)
+# O posto é menor ou igual a 1. (Não rejeita H0)
+# O posto é menor ou igual a 2. (Não rejeita H0)
+# Concluímos que o posto da matriz é r = 1.
+
