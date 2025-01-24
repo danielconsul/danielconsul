@@ -1,0 +1,130 @@
+# PROCEDIMENTO TODA-YAMAMOTO:
+
+# Em caso de não estacionariedade de uma ou mais séries envolvidas no Teste de Granger, é possível que os resultados sejam espúrios, como descrito em He e Maekawa (2001).
+# Nesse caso, um procedimento mais abrangente para ver a relação entre as variáveis foi estabelecido por Toda e Yamamoto (1995).
+
+# 1) Verificar a ordem de integração das variáveis através de testes de raiz unitária e estacionariedade;
+# 2) Definir a ordem máxima (m) de integração entre as variáveis;
+# 3) Determinar a ordem de defasagem do VAR(p) pelos critérios de informação tradicionais;
+# 4) Montar um VAR em nível para as variáveis;
+# 5) Verificar a estabilidade do modelo, em particular problemas de autocorrelação (normalidade, estabilidade do VAR, autocorrelação, heterocedasticidade);
+# 6) Se estiver tudo certo, adicionar m defasagens ao VAR, de modo que você terá um VAR(p + m);
+# 7) Rodar o teste de Wald com p coeficientes e p graus de liberdade. ATENÇÃO: o teste é feito até a ordem p, não até a ordem p + m.
+
+# No teste Wald do procedimento de Toda-Yamamoto, a hipótese nula é de NÃO CAUSALIDADE.
+
+# EXEMPLO PROCEDIMENTO TODA-YAMAMOTO:
+# Sejam duas séries temporais mensais, iie e dbgg, de dezembro de 2006 a dezembro de 2016.
+
+# 1) Ordem de integração -----------------------------------------------------
+
+# Verifica ordem de integração iterativamente
+adf1 <- forecast::ndiffs(x = dados$dbgg, test = "adf", type = "level", max.d = 4)
+adf2 <- forecast::ndiffs(x = dados$dbgg, test = "adf", type = "trend", max.d = 4)
+adf3 <- forecast::ndiffs(x = dados$iie, test = "adf", type = "level", max.d = 4)
+adf4 <- forecast::ndiffs(x = dados$iie, test = "adf", type = "trend", max.d = 4)
+# Foram feitos testes distintos para as variáveis, considerando só nível ou só tendência.
+
+ordem_integracao <- c(adf1, adf2, adf3, adf4)
+ordem_integracao
+
+# 2) Ordem de integração máxima ----------------------------------------------
+
+# Ordem máxima de integração
+m <- max(ordem_integracao)
+m
+
+# m = 1
+
+# 3) Seleção de defasagens ---------------------------------------------------
+
+# Seleção de defasagens VAR por critérios de informação
+p <- vars::VARselect(y = dados[-1], lag.max = 12, type = "both")$selection |> 
+  max()
+p
+
+# p = 2
+
+# 4) Modelo VAR(p) -----------------------------------------------------------
+
+# Modelo VAR(p)
+modelo_var1 <- vars::VAR(y = dados[-1], p = p, type = "both")
+# VAR de ordem p
+summary(modelo_var1)
+
+# 5) Testes de estabilidade do VAR -------------------------------------------
+
+# Teste de autocorrelação (H0: ausência de correlação serial)
+vars::serial.test(modelo_var1)
+# O teste não rejeita H0: evidências de ausência de autocorrelação.
+
+# Teste de normalidade (H0: normalidade dos resíduos)
+vars::normality.test(modelo_var1)
+# O teste rejeita H0: evidências de não normalidade dos resíduos.
+# Para projeções, os intervalos de confiança serão inacurados por conta da não normalidade.
+# A previsão pontual em si é ok, mas os ICs, não.
+
+# Teste para heterocedasticidade
+vars::arch.test(modelo_var1)
+# O teste não rejeita H0: evidências de homocedasticidade.
+
+# Teste de estabilidade do VAR
+modelo_var1 |> 
+  vars::stability() |> 
+  plot()
+# O teste demonstra que o VAR é estável, ou seja, não há mudanças estruturais nas equações.
+
+# 6) Modelo VAR(p+m) ---------------------------------------------------------
+
+# Modelo VAR(p+m)
+modelo_var2 <- vars::VAR(y = dados[-1], p = p + m, type = "both")
+# Modelo com p + m = 3 defasagens
+summary(modelo_var2)
+
+
+# 7) Teste de Causalidade de Granger (Teste de Wald) -----------------------------------------
+
+# a) Teste de Wald (H0: IIE não granger causa DBGG)
+# Testar a hipótese de que as p defasagens de iie são iguais a zero
+aod::wald.test(
+  Sigma = vcov(modelo_var2$varresult[[1]]), # equação variável dependente dbgg
+  b = coef(modelo_var2$varresult[[1]]), # coeficientes estimados na equação
+  Terms = which(
+    stringr::str_detect(
+      names(coef(modelo_var2$varresult[[1]])), 
+      pattern = "iie"
+    )
+  )[1:p] # Testa-se a hipótese até a ordem p de defasagem, por mais que o modelo_var2 tenha
+  # p + m defasagens
+)
+  # O código de Terms seleciona apenas os coeficientes 2 e 4, ou seja, iie.l. e iie.l2 da
+  # equação que tem dbgg como variável dependente. Elimina iie.l3 (coeficiente 6) porque
+  # o VAR tem defasagem p, e não p + m.
+
+# Wald test:
+#   Chi-squared test:
+#   X2 = 2.3, df = 2, P(> X2) = 0.31
+#   O teste não rejeita H0: IIE não granger causa DBGG (p-valor: 0.31)
+
+
+
+# b) Teste de Wald (H0: DBGG não granger causa IIE)
+aod::wald.test(
+  Sigma = vcov(modelo_var2$varresult[[2]]), # equação variável dependente iie
+  b = coef(modelo_var2$varresult[[2]]), # coeficientes estimados na equação
+  Terms = which(
+    stringr::str_detect(
+      names(coef(modelo_var2$varresult[[2]])), 
+      pattern = "dbgg"
+    )
+  )[1:p] # Testa-se a hipótese até a ordem p de defasagem, por mais que o modelo_var2 tenha
+  # p + m defasagens
+)
+# O código de Terms seleciona apenas os coeficientes 1 e 3, ou seja, dbgg.l1 e dbgg.l2 da
+# equação que tem iie como variável dependente. Elimina dbgg.l3 (coeficiente 5) porque
+# o VAR tem defasagem p, e não p + m.
+
+# Wald test:
+#   Chi-squared test:
+#   X2 = 1.0, df = 2, P(> X2) = 0.6
+#   O teste não rejeita H0: DBGG não granger causa IIE (p-valor: 0.6).
