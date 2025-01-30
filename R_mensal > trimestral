@@ -1,0 +1,69 @@
+library(tidyverse)
+
+
+# AJUSTE NOS DADOS ----------------------------------------------------------------------------
+
+original <- dados_trimestrais
+
+dados_trimestrais <- dados_trimestrais %>%
+  mutate(mes = as.Date(dados_trimestrais$mes, tryFormats = "%d/%m/%Y")) %>% 
+  mutate(ano = year(dados_trimestrais$mes)) %>% 
+  mutate(trimestre = quarter(dados_trimestrais$mes))
+
+# TRIMESTRALIZAÇÃO DE DADOS MENSAIS POR SOMA:
+
+# IMP -----------------------------------------------------------------------------------------
+
+imp <- aggregate(imp ~ trimestre + ano, dados_trimestrais, FUN = sum) %>% 
+  mutate(trimestre = seq(as.Date('1997/01/01', "%Y/%m/%d"),
+                         as.Date('2024/12/01', "%Y/%m/%d"), by = "quarters")) %>% select(- ano)
+
+
+# BK ------------------------------------------------------------------------------------------
+
+bk <- aggregate(bk ~ trimestre + ano, dados_trimestrais, FUN = sum) %>% 
+  mutate(trimestre = seq(as.Date('1997/01/01', "%Y/%m/%d"),
+                         as.Date('2024/12/01', "%Y/%m/%d"), by = "quarters")) %>% select(- ano)
+
+
+# BC ------------------------------------------------------------------------------------------
+
+bc <- aggregate(bc ~ trimestre + ano, dados_trimestrais, FUN = sum) %>% 
+  mutate(trimestre = seq(as.Date('1997/01/01', "%Y/%m/%d"),
+                         as.Date('2024/12/01', "%Y/%m/%d"), by = "quarters")) %>% select(- ano)
+
+
+# BC_DUR --------------------------------------------------------------------------------------
+
+bc_dur <- aggregate(bc_dur ~ trimestre + ano, dados_trimestrais, FUN = sum) %>% 
+  mutate(trimestre = seq(as.Date('1997/01/01', "%Y/%m/%d"),
+                         as.Date('2024/12/01', "%Y/%m/%d"), by = "quarters")) %>% select(- ano)
+
+
+# BC_ND ---------------------------------------------------------------------------------------
+
+bc_nd <- aggregate(bc_nd ~ trimestre + ano, dados_trimestrais, FUN = sum) %>% 
+  mutate(trimestre = seq(as.Date('1997/01/01', "%Y/%m/%d"),
+                         as.Date('2024/12/01', "%Y/%m/%d"), by = "quarters")) %>% select(- ano)
+
+
+# BI ------------------------------------------------------------------------------------------
+
+bi <- aggregate(bi ~ trimestre + ano, dados_trimestrais, FUN = sum) %>% 
+  mutate(trimestre = seq(as.Date('1997/01/01', "%Y/%m/%d"),
+                         as.Date('2024/12/01', "%Y/%m/%d"), by = "quarters")) %>% select(- ano)
+
+
+# CL ------------------------------------------------------------------------------------------
+
+cl <- aggregate(cl ~ trimestre + ano, dados_trimestrais, FUN = sum) %>% 
+  mutate(trimestre = seq(as.Date('1997/01/01', "%Y/%m/%d"),
+                         as.Date('2024/12/01', "%Y/%m/%d"), by = "quarters")) %>% select(- ano)
+
+# TRIMESTRALIZAÇÃO DE DADOS MENSAIS POR MÉDIA:
+
+# CÂMBIO REAL ---------------------------------------------------------------------------------
+
+cambio_real <- aggregate(cambio_real ~ trimestre + ano, dados_trimestrais, FUN = mean) %>% 
+  mutate(trimestre = seq(as.Date('1997/01/01', "%Y/%m/%d"),
+                         as.Date('2024/12/01', "%Y/%m/%d"), by = "quarters")) %>% select(- ano)
