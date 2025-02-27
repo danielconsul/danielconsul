@@ -52,7 +52,7 @@ modelo_ecm_cons <- Raotbl3 %>%
     li = difference(li), # Primeira diferença da variável li em nível
     lw = difference(lw)  # Primeira diferença da variável lw em nível
   ) %>%
-  model(ecm = fable::TSLM(lc ~ lag(residuo) + lag(lc) + lag(li) + lag(lw)))
+  model(ecm = TSLM(lc ~ lag(residuo) + lag(lc) + lag(li) + lag(lw)))
 # Resíduos em nível, mas defasados em um período
 # lag(lc), lag(li) e lag(lw) = defasagem da primeira diferença das variáveis
 # lc = primeira diferença da variável lc em nível
