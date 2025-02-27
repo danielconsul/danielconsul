@@ -1,0 +1,115 @@
+library(tidyverse)
+library(urca)
+library(tsibble)
+library(fabletools)
+library(fable)
+library(tseries)
+
+# MODELO ECM usando o pacote "fabletools":
+
+# Raotbl3 data:
+# lc = real consumption expenditure
+# li = real income
+# lw = real wealth
+
+# a) Modelo para a função consumo:
+data(Raotbl3)
+
+Raotbl3$date <- yearquarter(seq(from = yearquarter("1966 Q4"), 
+                            to = yearquarter("1991 Q2"), 
+                            by = 1)) # Criando uma coluna de data com os trimestres
+
+Raotbl3 <- Raotbl3 %>% filter(date >= yearquarter("1967 Q2"))
+# Filtrando a série para que ela comece em 1967 Q2.
+
+Raotbl3 <- as_tsibble(Raotbl3, index = date) # O pacote "fabletools" só aceita formato tsibble
+
+# Primeiramente rodar um modelo de regressão linear simples para obter os resíduos, os quais,
+# defasados em um período, representam o termo de correção de erros do modelo ECM.
+modelo_rl <- model(
+  .data = Raotbl3,
+  rl = TSLM(lc ~ li + lw)
+)
+
+# Teste de estacionariedade:
+residuos <- resid(modelo_rl)$.resid
+teste_adf <- ur.df(y = residuos, type = "trend")
+teste_adf@teststat # tau3 = -4.051966
+teste_adf@cval # Rejeita H0 a 1%: os resíduos são estacionários
+#       1pct  5pct 10pct
+# tau3 -4.05 -3.45 -3.15
+plot(residuos, type = "l")
+
+# Teste de normalidade:
+jarque.bera.test(residuos)
+# P-value de 0.7173: os resíduos são distribuídos normalmente
+
+# Modelo de correção de erros (ECM):
+modelo_ecm_cons <- Raotbl3 %>% 
+  mutate(
+    residuo = residuos,
+    lc = difference(lc), # Primeira diferença da variável lc em nível
+    li = difference(li), # Primeira diferença da variável li em nível
+    lw = difference(lw)  # Primeira diferença da variável lw em nível
+  ) %>%
+  model(ecm = fable::TSLM(lc ~ lag(residuo) + lag(lc) + lag(li) + lag(lw)))
+# Resíduos em nível, mas defasados em um período
+# lag(lc), lag(li) e lag(lw) = defasagem da primeira diferença das variáveis
+# lc = primeira diferença da variável lc em nível
+
+#Resultados:
+report(modelo_ecm_cons)
+# Termo de correção de erros positivo e significativo (0.062528): problema!
+# O sistema é instável.
+# Não há tendência ao ajuste do equilíbrio de longo prazo.
+
+# b) Modelo para a função renda:
+data(Raotbl3)
+
+Raotbl3$date <- yearquarter(seq(from = yearquarter("1966 Q4"), 
+                                to = yearquarter("1991 Q2"), 
+                                by = 1))
+
+Raotbl3 <- Raotbl3 %>% filter(date >= yearquarter("1967 Q2"))
+
+Raotbl3 <- as_tsibble(Raotbl3, index = date)
+
+modelo_rl <- model(
+  .data = Raotbl3,
+  rl = TSLM(li ~ lc + lw)
+) 
+
+# Teste de estacionariedade:
+residuos <- resid(modelo_rl)$.resid
+teste_adf <- ur.df(y = residuos, type = "trend")
+teste_adf@teststat # tau3 = -4.03832
+teste_adf@cval # Rejeita H0 a 5%: os resíduos são estacionários
+#       1pct  5pct 10pct
+# tau3 -4.04 -3.45 -3.15
+plot(residuos, type = "l")
+
+# Teste de normalidade:
+jarque.bera.test(residuos)
+# P-value de 0.9679: os resíduos são distribuídos normalmente
+
+# Modelo de correção de erros (ECM):
+modelo_ecm_inc <- Raotbl3 %>% 
+  mutate(
+    residuo = residuos,
+    lc = difference(lc),
+    li = difference(li),
+    lw = difference(lw)
+  ) %>%
+  model(ecm = TSLM(li ~ lag(residuo) + lag(lc) + lag(li) + lag(lw)))
+
+
+#Resultados:
+report(modelo_ecm_inc)
+# Termo de correção de erros negativo e significativo (0.5394): a cada período (trimestre),
+# aproximadamente 54% do desvio ao equilíbrio de longo prazo é corrigido.
+
+
+# MODELO ECM:
+# Variável dependente: primeira diferença da variável em nível
+# Variáveis independentes: lags da primeira diferença de todas as variáveis, incluindo
+# a variável dependente e o resíduo, que é o termo de correção de erros.
