@@ -29,7 +29,7 @@ Raotbl3 <- as_tsibble(Raotbl3, index = date) # O pacote "fabletools" só aceita 
 modelo_rl <- model(
   .data = Raotbl3,
   rl = TSLM(lc ~ li + lw)
-)
+) # Equação de cointegração, ou seja, equação de equilíbrio de longo prazo.
 
 # Teste de estacionariedade:
 residuos <- resid(modelo_rl)$.resid
