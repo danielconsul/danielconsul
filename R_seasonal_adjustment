@@ -1,4 +1,5 @@
 # SAZONALIDADE OIL ------------------------------------------------------------------------------------------------
+library(tidyverse)
 library(seasonal)
 library(forecast)
 
