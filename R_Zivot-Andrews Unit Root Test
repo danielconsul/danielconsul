@@ -1,0 +1,97 @@
+# TESTE DE RAIZ UNITÁRIA COM QUEBRA ESTRUTURAL PARA e (ZIVOT-ANDREWS TEST) --------------------
+
+# Testa a raiz unitária na presença de UMA quebra estrutural:
+  # H0: a série possui uma raiz unitária com uma possível quebra estrutural em algum ponto do tempo
+  # H1: a série é estacionária com uma quebra estrutural
+
+################################################################################################
+
+# ZA TEST (INTERCEPT):
+# "e" EM NÍVEL:
+
+lags_zai <- VARselect(y = dados$e, lag.max = 12, type = "const")$selection
+lags_zai # 2 lags para o critério AIC # 2 lags para o critério SC
+
+zai <- ur.za(dados$e, model = "intercept", lag = 2)
+plot(zai)
+summary(zai)
+# Teststatistic: -3.5391 # Não rejeita H0
+# A série possui raiz unitária mesmo considerando uma quebra estrutural na posição 60.
+dados$mes[60] # dezembro/2008
+
+ggplot(dados, aes(x = mes, y = e)) +
+  geom_line() +
+  geom_vline(xintercept = as.numeric(dados$mes[60]), 
+             linetype = "dashed", color = "#d4af37", size = 1) +
+  labs(x = " ", y = " ") +
+  theme_minimal() +
+  scale_x_date(date_breaks = "3 years", date_labels = "%Y")
+
+# "e" EM PRIMEIRA DIFERENÇA:
+dados$e_fd <- c(NA, diff(dados$e)) # Primeira diferença de e
+e_fd <- dados$e_fd %>% na.omit()
+
+lags_zai_fd <- VARselect(y = e_fd, lag.max = 12, type = "const")$selection
+lags_zai_fd # 1 lag para critério AIC e 1 lag para critério SC
+
+zai_fd <- ur.za(e_fd, model = "intercept", lag = 1)
+plot(zai_fd)
+summary(zai_fd)
+# Teststatistic: -10.4966 # Rejeita H0
+# A série não possui raiz unitária mesmo considerando uma quebra estrutural na posição 196.
+dados$mes[196] # mar/2020
+
+ggplot(dados, aes(x = mes, y = e_fd)) +
+  geom_line() +
+  geom_vline(xintercept = as.numeric(dados$mes[196]), 
+             linetype = "dashed", color = "#d4af37", size = 1) +
+  labs(x = " ", y = " ") +
+  theme_minimal() +
+  scale_x_date(date_breaks = "3 years", date_labels = "%Y")
+
+################################################################################################
+
+# ZA TEST (TREND):
+# "e" EM NÍVEL:
+
+lags_zat <- VARselect(y = dados$e, lag.max = 12, type = "trend")$selection
+lags_zat # 3 lags para critério AIC e 2 lags para o critério SC
+
+zat <- ur.za(dados$e, model = "trend", lag = 3)
+plot(zat)
+summary(zat)
+# Teststatistic: -2.7887 # Não rejeita H0
+# A série possui raiz unitária mesmo considerando uma quebra estrutural na posição 73.
+dados$mes[75] # mar/2010
+
+ggplot(dados, aes(x = mes, y = e)) +
+  geom_line() +
+  geom_vline(xintercept = as.numeric(dados$mes[75]), 
+             linetype = "dashed", color = "#d4af37", size = 1) +
+  labs(x = " ", y = " ") +
+  theme_minimal() +
+  scale_x_date(date_breaks = "3 years", date_labels = "%Y")
+
+################################################################################################
+
+# ZA TEST (INTERCEPT AND TREND):
+
+# "e" em nível
+
+lags_zab <- VARselect(y = dados$e, lag.max = 12, type = "both")$selection
+lags_zab # 2 lags para critério AIC e 2 lags para critério SC
+
+zab <- ur.za(dados$e, model = "both", lag = 2)
+plot(zab)
+summary(zab)
+# Teststatistic: -3.8661 # Não rejeita H0
+# A série possui raiz unitária mesmo considerando uma quebra estrutural na posição 64.
+dados$mes[64] # dez/2014
+
+ggplot(dados, aes(x = mes, y = e)) +
+  geom_line() +
+  geom_vline(xintercept = as.numeric(dados$mes[64]), 
+             linetype = "dashed", color = "#d4af37", size = 1) +
+  labs(x = " ", y = " ") +
+  theme_minimal() +
+  scale_x_date(date_breaks = "3 years", date_labels = "%Y")
