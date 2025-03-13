@@ -1,0 +1,46 @@
+# COINTEGRATION TEST --------------------------------------------------------------------------
+
+# 1) Testing Cointegrating Rank with Level Shift at Unknown time:
+# Test that consider structural change
+# coint_imp = matrix of variables
+
+coint_imp <- dados %>% dplyr::select(imp_kg, y, e_imp_kg)
+
+VARselect(y = coint_imp, lag.max = 12, type = "both")$selection
+# 2 lags para critério AIC e 2 lags para critério BIC
+
+# a) Trend:
+coint_trend <- cajolst(coint_imp, trend = TRUE, K = 2)
+summary(coint_trend)
+coint_trend@bp
+dados$mes[131] # break point: nov/13
+# Duas relações de cointegração a 5% e uma a 1%
+
+b) # Without trend:
+coint_notrend <- cajolst(coint_imp, trend = FALSE, K = 2)
+summary(coint_notrend)
+coint_notrend@bp
+dados$mes[123] # break point: mar/13
+# Duas relações de cointegração
+
+
+
+# 2) Johansen Procedure for VAR
+# Using dummies to deal with structural change
+# coint_imp = matrix of variables
+# dummies = matrix of dummies of structural change
+
+# a) No intercept in cointegration:
+coint_none <- ca.jo(coint_imp, type = "trace", ecdet = "none", K = 2, dumvar = dummies)
+summary(coint_none)
+# Duas relações de cointegração a 5%; uma a 1%
+
+# b) Constant term in cointegration:
+coint_const <- ca.jo(coint_imp, type = "trace", ecdet = "const", K = 2, dumvar = dummies)
+summary(coint_const)
+# Duas relações de cointegração
+
+# c) Trend variable in cointegration:
+coint_trend <- ca.jo(coint_imp, type = "trace", ecdet = "trend", K = 2, dumvar = dummies)
+summary(coint_trend)
+# Uma relação de cointegração a 1%; duas a 5%
