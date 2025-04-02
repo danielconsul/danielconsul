@@ -1,0 +1,1 @@
+selic$dia <- as.Date(selic$dia, tryFormats = "%d/%m/%Y")
