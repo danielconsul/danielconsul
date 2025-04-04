@@ -73,6 +73,7 @@ summary(teste_cointegracao2) # r = 1
 # É preciso identificar (1/2)K(K-1) restrições do modelo SVEC:
 # K = número de variáveis
 # 0.5*4*(4-1) = 0.5*4*3 = 6
+# SÃO NO MÍNIMO 6 RESTRIÇÕES, AS QUAIS DEVEM SER DISTRIBUÍDAS ENTRE AS MATRIZES DE CURTO E DE LONGO PRAZOS.
 
 # O efeito de curto prazo tem base no posto de cointegração.
 
