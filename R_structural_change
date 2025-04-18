@@ -1,0 +1,200 @@
+library(tidyverse)
+
+# CHANGE POINTS AND STRUCTURAL BREAKS
+
+# https://kevin-kotze.gitlab.io/tsm/ts-2-tut/
+# https://github.com/EconMaett/TSA/tree/main
+
+# INTRODUCTION --------------------------------------------------------------------------------
+
+
+# CHANGE POINT TESTS --------------------------------------------------------------------------
+devtools::install_gitlab("KevinKotze/sarbcurrent")
+library(changepoint)
+library(sarbcurrent)
+library(tidyverse)
+library(lubridate)
+library(strucchange)
+
+# 2.1 CHANGE POINT IN MEAN - SIMULATED DATA
+
+set.seed(123)
+
+sim_mean <- c(rnorm(100, 0, 1),
+              rnorm(50, 1.5, 1),
+              rnorm(90, 0, 1),
+              rnorm(120, -0.8, 1))
+# Four concatenated random normal distributions that have different means (0, 1.5, 0, and -0.8)
+# and the same variance (1).
+
+plot.ts(sim_mean)
+
+# Identifying changes in mean by method "BinSeg":
+m_binseg <- cpt.mean(sim_mean, penalty = "BIC", method = "BinSeg", Q = 5)
+# cpt.mean - change point test in mean
+plot(m_binseg, type = "l", xlab = "Index", cpt.width = 4)
+cpts(m_binseg) # The observation numbers for the breaks: [1]  85 152 233
+
+# Identifying changes in mean by method "PELT":
+m_pelt <- cpt.mean(sim_mean, penalty = "BIC", method = "PELT")
+plot(m_pelt, type = "l", cpt.col = "blue", xlab = "Index", cpt.width = 4)
+cpts(m_pelt) # [1] 100 149 233
+
+# Imposing a manual penalty:
+m_pm <- cpt.mean(sim_mean, penalty = "Manual", pen.value = "1.5 * log(n)",
+                 method = "PELT")
+plot(m_pm, type = "l", cpt.col = "blue", xlab = "Index", cpt.width = 4)
+cpts(m_pm) # [1] 100 149 233
+
+# 2.2 CHANGE POINT IN MEAN - REAL GROSS DOMESTIC PRODUCT
+data(package = 'sarbcurrent')
+View(sarb_quarter, title = "sarb_data")
+
+sarb_quarter %>%
+  select(date, KBP6006D)
+
+m_gdp <- sarb_quarter %>%
+  select(date, KBP6006D) %>%
+  mutate(growth = 100 * ((KBP6006D / lag(KBP6006D)) - 1)) %>%
+  filter(date > "1960-01-01") %>%
+  pull(growth) %>%
+  cpt.mean(., penalty = "SIC", method = "PELT")
+
+plot(m_gdp, type = "l", cpt.col = "blue", xlab = "Index", cpt.width = 4)
+cpts(m_gdp) # [1]  29  30 240 241 242
+
+sarb_quarter %>%
+  select(date, KBP6006D) %>%
+  mutate(growth = 100 * ((KBP6006D / lag(KBP6006D)) - 1)) %>%
+  filter(date > "1960-01-01") %>%
+  slice(cpts(m_gdp))
+
+# 2.3 CHANGE POINT IN VARIANCE - SIMULATED DATA
+sim_var <- c(rnorm(100, 0, 1),
+             rnorm(50, 0, 2),
+             rnorm(90, 0, 1),
+             rnorm(120, 0, 0.5))
+plot.ts(sim_var)
+
+v_pelt <- cpt.var(sim_var, method = "PELT")
+# cpt.var - change point test in variance
+plot(v_pelt, type = "l", cpt.col = "blue", xlab = "Index", cpt.width = 4)
+cpts(v_pelt) # [1] 104 148 240
+
+# 2.4 CHANGE POINT IN VARIANCE - REAL GROSS DOMESTIC PRODUCT
+v_gdp <- sarb_quarter %>%
+  select(date, KBP6006D) %>%
+  mutate(growth = 100 * ((KBP6006D / lag(KBP6006D)) - 1)) %>%
+  filter(date > "1960-01-01") %>%
+  pull(growth) %>%
+  cpt.var(., method = "PELT")
+plot(v_gdp, type = "l", cpt.col = "blue", xlab = "Index", cpt.width = 4)
+
+sarb_quarter %>%
+  select(date, KBP6006D) %>%
+  mutate(growth = 100 * ((KBP6006D / lag(KBP6006D)) - 1)) %>%
+  filter(date > "1960-01-01") %>%
+  slice(cpts(v_gdp))
+
+# 2.5 CHANGE POINTS IN THE MEAN AND VARIANCE - SIMULATED DATA
+
+sim_mv <- c(rnorm(100, 0, 1),
+            rnorm(50, 1, 2),
+            rnorm(90, 0, 1),
+            rnorm(120, -0.8, 0.5)) # different means and variances
+plot.ts(sim_mv)
+
+mv_pelt <- cpt.meanvar(sim_mv, method = "PELT")
+# cpt.meanvar - change point test in mean and variance
+plot(mv_pelt)
+
+# 2.6 CHANGE POINT IN MEAN AND VARIANCE - REAL GROSS DOMESTIC PRODUCT
+mv_gdp <- sarb_quarter %>%
+  select(date, KBP6006D) %>%
+  mutate(growth = 100 * ((KBP6006D / lag(KBP6006D)) - 1)) %>%
+  filter(date > "1960-01-01") %>%
+  pull(growth) %>%
+  cpt.meanvar(., method = "PELT")
+
+plot(mv_gdp, type = "l", cpt.col = "blue", xlab = "Index", cpt.width = 4)
+
+sarb_quarter %>%
+  select(date, KBP6006D) %>%
+  mutate(growth = 100 * ((KBP6006D / lag(KBP6006D)) - 1)) %>%
+  filter(date > "1960-01-01") %>%
+  slice(cpts(mv_gdp))
+
+
+# STRUCTURAL BREAK TESTS ----------------------------------------------------------------------
+
+# 3.1 STRUCTURAL BREAK TESTS - SIMULATED DATA
+
+set.seed(123)
+
+x1 <- arima.sim(model = list(ar = 0.9), n = 100)
+x2 <- arima.sim(model = list(ma = 0.1), n = 100)
+x3 <- arima.sim(model = list(ar = 0.5, ma = 0.3), n = 100)
+
+y <- c((1 + x1),
+       x2,
+       (0.5 - x3))
+plot.ts(y)
+
+# The strucchange package requires that we specify a regression model, to crreate residuals that
+# are used to perform the subsequent structural break tests on the residuals.
+
+dat <- tibble(ylag0 = y,
+              ylag1 = lag(y)
+) %>%
+  drop_na()
+
+qlr <- Fstats(ylag0 ~ ylag1, data = dat) # Quandt Likelihood Ratio
+breakpoints(qlr) # position 89
+
+sctest(qlr, type = "supF")
+plot(qlr)
+
+# CUSUM statistic: it uses the cumulative sum of the residuals to identify a potential
+# structural break.
+
+cusum <- efp(ylag0 ~ ylag1, type = "OLS-CUSUM", data = dat)
+plot(cusum)
+
+# 3.2 STRUCTURAL BREAK TESTS - REAL GROSS DOMESTIC PRODUCT
+
+sa_dat <- sarb_quarter %>%
+  select(date, KBP6006D) %>%
+  mutate(growth = 100 * ((KBP6006D / lag(KBP6006D)) - 1),
+         grow_lag = lag(growth)) %>%
+  drop_na()
+sa_dat
+
+sa_qlr <- Fstats(growth ~ grow_lag, data = sa_dat)
+breakpoints(sa_qlr) # 219
+
+sctest(sa_qlr, type = "supF")
+
+plot(sa_qlr)
+
+sarb_quarter %>%
+  select(date, KBP6006D) %>%
+  mutate(growth = 100 * ((KBP6006D / lag(KBP6006D)) - 1),
+         grow_lag = lag(growth)) %>%
+  drop_na() %>%
+  slice(sa_qlr$breakpoint)
+
+# BAI AND PERRON (2003) TEST FOR MULTIPLE STRUCTURAL BREAKS:
+sa_bp <- breakpoints(growth ~ grow_lag, data = sa_dat, breaks = 5)
+summary(sa_bp)  # where the breakpoints are
+sa_bp # 42 219
+plot(sa_bp, breaks = 5)
+
+sarb_quarter %>%
+  select(date, KBP6006D) %>%
+  mutate(growth = 100 * ((KBP6006D / lag(KBP6006D)) - 1),
+         grow_lag = lag(growth)) %>%
+  drop_na() %>%
+  slice(sa_bp$breakpoint)
+
+sa_cusum <- efp(growth ~ grow_lag, data = sa_dat, type = "OLS-CUSUM")
+plot(sa_cusum)
