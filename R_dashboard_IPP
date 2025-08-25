@@ -1,0 +1,593 @@
+---
+title: 'Índice de Preços ao Produtor (IPP)'
+output: 
+  flexdashboard::flex_dashboard:
+    theme: spacelab
+    orientation: columns
+    vertical_layout: scroll
+runtime: shiny
+---
+
+<style>
+p {
+  text-align: justify;
+  margin-right: 10px;
+}
+</style>
+
+
+```{r setup, include=FALSE}
+library(flexdashboard) # Versões de painéis de relatórios R Markdown
+library(tidyverse)
+library(sidrar)
+library(readr)
+library(highcharter)
+library(shinyWidgets) # Cria os botões de seleção
+
+# {vertical_layout: scroll} # scroll por página individual
+
+# Importar os dados:
+
+ind_geral <- sidrar::get_sidra(
+  api = "/t/6903/n1/all/v/all/p/last%20186/c842/46608/d/v1394%202,v1395%202,v1396%202,v10008%201"
+) # Dados brutos da indústria geral
+
+secoes <- sidrar::get_sidra(
+  api = "/t/6903/n1/all/v/all/p/all/c842/46609,46610/d/v1394%202,v1395%202,v1396%202,v10008%205"
+) # Dados brutos das seções
+
+atividades <- sidrar::get_sidra(
+  api = "/t/6903/n1/all/v/all/p/all/c842/46611,46618,46619,46620,46621,46622,46625,46626,46627,46628,46629,46633,46634,46635,46638,46641,46643,46644,46647,46650,46653,46655,46656/d/v1394%202,v1395%202,v1396%202,v10008%201"
+) # Dados brutos das atividades
+
+gce <- sidrar::get_sidra(
+  api = "/t/6904/n1/all/v/all/p/all/c543/allxt/d/v1394%202,v1395%202,v1396%202,v10008%201"
+) # Dados brutos das grandes categorias econômicas
+  
+gis <- sidrar::get_sidra(
+  api = "/t/6723/n1/all/v/all/p/all/c844/all/d/v1394%202,v1395%202,v1396%202,v10008%201"
+)
+
+# Tratamento de dados da indústria geral:
+dados_ind_geral <- ind_geral %>% 
+  dplyr::mutate(
+    data_ind_geral = lubridate::ym(`Mês (Código)`),
+    variavel_ind_geral = Variável,
+    categ_ind_geral = `Indústria geral, indústrias extrativas e indústrias de transformação e atividades (CNAE 2.0)`,
+    valor_ind_geral = Valor,
+    .keep = "none", # Mantém só as variáveis criadas
+    variavel_ind_geral = dplyr::recode( # Renomeia as linhas da coluna "variavel_ind_geral"
+      .x = variavel_ind_geral,
+      "IPP - Variação mês/mês imediatamente anterior (M/M-1)" = "Variação M/M-1 (%)",
+      "IPP - Variação acumulada no ano (em relação a dezembro do ano anterior)" = "Variação acumulada no ano (%)",
+      "IPP - Variação mês/mesmo mês do ano anterior (M/M-12)" = "Variação M/M-12 (%)",
+      "IPP - Número-índice (dezembro de 2018 = 100)" = "Número-índice (Dez/2018 = 100)")) %>% 
+    tidyr::drop_na() %>% dplyr::as_tibble()
+
+# Tratamento de dados das seções:
+dados_secoes <- secoes %>% 
+  dplyr::mutate(
+    data_secoes = lubridate::ym(`Mês (Código)`),
+    variavel_secoes = Variável,
+    categ_secoes = `Indústria geral, indústrias extrativas e indústrias de transformação e atividades (CNAE 2.0)`,
+    valor_secoes = Valor,
+    .keep = "none",
+    variavel_secoes = dplyr::recode(
+      .x = variavel_secoes,
+      "IPP - Variação mês/mês imediatamente anterior (M/M-1)" = "Variação M/M-1 (%)",
+      "IPP - Variação acumulada no ano (em relação a dezembro do ano anterior)" = "Variação acumulada no ano (%)",
+      "IPP - Variação mês/mesmo mês do ano anterior (M/M-12)" = "Variação M/M-12 (%)",
+      "IPP - Número-índice (dezembro de 2018 = 100)" = "Número-índice (Dez/2018 = 100)")) %>% 
+    tidyr::drop_na() %>% dplyr::as_tibble()
+
+# Tratamento de dados das atividades:
+dados_atividades <- atividades %>% 
+  dplyr::mutate(
+    data_atividades = lubridate::ym(`Mês (Código)`),
+    variavel_atividades = Variável,
+    categ_atividades = `Indústria geral, indústrias extrativas e indústrias de transformação e atividades (CNAE 2.0)`,
+    valor_atividades = Valor,
+    .keep = "none",
+    variavel_atividades = dplyr::recode(
+      .x = variavel_atividades,
+      "IPP - Variação mês/mês imediatamente anterior (M/M-1)" = "Variação M/M-1 (%)",
+      "IPP - Variação acumulada no ano (em relação a dezembro do ano anterior)" = "Variação acumulada no ano (%)",
+      "IPP - Variação mês/mesmo mês do ano anterior (M/M-12)" = "Variação M/M-12 (%)",
+      "IPP - Número-índice (dezembro de 2018 = 100)" = "Número-índice (Dez/2018 = 100)")) %>% 
+    tidyr::drop_na() %>% dplyr::as_tibble()
+
+# Tratamento de dados das grandes categorias econômicas:
+dados_gce <- gce %>% 
+  dplyr::mutate(
+    data_gce = lubridate::ym(`Mês (Código)`),
+    variavel_gce = Variável,
+    categ_gce = `Grandes categorias econômicas`,
+    valor_gce = Valor,
+    .keep = "none",
+    variavel_gce = dplyr::recode(
+      .x = variavel_gce,
+      "IPP - Variação mês/mês imediatamente anterior (M/M-1)" = "Variação M/M-1 (%)",
+      "IPP - Variação acumulada no ano (em relação a dezembro do ano anterior)" = "Variação acumulada no ano (%)",
+      "IPP - Variação mês/mesmo mês do ano anterior (M/M-12)" = "Variação M/M-12 (%)",
+      "IPP - Número-índice (dezembro de 2018 = 100)" = "Número-índice (Dez/2018 = 100)")) %>% 
+    tidyr::drop_na() %>% dplyr::as_tibble()
+
+# Tratamento de dados dos grupos industriais selecionados:
+dados_gis <- gis %>% 
+  dplyr::mutate(
+    data_gis = lubridate::ym(`Mês (Código)`),
+    variavel_gis = Variável,
+    categ_gis = `Grupos industriais selecionados`,
+    valor_gis = Valor,
+    .keep = "none",
+    variavel_gis = dplyr::recode(
+      .x = variavel_gis,
+      "IPP - Variação mês/mês imediatamente anterior (M/M-1)" = "Variação M/M-1 (%)",
+      "IPP - Variação acumulada no ano (em relação a dezembro do ano anterior)" = "Variação acumulada no ano (%)",
+      "IPP - Variação mês/mesmo mês do ano anterior (M/M-12)" = "Variação M/M-12 (%)",
+      "IPP - Número-índice (dezembro de 2018 = 100)" = "Número-índice (Dez/2018 = 100)")) %>% 
+    tidyr::drop_na() %>% dplyr::as_tibble()
+```
+
+# Indústria geral
+
+Column {.sidebar} {data-columns=80}
+-----------------------------------------------------------------------
+O [Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e), cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
+
+O IPP investiga, em aproximadamente 2 mil empresas, os preços recebidos pelos produtores isentos de impostos, tarifas e fretes e definidos segundo as práticas comerciais mais usuais. Os produtos coletados são especificados em detalhes (aspectos físicos e de transação), garantindo, dessa forma, que sejam comparados produtos homogêneos ao longo do tempo. Com isso, coletam-se cerca de 6.000 preços mensalmente.
+
+A divulgação das séries do IPP ocorre mensalmente através do [Banco de dados Sidra](https://sidra.ibge.gov.br/home/ipp/brasil) e é condensada em três comparações básicas, além do número-índice (com base dezembro/2018 = 100): M/M-1 (mês contra mês imaediatamente anterior); acumulado no ano (mês contra dezembro do ano anterior); e M/M-12 (mês contra mesmo mês do ano anterior).
+
+Adotando a Classificação Nacional de Atividades Econômicas (CNAE) 2.0, o IPP gera indicadores para 24 atividades das indústrias extrativas e de transformação, além de reorganizar os mesmos dados em grandes categorias econômicas, abertas em bens de capital, bens intermediários e bens de consumo (duráveis e semiduráveis e não duráveis).
+
+<br>
+
+```{r}
+
+# Botão de selecionar a categoria (nesse caso só tem uma):
+shinyWidgets::pickerInput(
+  inputId = "categ_ind_geral",
+  label = "Seleção da indústria geral:",
+  choices = sort(unique(dados_ind_geral$categ_ind_geral)),
+  selected = c("Indústria geral"), # Já selecionado quando abre a dashboard
+  multiple = FALSE,
+  )
+
+# Botão de selecionar a variável:
+shinyWidgets::pickerInput(
+  inputId = "variavel_ind_geral",
+  label = "Selecione a variável:",
+  choices = sort(unique(dados_ind_geral$variavel_ind_geral)),
+  selected = "Variação M/M-1 (%)", 
+  multiple = FALSE
+  )
+
+# Botão de selecionar o tipo de gráfico:
+shinyWidgets::radioGroupButtons(
+  inputId = "grafico_ind_geral",
+  label = "Selecione o tipo de gráfico:", 
+  choices = c("Área" = "area", "Coluna" = "column", "Linha" = "line"), 
+  selected = "line"
+  )
+```
+<br><br><br>
+<span style = "text-align:center;
+display: block;">
+Elaboração: Equipe IPP/IBGE.
+</span>
+
+<span style = "text-align:center;
+display: block;">
+Contato: ipp@ibge.gov.br
+</span>
+
+<span style = "text-align:center;
+display: block;">
+Última atualização: `r format(Sys.Date(), format = "%d/%m/%Y")`
+</span>
+
+```{r, out.width="40%", fig.align='center'}
+knitr::include_graphics("ibge.png")
+```
+
+Column {data-width=920}
+-----------------------------------------------------------------------
+
+### PRIMEIRA VARIÁVEL {.no-title}
+
+```{r}
+highcharter::renderHighchart({
+  
+  shiny::req(input$categ_ind_geral[1], input$variavel_ind_geral, input$grafico_ind_geral) # "input" acessa um elemento da lista
+  # "req" exige que o usuário selecione os dados
+  dados_ind_geral %>% 
+    dplyr::filter(categ_ind_geral == input$categ_ind_geral[1], variavel_ind_geral == input$variavel_ind_geral) %>% 
+    highcharter::hchart(type = input$grafico_ind_geral, highcharter::hcaes(x = data_ind_geral, y = valor_ind_geral)) %>% 
+    highcharter::hc_navigator(enabled = TRUE) %>% # Habilita o filtro por datas
+    highcharter::hc_title(text = paste0(input$categ_ind_geral[1], " - ", input$variavel_ind_geral)) %>% # título do gráfico
+    highcharter::hc_xAxis(title = list(text = NULL)) %>% highcharter::hc_yAxis(title = list(text = " "))
+})
+```
+
+# Seções
+
+Column {.sidebar} {data-columns=80}
+-----------------------------------------------------------------------
+O [Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e), cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
+
+O IPP investiga, em aproximadamente 2 mil empresas, os preços recebidos pelos produtores isentos de impostos, tarifas e fretes e definidos segundo as práticas comerciais mais usuais. Os produtos coletados são especificados em detalhes (aspectos físicos e de transação), garantindo, dessa forma, que sejam comparados produtos homogêneos ao longo do tempo. Com isso, coletam-se cerca de 6.000 preços mensalmente.
+
+A divulgação das séries do IPP ocorre mensalmente através do [Banco de dados Sidra](https://sidra.ibge.gov.br/home/ipp/brasil) e é condensada em três comparações básicas, além do número-índice (com base dezembro/2018 = 100): M/M-1 (mês contra mês imaediatamente anterior); acumulado no ano (mês contra dezembro do ano anterior); e M/M-12 (mês contra mesmo mês do ano anterior).
+
+Adotando a Classificação Nacional de Atividades Econômicas (CNAE) 2.0, o IPP gera indicadores para 24 atividades das indústrias extrativas e de transformação, além de reorganizar os mesmos dados em grandes categorias econômicas, abertas em bens de capital, bens intermediários e bens de consumo (duráveis e semiduráveis e não duráveis).
+
+<br>
+
+```{r}
+shinyWidgets::pickerInput(
+  inputId = "categ_secoes",
+  label = "Selecione a(s) seção(ões):",
+  choices = sort(unique(dados_secoes$categ_secoes)),
+  selected = c("B Indústrias Extrativas", "C Indústrias de Transformação"),
+  multiple = TRUE
+  )
+
+shinyWidgets::pickerInput(
+  inputId = "variavel_secoes",
+  label = "Selecione a variável:",
+  choices = sort(unique(dados_secoes$variavel_secoes)),
+  selected = "Variação M/M-1 (%)", 
+  multiple = FALSE
+  )
+
+# Botão de selecionar o tipo de gráfico:
+shinyWidgets::radioGroupButtons(
+  inputId = "grafico_secoes",
+  label = "Selecione o tipo de gráfico:", 
+  choices = c("Área" = "area", "Coluna" = "column", "Linha" = "line"), 
+  selected = "line"
+  )
+```
+
+<br><br><br><br><br><br>
+
+<span style = "text-align:center;
+display: block;">
+Elaboração: Equipe IPP/IBGE.
+</span>
+
+<span style = "text-align:center;
+display: block;">
+Contato: ipp@ibge.gov.br
+</span>
+
+<span style = "text-align:center;
+display: block;">
+Última atualização: `r format(Sys.Date(), format = "%d/%m/%Y")`
+</span>
+
+```{r, out.width="40%", fig.align='center'}
+knitr::include_graphics("ibge.png")
+```
+
+Column {data-width=920}
+-----------------------------------------------------------------------
+
+### PRIMEIRA VARIÁVEL {.no-title}
+
+```{r}
+highcharter::renderHighchart({
+  
+  shiny::req(input$categ_secoes[1], input$variavel_secoes, input$grafico_secoes) 
+  dados_secoes %>% 
+    dplyr::filter(categ_secoes == input$categ_secoes[1], variavel_secoes == input$variavel_secoes) %>% 
+    highcharter::hchart(type = input$grafico_secoes, highcharter::hcaes(x = data_secoes, y = valor_secoes)) %>% 
+    highcharter::hc_navigator(enabled = TRUE) %>% 
+    highcharter::hc_title(text = paste0(input$categ_secoes[1], " - ", input$variavel_secoes)) %>% 
+    highcharter::hc_xAxis(title = list(text = NULL)) %>% highcharter::hc_yAxis(title = list(text = " "))
+})
+```
+
+### SEGUNDA VARIÁVEL {.no-title}
+
+```{r}
+highcharter::renderHighchart({
+  
+  shiny::req(input$categ_secoes[2], input$variavel_secoes, input$grafico_secoes) 
+  dados_secoes %>% 
+    dplyr::filter(categ_secoes == input$categ_secoes[2], variavel_secoes == input$variavel_secoes) %>% 
+    highcharter::hchart(type = input$grafico_secoes, highcharter::hcaes(x = data_secoes, y = valor_secoes)) %>% 
+    highcharter::hc_navigator(enabled = TRUE) %>% 
+    highcharter::hc_title(text = paste0(input$categ_secoes[2], " - ", input$variavel_secoes)) %>% 
+    highcharter::hc_xAxis(title = list(text = NULL)) %>% highcharter::hc_yAxis(title = list(text = " "))
+})
+```
+
+# Atividades
+
+Column {.sidebar} {data-columns=80}
+-----------------------------------------------------------------------
+O [Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e), cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
+
+O IPP investiga, em aproximadamente 2 mil empresas, os preços recebidos pelos produtores isentos de impostos, tarifas e fretes e definidos segundo as práticas comerciais mais usuais. Os produtos coletados são especificados em detalhes (aspectos físicos e de transação), garantindo, dessa forma, que sejam comparados produtos homogêneos ao longo do tempo. Com isso, coletam-se cerca de 6.000 preços mensalmente.
+
+A divulgação das séries do IPP ocorre mensalmente através do [Banco de dados Sidra](https://sidra.ibge.gov.br/home/ipp/brasil) e é condensada em três comparações básicas, além do número-índice (com base dezembro/2018 = 100): M/M-1 (mês contra mês imaediatamente anterior); acumulado no ano (mês contra dezembro do ano anterior); e M/M-12 (mês contra mesmo mês do ano anterior).
+
+Adotando a Classificação Nacional de Atividades Econômicas (CNAE) 2.0, o IPP gera indicadores para 24 atividades das indústrias extrativas e de transformação, além de reorganizar os mesmos dados em grandes categorias econômicas, abertas em bens de capital, bens intermediários e bens de consumo (duráveis e semiduráveis e não duráveis).
+
+<br>
+
+```{r}
+shinyWidgets::pickerInput(
+  inputId = "categ_atividades",
+  choices = sort(unique(dados_atividades$categ_atividades)),
+  label = "Selecione a(s) atividade(s):",
+  selected = c("10 FABRICAÇÃO DE PRODUTOS ALIMENTÍCIOS", "11 FABRICAÇÃO DE BEBIDAS"),
+  multiple = TRUE,
+    options = list("max-options" = 2,
+                 "max-options-text" = "No máximo duas atividades.")
+  )
+
+shinyWidgets::pickerInput(
+  inputId = "variavel_atividades",
+  label = "Selecione a variável:",
+  choices = sort(unique(dados_atividades$variavel_atividades)),
+  selected = "Variação M/M-1 (%)", 
+  multiple = FALSE
+  )
+
+# Botão de selecionar o tipo de gráfico:
+shinyWidgets::radioGroupButtons(
+  inputId = "grafico_atividades",
+  label = "Selecione o tipo de gráfico:", 
+  choices = c("Área" = "area", "Coluna" = "column", "Linha" = "line"), 
+  selected = "line"
+  )
+```
+
+<br><br><br><br><br><br>
+
+<span style = "text-align:center;
+display: block;">
+Elaboração: Equipe IPP/IBGE.
+</span>
+
+<span style = "text-align:center;
+display: block;">
+Contato: ipp@ibge.gov.br
+</span>
+
+<span style = "text-align:center;
+display: block;">
+Última atualização: `r format(Sys.Date(), format = "%d/%m/%Y")`
+</span>
+
+```{r, out.width="40%", fig.align='center'}
+knitr::include_graphics("ibge.png")
+```
+
+Column {data-width=920}
+-----------------------------------------------------------------------
+
+### PRIMEIRA VARIÁVEL {.no-title}
+
+```{r}
+highcharter::renderHighchart({
+  
+  shiny::req(input$categ_atividades[1], input$variavel_atividades, input$grafico_atividades)
+  dados_atividades %>% 
+    dplyr::filter(categ_atividades == input$categ_atividades[1], variavel_atividades == input$variavel_atividades) %>% 
+    highcharter::hchart(type = input$grafico_atividades, highcharter::hcaes(x = data_atividades, y = valor_atividades)) %>% 
+    highcharter::hc_navigator(enabled = TRUE) %>%
+    highcharter::hc_title(text = paste0(input$categ_atividades[1], " - ", input$variavel_atividades)) %>% 
+    highcharter::hc_xAxis(title = list(text = NULL)) %>% highcharter::hc_yAxis(title = list(text = " "))
+})
+```
+
+### SEGUNDA VARIÁVEL {.no-title}
+
+```{r}
+highcharter::renderHighchart({
+  
+  shiny::req(input$categ_atividades[2], input$variavel_atividades, input$grafico_atividades)
+  dados_atividades %>% 
+    dplyr::filter(categ_atividades == input$categ_atividades[2], variavel_atividades == input$variavel_atividades) %>% 
+    highcharter::hchart(type = input$grafico_atividades, highcharter::hcaes(x = data_atividades, y = valor_atividades)) %>% 
+    highcharter::hc_navigator(enabled = TRUE) %>%
+    highcharter::hc_title(text = paste0(input$categ_atividades[2], " - ", input$variavel_atividades)) %>%
+    highcharter::hc_xAxis(title = list(text = NULL)) %>% highcharter::hc_yAxis(title = list(text = " "))
+})
+```
+
+# Grandes categorias econômicas
+
+Column {.sidebar} {data-columns=80}
+-----------------------------------------------------------------------
+O [Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e), cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
+
+O IPP investiga, em aproximadamente 2 mil empresas, os preços recebidos pelos produtores isentos de impostos, tarifas e fretes e definidos segundo as práticas comerciais mais usuais. Os produtos coletados são especificados em detalhes (aspectos físicos e de transação), garantindo, dessa forma, que sejam comparados produtos homogêneos ao longo do tempo. Com isso, coletam-se cerca de 6.000 preços mensalmente.
+
+A divulgação das séries do IPP ocorre mensalmente através do [Banco de dados Sidra](https://sidra.ibge.gov.br/home/ipp/brasil) e é condensada em três comparações básicas, além do número-índice (com base dezembro/2018 = 100): M/M-1 (mês contra mês imaediatamente anterior); acumulado no ano (mês contra dezembro do ano anterior); e M/M-12 (mês contra mesmo mês do ano anterior).
+
+Adotando a Classificação Nacional de Atividades Econômicas (CNAE) 2.0, o IPP gera indicadores para 24 atividades das indústrias extrativas e de transformação, além de reorganizar os mesmos dados em grandes categorias econômicas, abertas em bens de capital, bens intermediários e bens de consumo (duráveis e semiduráveis e não duráveis).
+
+<br>
+
+```{r}
+shinyWidgets::pickerInput(
+  inputId = "categ_gce",
+  label = "Selecione a(s) grande(s) categoria(s) econômica(s):",
+  choices = sort(unique(dados_gce$categ_gce)),
+  selected = c("Bens de capital (BK)", "Bens de consumo (BC)"),
+  multiple = TRUE,
+    options = list("max-options" = 2,
+                 "max-options-text" = "No máximo duas grandes categorias econômicas.")
+  )
+
+shinyWidgets::pickerInput(
+  inputId = "variavel_gce",
+  label = "Selecione a variável:",
+  choices = sort(unique(dados_gce$variavel_gce)),
+  selected = "Variação M/M-1 (%)", 
+  multiple = FALSE
+  )
+
+# Botão de selecionar o tipo de gráfico:
+shinyWidgets::radioGroupButtons(
+  inputId = "grafico_gce",
+  label = "Selecione o tipo de gráfico:", 
+  choices = c("Área" = "area", "Coluna" = "column", "Linha" = "line"), 
+  selected = "line"
+  )
+```
+
+<br><br><br><br><br>
+
+<span style = "text-align:center;
+display: block;">
+Elaboração: Equipe IPP/IBGE.
+</span>
+
+<span style = "text-align:center;
+display: block;">
+Contato: ipp@ibge.gov.br
+</span>
+
+<span style = "text-align:center;
+display: block;">
+Última atualização: `r format(Sys.Date(), format = "%d/%m/%Y")`
+</span>
+
+```{r, out.width="40%", fig.align='center'}
+knitr::include_graphics("ibge.png")
+```
+
+Column {data-width=920}
+-----------------------------------------------------------------------
+
+### PRIMEIRA VARIÁVEL {.no-title}
+
+```{r}
+highcharter::renderHighchart({
+  
+  shiny::req(input$categ_gce[1], input$variavel_gce, input$grafico_gce)
+  dados_gce %>% 
+    dplyr::filter(categ_gce == input$categ_gce[1], variavel_gce == input$variavel_gce) %>% 
+    highcharter::hchart(type = input$grafico_gce, highcharter::hcaes(x = data_gce, y = valor_gce)) %>% 
+    highcharter::hc_navigator(enabled = TRUE) %>%
+    highcharter::hc_title(text = paste0(input$categ_gce[1], " - ", input$variavel_gce)) %>%
+    highcharter::hc_xAxis(title = list(text = NULL)) %>% highcharter::hc_yAxis(title = list(text = " "))
+})
+```
+
+### SEGUNDA VARIÁVEL {.no-title}
+
+```{r}
+highcharter::renderHighchart({
+  
+  shiny::req(input$categ_gce[2], input$variavel_gce, input$grafico_gce)
+  dados_gce %>% 
+    dplyr::filter(categ_gce == input$categ_gce[2], variavel_gce == input$variavel_gce) %>% 
+    highcharter::hchart(type = input$grafico_gce, highcharter::hcaes(x = data_gce, y = valor_gce)) %>% 
+    highcharter::hc_navigator(enabled = TRUE) %>%
+    highcharter::hc_title(text = paste0(input$categ_gce[2], " - ", input$variavel_gce)) %>%
+    highcharter::hc_xAxis(title = list(text = NULL)) %>% highcharter::hc_yAxis(title = list(text = " "))
+})
+```
+
+# Grupos industriais
+
+Column {.sidebar} {data-columns=80}
+-----------------------------------------------------------------------
+O [Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e), cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
+
+O IPP investiga, em aproximadamente 2 mil empresas, os preços recebidos pelos produtores isentos de impostos, tarifas e fretes e definidos segundo as práticas comerciais mais usuais. Os produtos coletados são especificados em detalhes (aspectos físicos e de transação), garantindo, dessa forma, que sejam comparados produtos homogêneos ao longo do tempo. Com isso, coletam-se cerca de 6.000 preços mensalmente.
+
+A divulgação das séries do IPP ocorre mensalmente através do [Banco de dados Sidra](https://sidra.ibge.gov.br/home/ipp/brasil) e é condensada em três comparações básicas, além do número-índice (com base dezembro/2018 = 100): M/M-1 (mês contra mês imaediatamente anterior); acumulado no ano (mês contra dezembro do ano anterior); e M/M-12 (mês contra mesmo mês do ano anterior).
+
+Adotando a Classificação Nacional de Atividades Econômicas (CNAE) 2.0, o IPP gera indicadores para 24 atividades das indústrias extrativas e de transformação, além de reorganizar os mesmos dados em grandes categorias econômicas, abertas em bens de capital, bens intermediários e bens de consumo (duráveis e semiduráveis e não duráveis).
+
+<br>
+
+```{r}
+shinyWidgets::pickerInput(
+  inputId = "categ_gis",
+  label = "Selecione o(s) grupo(s) industrial(ais):",
+  choices = sort(unique(dados_gis$categ_gis)),
+  selected = c("101 Abate e fabricação de produtos de carne", "104 Fabricação de óleos e gorduras vegetais e animais"),
+  multiple = TRUE,
+    options = list("max-options" = 2,
+                 "max-options-text" = "No máximo dois grupos industriais selecionados.")
+  )
+
+shinyWidgets::pickerInput(
+  inputId = "variavel_gis",
+  label = "Selecione a variável:",
+  choices = sort(unique(dados_gis$variavel_gis)),
+  selected = "Variação M/M-1 (%)", 
+  multiple = FALSE
+  )
+
+# Botão de selecionar o tipo de gráfico:
+shinyWidgets::radioGroupButtons(
+  inputId = "grafico_gis",
+  label = "Selecione o tipo de gráfico:", 
+  choices = c("Área" = "area", "Coluna" = "column", "Linha" = "line"), 
+  selected = "line"
+  )
+```
+
+<br><br><br><br><br><br>
+
+<span style = "text-align:center;
+display: block;">
+Elaboração: Equipe IPP/IBGE.
+</span>
+
+<span style = "text-align:center;
+display: block;">
+Contato: ipp@ibge.gov.br
+</span>
+
+<span style = "text-align:center;
+display: block;">
+Última atualização: `r format(Sys.Date(), format = "%d/%m/%Y")`
+</span>
+
+```{r, out.width="40%", fig.align='center'}
+knitr::include_graphics("ibge.png")
+```
+
+Column {data-width=920}
+-----------------------------------------------------------------------
+
+### PRIMEIRA VARIÁVEL {.no-title}
+
+```{r}
+highcharter::renderHighchart({
+  
+  shiny::req(input$categ_gis[1], input$variavel_gis, input$grafico_gis)
+  dados_gis %>% 
+    dplyr::filter(categ_gis == input$categ_gis[1], variavel_gis == input$variavel_gis) %>% 
+    highcharter::hchart(type = input$grafico_gis, highcharter::hcaes(x = data_gis, y = valor_gis)) %>% 
+    highcharter::hc_navigator(enabled = TRUE) %>%
+    highcharter::hc_title(text = paste0(input$categ_gis[1], " - ", input$variavel_gis)) %>%
+    highcharter::hc_xAxis(title = list(text = NULL)) %>% highcharter::hc_yAxis(title = list(text = " "))
+})
+```
+
+### SEGUNDA VARIÁVEL {.no-title}
+
+```{r}
+highcharter::renderHighchart({
+  
+  shiny::req(input$categ_gis[2], input$variavel_gis, input$grafico_gis)
+  dados_gis %>% 
+    dplyr::filter(categ_gis == input$categ_gis[2], variavel_gis == input$variavel_gis) %>% 
+    highcharter::hchart(type = input$grafico_gis, highcharter::hcaes(x = data_gis, y = valor_gis)) %>% 
+    highcharter::hc_navigator(enabled = TRUE) %>%
+    highcharter::hc_title(text = paste0(input$categ_gis[2], " - ", input$variavel_gis)) %>%
+    highcharter::hc_xAxis(title = list(text = NULL)) %>% highcharter::hc_yAxis(title = list(text = " "))
+})
+```
