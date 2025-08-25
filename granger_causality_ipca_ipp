@@ -1,0 +1,122 @@
+library(tidyverse)
+library(sidrar)
+library(lmtest)
+library(urca)
+library(tseries)
+library(vars)
+
+
+# IMPORTAÇÃO DOS DADOS ------------------------------------------------------------------------
+
+ipca <- sidrar::get_sidra(
+  api = "/t/1737/n1/all/v/63,2265/p/all/d/v63%202,v2265%202"
+) # Dados brutos IPCA
+
+ipp <- sidrar::get_sidra(
+  api = "/t/6903/n1/all/v/1394,1396/p/all/c842/46608/d/v1394%202,v1396%202"
+) # Dados brutos IPP
+
+# TRATAMENTO DE DADOS -------------------------------------------------------------------------
+
+dados_ipca <- ipca %>% 
+  dplyr::mutate(
+    data_ipca = lubridate::ym(`Mês (Código)`),
+    variavel_ipca = Variável,
+    valor_ipca = Valor,
+    .keep = "none", # Mantém só as variáveis criadas
+    variavel_ipca = dplyr::recode( # Renomeia as linhas da coluna "variavel_ind_geral"
+      .x = variavel_ipca,
+      "IPCA - Variação mensal" = "IPCA - Variação M/M-1 (%)",
+      "IPCA - Variação acumulada em 12 meses" = "IPCA - Variação acumulada em 12 meses (%)")) %>%
+  filter(data_ipca >= "2010-01-01") %>% 
+  tidyr::drop_na() %>% dplyr::as_tibble()
+
+dados_ipp <- ipp %>% 
+  dplyr::mutate(
+    data_ipp = lubridate::ym(`Mês (Código)`),
+    variavel_ipp = Variável,
+    valor_ipp = Valor,
+    .keep = "none", # Mantém só as variáveis criadas
+    variavel_ipp = dplyr::recode( # Renomeia as linhas da coluna "variavel_ind_geral"
+      .x = variavel_ipp,
+      "IPP - Variação mês/mês imediatamente anterior (M/M-1)" = "IPP - Variação M/M-1 (%)",
+      "IPP - Variação mês/mesmo mês do ano anterior (M/M-12)" = "IPP - Variação M/M-12 (%)")) %>% 
+  tidyr::drop_na() %>% dplyr::as_tibble()
+
+ipca_margem <- dados_ipca %>% 
+  filter(variavel_ipca == "IPCA - Variação M/M-1 (%)" & data_ipca >= "2014-01-01")
+
+ipp_margem <- dados_ipp %>% 
+  filter(variavel_ipp == "IPP - Variação M/M-1 (%)")
+
+# GRÁFICO IPCA E IPP À MARGEM -----------------------------------------------------------------
+
+ggplot() + 
+  geom_line(data = ipca_margem, aes(x = data_ipca, y = valor_ipca, colour = "IPCA - Variação M/M-1 (%)"),
+            linewidth = 1) +
+  geom_line(data = ipp_margem, aes(x = data_ipp, y = valor_ipp, colour = "IPP - Variação M/M-1 (%)"),
+            linewidth = 1) +
+  labs(x = " ", y = " ", colour = " ") + theme_classic() +
+  scale_colour_manual(values = c(
+    "IPCA - Variação M/M-1 (%)" = "black",
+    "IPP - Variação M/M-1 (%)" = "#DAA520")) +
+  theme(legend.position = "bottom")
+
+# CORRELAÇÃO IPCA / IPP -----------------------------------------------------------------------
+
+cor(ipca_margem$valor_ipca[-139], ipp_margem$valor_ipp) # 0.29
+
+
+# TESTES DE RAIZ UNITÁRIA ----------------------------------------------------------------------
+
+# a) TESTE ADF (AUGMENTED DICKEY-FULLER): H0 → a série possui raiz unitária.
+adf.test(ipca_margem$valor_ipca)
+# Rejeita H0: a série IPCA é estacionária
+adf.test(ipp_margem$valor_ipp)
+# Não rejeita H0: a série IPP não é estacionária
+
+# b) TESTE KPSS: H0 → a série é estacionária.
+kpss.test(ipca_margem$valor_ipca, null = "Level")
+# Não rejeita H0: a série IPCA é estacionária.
+kpss.test(ipp_margem$valor_ipp, null = "Level")
+# Não rejeita H0: a série IPP é estacionária.
+
+# c) TESTE PHILLIPS-PERRON: H0 → a série possui raiz unitária.
+pp.test(ipca_margem$valor_ipca)
+# Rejeita H0: a série IPCA é estacionária.
+pp.test(ipp_margem$valor_ipp)
+# Rejeita H0: a série IPP é estacionária.
+
+# d) TESTE ZIVOT-ANDREWS COM QUEBRA ESTRUTURAL: H0 → a série possui raiz unitária.
+lags_ipca <- VARselect(y = ipca_margem$valor_ipca, lag.max = 12, type = "const")$selection
+lags_ipca
+za_ipca <- ur.za(ipca_margem$valor_ipca, model = "intercept", lag = min(lags_ipca))
+plot(za_ipca)
+summary(za_ipca)
+ipca_margem$data_ipca[80]
+# Rejeita H0: a série é estacionária mesmo considerando uma quebra estrutural na posição 80
+# (agosto/2020)
+lags_ipp <- VARselect(y = ipp_margem$valor_ipp, lag.max = 12, type = "const")$selection
+lags_ipp
+za_ipp <- ur.za(ipp_margem$valor_ipp, model = "intercept", lag = min(lags_ipp))
+plot(za_ipp)
+summary(za_ipp)
+ipp_margem$data_ipp[103]
+# Rejeita H0: a série é estacionária mesmo considerando uma quebra estrutural na posição 103
+# (julho/2022)
+
+# Há indícios, por testes e visuais, de que ambas as séries, IPCA e IPP, são estacionárias.
+
+# TESTE DE CAUSALIDADE (PRECEDÊNCIA) DE GRANGER -----------------------------------------------
+# grangerteste(y ~ x) → x Granger-causa y?
+# H0: x não Granger-causa y
+
+# IPP GRANGER-CAUSA IPCA?
+grangertest(ipca_margem$valor_ipca[-139] ~ ipp_margem$valor_ipp, order = 7)
+# H0: IPP não granger-causa IPCA
+# De 7 defasagens em diante → rejeita H0: há evidências de que IPP Granger-causa IPCA.
+
+# IPCA GRANGER-CAUSA IPP?
+grangertest(ipp_margem$valor_ipp ~ ipca_margem$valor_ipca[-139], order = 9)
+# H0: IPCA não Granger-causa IPP
+# De 9 defasagens em diante → rejeita H0: há evidências de que IPCA Granger-causa IPP.
