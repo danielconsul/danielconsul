@@ -1,0 +1,59 @@
+library(tidyverse)
+library(sidrar)
+library(forecast)
+
+
+# IMPORTAÇÃO DOS DADOS ------------------------------------------------------------------------
+ipp <- sidrar::get_sidra(
+  api = "/t/6903/n1/all/v/1396/p/all/c842/46608/d/v1396%202"
+) # Dados brutos IPP
+
+
+# TRATAMENTO DOS DADOS ------------------------------------------------------------------------
+dados_ipp <- ipp %>% 
+  dplyr::mutate(
+    data_ipp = lubridate::ym(`Mês (Código)`),
+    variavel_ipp = Variável,
+    valor_ipp = Valor,
+    .keep = "none",
+    variavel_ipp = dplyr::recode(
+      .x = variavel_ipp,
+      "IPP - Variação mês/mês imediatamente anterior (M/M-1)" = "Variação M/M-1 (%)")) %>% 
+  tidyr::drop_na() %>% dplyr::as_tibble()
+
+# MODELO ARIMA IPP ----------------------------------------------------------------------------
+ipp_ts <- ts(dados_ipp$valor_ipp, start = c(2014, 1), frequency = 12)
+ipp_ts
+
+arima_model <- auto.arima(ipp_ts) # Returns best ARIMA model according to either AIC, AICc or BIC value.
+summary(arima_model)
+
+# FORECAST IPP --------------------------------------------------------------------------------
+# Projeção IPP 12 meses à frente:
+forecast(arima_model, h = 12)
+#             Point Forecast Lo 80    Hi 80     Lo 95    Hi 95
+# Jul 2025    -0.46242971 -1.767414 0.842555 -2.458232 1.533372
+# Aug 2025     0.06336479 -1.542478 1.669208 -2.392560 2.519289
+# Sep 2025     0.32070409 -1.349179 1.990587 -2.233161 2.874569
+# Oct 2025     0.44665352 -1.238208 2.131515 -2.130120 3.023427
+# Nov 2025     0.50829688 -1.180133 2.196727 -2.073934 3.090528
+# Dec 2025     0.53846695 -1.150817 2.227750 -2.045069 3.122003
+# Jan 2026     0.55323307 -1.136255 2.242721 -2.030616 3.137082
+# Feb 2026     0.56046004 -1.129077 2.249997 -2.023464 3.144384
+# Mar 2026     0.56399714 -1.125551 2.253546 -2.019944 3.147939
+# Apr 2026     0.56572830 -1.123823 2.255280 -2.018218 3.149674
+# May 2026     0.56657558 -1.122977 2.256128 -2.017371 3.150523
+# Jun 2026     0.56699026 -1.122562 2.256543 -2.016957 3.150937
+
+# Gráfico:
+forecast(arima_model, h = 12) %>% plot()
+
+# Projeção próximo mês: -0.46
+forecast(arima_model, h = 1)
+#              Point Forecast Lo 80    Hi 80     Lo 95    Hi 95
+# Jul 2025     -0.4624297 -1.767414 0.842555 -2.458232 1.533372
+
+
+# PROJEÇÕES IPP -------------------------------------------------------------------------------
+
+# Julho 2025: -0.46 (projeção feita em 25.08.2025)
