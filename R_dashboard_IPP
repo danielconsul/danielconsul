@@ -1,7 +1,11 @@
 ---
-title: 'Índice de Preços ao Produtor (IPP)'
+title: "Índice de Preços ao Produtor (IPP)"
 output: 
   flexdashboard::flex_dashboard:
+    navbar:
+      - { title: "Sobre o IPP", href: "https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e", align: right}
+    social: [ "menu" ]
+    favicon: icon.png
     theme: spacelab
     orientation: columns
     vertical_layout: scroll
@@ -133,7 +137,7 @@ dados_gis <- gis %>%
 
 Column {.sidebar} {data-columns=80}
 -----------------------------------------------------------------------
-O [Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e), cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
+O **[Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e)**, cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
 
 O IPP investiga, em aproximadamente 2 mil empresas, os preços recebidos pelos produtores isentos de impostos, tarifas e fretes e definidos segundo as práticas comerciais mais usuais. Os produtos coletados são especificados em detalhes (aspectos físicos e de transação), garantindo, dessa forma, que sejam comparados produtos homogêneos ao longo do tempo. Com isso, coletam-se cerca de 6.000 preços mensalmente.
 
@@ -152,6 +156,7 @@ shinyWidgets::pickerInput(
   choices = sort(unique(dados_ind_geral$categ_ind_geral)),
   selected = c("Indústria geral"), # Já selecionado quando abre a dashboard
   multiple = FALSE,
+  width = "fit"
   )
 
 # Botão de selecionar a variável:
@@ -160,7 +165,8 @@ shinyWidgets::pickerInput(
   label = "Selecione a variável:",
   choices = sort(unique(dados_ind_geral$variavel_ind_geral)),
   selected = "Variação M/M-1 (%)", 
-  multiple = FALSE
+  multiple = FALSE,
+  width = "250px"
   )
 
 # Botão de selecionar o tipo de gráfico:
@@ -171,7 +177,9 @@ shinyWidgets::radioGroupButtons(
   selected = "line"
   )
 ```
-<br><br><br>
+
+<br><br>
+
 <span style = "text-align:center;
 display: block;">
 Elaboração: Equipe IPP/IBGE.
@@ -214,7 +222,7 @@ highcharter::renderHighchart({
 
 Column {.sidebar} {data-columns=80}
 -----------------------------------------------------------------------
-O [Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e), cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
+O **[Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e)**, cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
 
 O IPP investiga, em aproximadamente 2 mil empresas, os preços recebidos pelos produtores isentos de impostos, tarifas e fretes e definidos segundo as práticas comerciais mais usuais. Os produtos coletados são especificados em detalhes (aspectos físicos e de transação), garantindo, dessa forma, que sejam comparados produtos homogêneos ao longo do tempo. Com isso, coletam-se cerca de 6.000 preços mensalmente.
 
@@ -230,7 +238,8 @@ shinyWidgets::pickerInput(
   label = "Selecione a(s) seção(ões):",
   choices = sort(unique(dados_secoes$categ_secoes)),
   selected = c("B Indústrias Extrativas", "C Indústrias de Transformação"),
-  multiple = TRUE
+  multiple = TRUE,
+  width = "fit"
   )
 
 shinyWidgets::pickerInput(
@@ -238,7 +247,8 @@ shinyWidgets::pickerInput(
   label = "Selecione a variável:",
   choices = sort(unique(dados_secoes$variavel_secoes)),
   selected = "Variação M/M-1 (%)", 
-  multiple = FALSE
+  multiple = FALSE,
+  width = "250px"
   )
 
 # Botão de selecionar o tipo de gráfico:
@@ -250,7 +260,7 @@ shinyWidgets::radioGroupButtons(
   )
 ```
 
-<br><br><br><br><br><br>
+<br><br>
 
 <span style = "text-align:center;
 display: block;">
@@ -308,7 +318,7 @@ highcharter::renderHighchart({
 
 Column {.sidebar} {data-columns=80}
 -----------------------------------------------------------------------
-O [Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e), cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
+O **[Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e)**, cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
 
 O IPP investiga, em aproximadamente 2 mil empresas, os preços recebidos pelos produtores isentos de impostos, tarifas e fretes e definidos segundo as práticas comerciais mais usuais. Os produtos coletados são especificados em detalhes (aspectos físicos e de transação), garantindo, dessa forma, que sejam comparados produtos homogêneos ao longo do tempo. Com isso, coletam-se cerca de 6.000 preços mensalmente.
 
@@ -326,7 +336,9 @@ shinyWidgets::pickerInput(
   selected = c("10 FABRICAÇÃO DE PRODUTOS ALIMENTÍCIOS", "11 FABRICAÇÃO DE BEBIDAS"),
   multiple = TRUE,
     options = list("max-options" = 2,
-                 "max-options-text" = "No máximo duas atividades.")
+                 "max-options-text" = "No máximo duas atividades."
+  ),
+  width = "540px"
   )
 
 shinyWidgets::pickerInput(
@@ -334,7 +346,8 @@ shinyWidgets::pickerInput(
   label = "Selecione a variável:",
   choices = sort(unique(dados_atividades$variavel_atividades)),
   selected = "Variação M/M-1 (%)", 
-  multiple = FALSE
+  multiple = FALSE,
+  width = "250px"
   )
 
 # Botão de selecionar o tipo de gráfico:
@@ -346,7 +359,7 @@ shinyWidgets::radioGroupButtons(
   )
 ```
 
-<br><br><br><br><br><br>
+<br><br>
 
 <span style = "text-align:center;
 display: block;">
@@ -404,7 +417,7 @@ highcharter::renderHighchart({
 
 Column {.sidebar} {data-columns=80}
 -----------------------------------------------------------------------
-O [Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e), cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
+O **[Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e)**, cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
 
 O IPP investiga, em aproximadamente 2 mil empresas, os preços recebidos pelos produtores isentos de impostos, tarifas e fretes e definidos segundo as práticas comerciais mais usuais. Os produtos coletados são especificados em detalhes (aspectos físicos e de transação), garantindo, dessa forma, que sejam comparados produtos homogêneos ao longo do tempo. Com isso, coletam-se cerca de 6.000 preços mensalmente.
 
@@ -422,7 +435,9 @@ shinyWidgets::pickerInput(
   selected = c("Bens de capital (BK)", "Bens de consumo (BC)"),
   multiple = TRUE,
     options = list("max-options" = 2,
-                 "max-options-text" = "No máximo duas grandes categorias econômicas.")
+                 "max-options-text" = "No máximo duas grandes categorias econômicas."
+  ),
+  width = "350"
   )
 
 shinyWidgets::pickerInput(
@@ -430,7 +445,8 @@ shinyWidgets::pickerInput(
   label = "Selecione a variável:",
   choices = sort(unique(dados_gce$variavel_gce)),
   selected = "Variação M/M-1 (%)", 
-  multiple = FALSE
+  multiple = FALSE,
+  width = "250px"
   )
 
 # Botão de selecionar o tipo de gráfico:
@@ -442,7 +458,7 @@ shinyWidgets::radioGroupButtons(
   )
 ```
 
-<br><br><br><br><br>
+<br><br>
 
 <span style = "text-align:center;
 display: block;">
@@ -500,7 +516,7 @@ highcharter::renderHighchart({
 
 Column {.sidebar} {data-columns=80}
 -----------------------------------------------------------------------
-O [Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e), cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
+O **[Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e)**, cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
 
 O IPP investiga, em aproximadamente 2 mil empresas, os preços recebidos pelos produtores isentos de impostos, tarifas e fretes e definidos segundo as práticas comerciais mais usuais. Os produtos coletados são especificados em detalhes (aspectos físicos e de transação), garantindo, dessa forma, que sejam comparados produtos homogêneos ao longo do tempo. Com isso, coletam-se cerca de 6.000 preços mensalmente.
 
@@ -518,7 +534,9 @@ shinyWidgets::pickerInput(
   selected = c("101 Abate e fabricação de produtos de carne", "104 Fabricação de óleos e gorduras vegetais e animais"),
   multiple = TRUE,
     options = list("max-options" = 2,
-                 "max-options-text" = "No máximo dois grupos industriais selecionados.")
+                 "max-options-text" = "No máximo dois grupos industriais."
+  ),
+  width = "625px"
   )
 
 shinyWidgets::pickerInput(
@@ -526,7 +544,8 @@ shinyWidgets::pickerInput(
   label = "Selecione a variável:",
   choices = sort(unique(dados_gis$variavel_gis)),
   selected = "Variação M/M-1 (%)", 
-  multiple = FALSE
+  multiple = FALSE,
+  width = "250px"
   )
 
 # Botão de selecionar o tipo de gráfico:
@@ -538,7 +557,7 @@ shinyWidgets::radioGroupButtons(
   )
 ```
 
-<br><br><br><br><br><br>
+<br><br>
 
 <span style = "text-align:center;
 display: block;">
