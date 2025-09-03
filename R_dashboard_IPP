@@ -53,20 +53,32 @@ gis <- sidrar::get_sidra(
 )
 
 # Tratamento de dados da indústria geral:
-dados_ind_geral <- ind_geral %>% 
+
+dados_ind_geral <- ind_geral %>%
   dplyr::mutate(
     data_ind_geral = lubridate::ym(`Mês (Código)`),
     variavel_ind_geral = Variável,
     categ_ind_geral = `Indústria geral, indústrias extrativas e indústrias de transformação e atividades (CNAE 2.0)`,
     valor_ind_geral = Valor,
-    .keep = "none", # Mantém só as variáveis criadas
-    variavel_ind_geral = dplyr::recode( # Renomeia as linhas da coluna "variavel_ind_geral"
+    .keep = "none",
+    variavel_ind_geral = dplyr::recode(
       .x = variavel_ind_geral,
       "IPP - Variação mês/mês imediatamente anterior (M/M-1)" = "Variação M/M-1 (%)",
       "IPP - Variação acumulada no ano (em relação a dezembro do ano anterior)" = "Variação acumulada no ano (%)",
       "IPP - Variação mês/mesmo mês do ano anterior (M/M-12)" = "Variação M/M-12 (%)",
-      "IPP - Número-índice (dezembro de 2018 = 100)" = "Número-índice (Dez/2018 = 100)")) %>% 
-    tidyr::drop_na() %>% dplyr::as_tibble()
+      "IPP - Número-índice (dezembro de 2018 = 100)" = "Número-índice (Dez/2018 = 100)")
+  ) %>%
+  tidyr::drop_na() %>%
+  dplyr::as_tibble()
+
+desvio <- dados_ind_geral %>%
+  filter(variavel_ind_geral == "Número-índice (Dez/2018 = 100)") %>%
+  mutate(
+    valor_ind_geral = (valor_ind_geral / max(valor_ind_geral) - 1) * 100,
+    variavel_ind_geral = "Desvio em relação ao pico da série (%)"
+  )
+
+dados_ind_geral <- dplyr::bind_rows(dados_ind_geral, desvio)
 
 # Tratamento de dados das seções:
 dados_secoes <- secoes %>% 
@@ -85,11 +97,18 @@ dados_secoes <- secoes %>%
     tidyr::drop_na() %>% dplyr::as_tibble()
 
 # Tratamento de dados das atividades:
-dados_atividades <- atividades %>% 
+dados_atividades <- atividades %>%
   dplyr::mutate(
     data_atividades = lubridate::ym(`Mês (Código)`),
     variavel_atividades = Variável,
     categ_atividades = `Indústria geral, indústrias extrativas e indústrias de transformação e atividades (CNAE 2.0)`,
+    categ_atividades = tolower(categ_atividades),     # Transformar tudo em minúsculo
+    # Colocar apenas o primeiro caractere após o número como maiúsculo
+    categ_atividades = paste0(
+      substr(categ_atividades, 1, 3),  # mantém "10 " como está
+      toupper(substr(categ_atividades, 4, 4)),  # transforma o "F" em maiúsculo
+      substr(categ_atividades, 5, nchar(categ_atividades))  # restante da string
+    ),
     valor_atividades = Valor,
     .keep = "none",
     variavel_atividades = dplyr::recode(
@@ -97,8 +116,15 @@ dados_atividades <- atividades %>%
       "IPP - Variação mês/mês imediatamente anterior (M/M-1)" = "Variação M/M-1 (%)",
       "IPP - Variação acumulada no ano (em relação a dezembro do ano anterior)" = "Variação acumulada no ano (%)",
       "IPP - Variação mês/mesmo mês do ano anterior (M/M-12)" = "Variação M/M-12 (%)",
-      "IPP - Número-índice (dezembro de 2018 = 100)" = "Número-índice (Dez/2018 = 100)")) %>% 
-    tidyr::drop_na() %>% dplyr::as_tibble()
+      "IPP - Número-índice (dezembro de 2018 = 100)" = "Número-índice (Dez/2018 = 100)"),
+    categ_atividades = dplyr::recode(
+      .x = categ_atividades,
+      "20c fabricação de outros produtos químicos" = "20C Fabricação de outros produtos químicos",
+      "20b fabricação de sabões, detergentes, produtos de limpeza, cosméticos, produtos de perfumaria e de higiene pessoal" = "20B Fabricação de sabões, detergentes, produtos de limpeza, cosméticos, produtos de perfumaria e de higiene pessoal"
+    )
+  ) %>%
+  tidyr::drop_na() %>%
+  dplyr::as_tibble()
 
 # Tratamento de dados das grandes categorias econômicas:
 dados_gce <- gce %>% 
@@ -166,7 +192,7 @@ shinyWidgets::pickerInput(
   choices = sort(unique(dados_ind_geral$variavel_ind_geral)),
   selected = "Variação M/M-1 (%)", 
   multiple = FALSE,
-  width = "250px"
+  width = "300px"
   )
 
 # Botão de selecionar o tipo de gráfico:
@@ -333,12 +359,12 @@ shinyWidgets::pickerInput(
   inputId = "categ_atividades",
   choices = sort(unique(dados_atividades$categ_atividades)),
   label = "Selecione a(s) atividade(s):",
-  selected = c("10 FABRICAÇÃO DE PRODUTOS ALIMENTÍCIOS", "11 FABRICAÇÃO DE BEBIDAS"),
+  selected = c("10 Fabricação de produtos alimentícios", "11 Fabricação de bebidas"),
   multiple = TRUE,
     options = list("max-options" = 2,
                  "max-options-text" = "No máximo duas atividades."
   ),
-  width = "540px"
+  width = "470"
   )
 
 shinyWidgets::pickerInput(
