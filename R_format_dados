@@ -1,0 +1,10 @@
+dados <- read_csv2("https://api.bcb.gov.br/dados/serie/bcdata.sgs.4189/dados?formato=csv") |>
+  mutate(
+    data = as.Date(data, format = "%d/%m/%Y"),
+    variacao_pct = (valor / lag(valor) - 1) * 100
+  ) |>
+  arrange(desc(data)) |>
+  mutate(
+    data = format(data, "%d/%m/%Y"),
+    valor = formatC(valor, format = "f", digits = 2, big.mark = ".", decimal.mark = ","),
+    variacao_pct = formatC(variacao_pct, format = "f", digits = 2, big.mark = ".", decimal.mark = ","))
