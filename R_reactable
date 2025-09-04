@@ -1,0 +1,39 @@
+library(tidyverse)
+library(reactable)
+
+```{r}
+
+reactable(
+  dados,
+  columns = list(
+    data = colDef(
+      name = "Data",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Selic (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    variacao_pct = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  theme = reactableTheme(
+    color = "black",  # texto
+    backgroundColor = "white",  # fundo
+    borderColor = "black",  # bordas
+    stripedColor = "#D6EAF8",  # faixas alternadas
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
