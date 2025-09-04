@@ -1,10 +1,11 @@
-dados <- read_csv2("https://api.bcb.gov.br/dados/serie/bcdata.sgs.4189/dados?formato=csv") |>
+cambio_nom <- read_csv2("https://api.bcb.gov.br/dados/serie/bcdata.sgs.10813/dados?formato=csv&dataInicial=01/01/2020") %>% # aceita no máximo 10 anos
   mutate(
     data = as.Date(data, format = "%d/%m/%Y"),
-    variacao_pct = (valor / lag(valor) - 1) * 100
-  ) |>
-  arrange(desc(data)) |>
+    var_mg = (valor / lag(valor) - 1) * 100
+  ) %>% 
+  arrange(desc(data)) %>% 
   mutate(
     data = format(data, "%d/%m/%Y"),
-    valor = formatC(valor, format = "f", digits = 2, big.mark = ".", decimal.mark = ","),
-    variacao_pct = formatC(variacao_pct, format = "f", digits = 2, big.mark = ".", decimal.mark = ","))
+    valor = formatC(valor, format = "f", digits = 2, decimal.mark = ","),
+    var_mg = formatC(var_mg, format = "f", digits = 2, decimal.mark = ","),
+)
