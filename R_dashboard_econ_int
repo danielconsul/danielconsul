@@ -310,26 +310,59 @@ reactable(
   )
 )
 ```
-
 # Mov. câmbio contratado
+```{r}
 
-# Balanço de pagamentos {.tabset}
+```
 
-# Transações correntes
+# Transações correntes {data-navmenu="Balanço de pagamentos"}
+```{r}
 
+```
 
-# Balança comercial
+# Balança comercial {data-navmenu="Balanço de pagamentos"}
+```{r}
 
+```
 
-# Conta capital
+# Exportações {data-navmenu="Balanço de pagamentos"}
+```{r}
 
+```
 
-# Conta financeira
+# Importações {data-navmenu="Balanço de pagamentos"}
+```{r}
 
+```
+
+# Balança de serviços {data-navmenu="Balanço de pagamentos"}
+```{r}
+
+```
+
+# Renda primária {data-navmenu="Balanço de pagamentos"}
+```{r}
+
+```
+
+# Renda secundária {data-navmenu="Balanço de pagamentos"}
+```{r}
+
+```
+
+# Conta capital {data-navmenu="Balanço de pagamentos"}
+```{r}
+
+```
+
+# Conta financeira {data-navmenu="Balanço de pagamentos"}
+```{r}
+
+```
 
 # Reservas internacionais
 
 
-# Dívida externa
 
+# Dívida externa
 
