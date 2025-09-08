@@ -162,24 +162,8 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
-  )
-```
-
-### Variação diária (%)
-
-```{r}
-plot_ly(
-  data = cambio_nom, 
-  x = ~date, 
-  y = ~var_mg, 
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = " ")
-  )
+    yaxis = list(title = " ", dtick = 30)
+  ) %>% rangeslider(thickness = 0.05)
 ```
 
 Column {data-width=400}  {.tabset}
@@ -246,7 +230,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(title = " ")
-  )
+  ) %>% rangeslider(thickness = 0.05)
 ```
 
 ### Variação mensal (%)
@@ -261,7 +245,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(title = " ")
-  )
+  ) %>% rangeslider(thickness = 0.05)
 ```
 
 ### Variação em 12 meses (%)
@@ -275,8 +259,8 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
-  )
+    yaxis = list(title = " ", dtick = 10)
+  ) %>% rangeslider(thickness = 0.05)
 ```
 
 Column {data-width=400}  {.tabset}
@@ -348,7 +332,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(title = " ")
-  )
+  ) %>% rangeslider(thickness = 0.05)
 ```
 
 ### Variação mensal (%)
@@ -363,7 +347,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(title = " ")
-  )
+  ) %>% rangeslider(thickness = 0.05)
 ```
 
 ### Variação em 12 meses (%)
@@ -377,8 +361,8 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
-  )
+    yaxis = list(title = " ", dtick = 10)
+  ) %>% rangeslider(thickness = 0.05)
 ```
 
 Column {data-width=400}  {.tabset}
@@ -429,7 +413,7 @@ reactable(
 ```
 
 
-# Mov. câmbio contratado {data-navmenu="Taxa de câmbio"}
+# Movimento de câmbio contratado {data-navmenu="Taxa de câmbio"}
 ```{r}
 
 ```
@@ -515,7 +499,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(title = " ")
-  )
+  ) %>% rangeslider(thickness = 0.05)
 
 ```
 
@@ -531,7 +515,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(title = " ")
-  )
+  ) %>% rangeslider(thickness = 0.05)
 ```
 
 ### Variação em 12 meses (%)
@@ -545,8 +529,8 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
-  )
+    yaxis = list(title = " ", dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
 ```
 
 Column {data-width=400}  {.tabset}
