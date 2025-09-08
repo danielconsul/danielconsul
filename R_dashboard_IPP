@@ -161,7 +161,7 @@ dados_gis <- gis %>%
 
 # Indústria geral
 
-Column {.sidebar} {data-columns=80}
+Column {.sidebar} {data-width=300}
 -----------------------------------------------------------------------
 O **[Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e)**, cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
 
@@ -170,8 +170,6 @@ O IPP investiga, em aproximadamente 2 mil empresas, os preços recebidos pelos p
 A divulgação das séries do IPP ocorre mensalmente através do [Banco de dados Sidra](https://sidra.ibge.gov.br/home/ipp/brasil) e é condensada em três comparações básicas, além do número-índice (com base dezembro/2018 = 100): M/M-1 (mês contra mês imaediatamente anterior); acumulado no ano (mês contra dezembro do ano anterior); e M/M-12 (mês contra mesmo mês do ano anterior).
 
 Adotando a Classificação Nacional de Atividades Econômicas (CNAE) 2.0, o IPP gera indicadores para 24 atividades das indústrias extrativas e de transformação, além de reorganizar os mesmos dados em grandes categorias econômicas, abertas em bens de capital, bens intermediários e bens de consumo (duráveis e semiduráveis e não duráveis).
-
-<br>
 
 ```{r}
 
@@ -204,18 +202,14 @@ shinyWidgets::radioGroupButtons(
   )
 ```
 
-<br><br>
-
 <span style = "text-align:center;
 display: block;">
 Elaboração: Equipe IPP/IBGE.
 </span>
-
 <span style = "text-align:center;
 display: block;">
 Contato: ipp@ibge.gov.br
 </span>
-
 <span style = "text-align:center;
 display: block;">
 Última atualização: `r format(Sys.Date(), format = "%d/%m/%Y")`
@@ -225,7 +219,7 @@ display: block;">
 knitr::include_graphics("ibge.png")
 ```
 
-Column {data-width=920}
+Column {data-width=700}
 -----------------------------------------------------------------------
 
 ### PRIMEIRA VARIÁVEL {.no-title}
@@ -246,7 +240,7 @@ highcharter::renderHighchart({
 
 # Seções
 
-Column {.sidebar} {data-columns=80}
+Column {.sidebar} {data-width=300}
 -----------------------------------------------------------------------
 O **[Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e)**, cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
 
@@ -255,8 +249,6 @@ O IPP investiga, em aproximadamente 2 mil empresas, os preços recebidos pelos p
 A divulgação das séries do IPP ocorre mensalmente através do [Banco de dados Sidra](https://sidra.ibge.gov.br/home/ipp/brasil) e é condensada em três comparações básicas, além do número-índice (com base dezembro/2018 = 100): M/M-1 (mês contra mês imaediatamente anterior); acumulado no ano (mês contra dezembro do ano anterior); e M/M-12 (mês contra mesmo mês do ano anterior).
 
 Adotando a Classificação Nacional de Atividades Econômicas (CNAE) 2.0, o IPP gera indicadores para 24 atividades das indústrias extrativas e de transformação, além de reorganizar os mesmos dados em grandes categorias econômicas, abertas em bens de capital, bens intermediários e bens de consumo (duráveis e semiduráveis e não duráveis).
-
-<br>
 
 ```{r}
 shinyWidgets::pickerInput(
@@ -286,18 +278,14 @@ shinyWidgets::radioGroupButtons(
   )
 ```
 
-<br><br>
-
 <span style = "text-align:center;
 display: block;">
 Elaboração: Equipe IPP/IBGE.
 </span>
-
 <span style = "text-align:center;
 display: block;">
 Contato: ipp@ibge.gov.br
 </span>
-
 <span style = "text-align:center;
 display: block;">
 Última atualização: `r format(Sys.Date(), format = "%d/%m/%Y")`
@@ -307,7 +295,7 @@ display: block;">
 knitr::include_graphics("ibge.png")
 ```
 
-Column {data-width=920}
+Column {data-width=700}
 -----------------------------------------------------------------------
 
 ### PRIMEIRA VARIÁVEL {.no-title}
@@ -342,7 +330,7 @@ highcharter::renderHighchart({
 
 # Atividades
 
-Column {.sidebar} {data-columns=80}
+Column {.sidebar} {data-width=300}
 -----------------------------------------------------------------------
 O **[Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e)**, cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
 
@@ -351,8 +339,6 @@ O IPP investiga, em aproximadamente 2 mil empresas, os preços recebidos pelos p
 A divulgação das séries do IPP ocorre mensalmente através do [Banco de dados Sidra](https://sidra.ibge.gov.br/home/ipp/brasil) e é condensada em três comparações básicas, além do número-índice (com base dezembro/2018 = 100): M/M-1 (mês contra mês imaediatamente anterior); acumulado no ano (mês contra dezembro do ano anterior); e M/M-12 (mês contra mesmo mês do ano anterior).
 
 Adotando a Classificação Nacional de Atividades Econômicas (CNAE) 2.0, o IPP gera indicadores para 24 atividades das indústrias extrativas e de transformação, além de reorganizar os mesmos dados em grandes categorias econômicas, abertas em bens de capital, bens intermediários e bens de consumo (duráveis e semiduráveis e não duráveis).
-
-<br>
 
 ```{r}
 shinyWidgets::pickerInput(
@@ -385,18 +371,14 @@ shinyWidgets::radioGroupButtons(
   )
 ```
 
-<br><br>
-
 <span style = "text-align:center;
 display: block;">
 Elaboração: Equipe IPP/IBGE.
 </span>
-
 <span style = "text-align:center;
 display: block;">
 Contato: ipp@ibge.gov.br
 </span>
-
 <span style = "text-align:center;
 display: block;">
 Última atualização: `r format(Sys.Date(), format = "%d/%m/%Y")`
@@ -406,7 +388,7 @@ display: block;">
 knitr::include_graphics("ibge.png")
 ```
 
-Column {data-width=920}
+Column {data-width=700}
 -----------------------------------------------------------------------
 
 ### PRIMEIRA VARIÁVEL {.no-title}
@@ -441,7 +423,7 @@ highcharter::renderHighchart({
 
 # Grandes categorias econômicas
 
-Column {.sidebar} {data-columns=80}
+Column {.sidebar} {data-width=300}
 -----------------------------------------------------------------------
 O **[Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e)**, cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
 
@@ -450,8 +432,6 @@ O IPP investiga, em aproximadamente 2 mil empresas, os preços recebidos pelos p
 A divulgação das séries do IPP ocorre mensalmente através do [Banco de dados Sidra](https://sidra.ibge.gov.br/home/ipp/brasil) e é condensada em três comparações básicas, além do número-índice (com base dezembro/2018 = 100): M/M-1 (mês contra mês imaediatamente anterior); acumulado no ano (mês contra dezembro do ano anterior); e M/M-12 (mês contra mesmo mês do ano anterior).
 
 Adotando a Classificação Nacional de Atividades Econômicas (CNAE) 2.0, o IPP gera indicadores para 24 atividades das indústrias extrativas e de transformação, além de reorganizar os mesmos dados em grandes categorias econômicas, abertas em bens de capital, bens intermediários e bens de consumo (duráveis e semiduráveis e não duráveis).
-
-<br>
 
 ```{r}
 shinyWidgets::pickerInput(
@@ -484,18 +464,14 @@ shinyWidgets::radioGroupButtons(
   )
 ```
 
-<br><br>
-
 <span style = "text-align:center;
 display: block;">
 Elaboração: Equipe IPP/IBGE.
 </span>
-
 <span style = "text-align:center;
 display: block;">
 Contato: ipp@ibge.gov.br
 </span>
-
 <span style = "text-align:center;
 display: block;">
 Última atualização: `r format(Sys.Date(), format = "%d/%m/%Y")`
@@ -505,7 +481,7 @@ display: block;">
 knitr::include_graphics("ibge.png")
 ```
 
-Column {data-width=920}
+Column {data-width=700}
 -----------------------------------------------------------------------
 
 ### PRIMEIRA VARIÁVEL {.no-title}
@@ -540,7 +516,7 @@ highcharter::renderHighchart({
 
 # Grupos industriais
 
-Column {.sidebar} {data-columns=80}
+Column {.sidebar} {data-width=300}
 -----------------------------------------------------------------------
 O **[Índice de Preços ao Produtor (IPP)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e)**, cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no Brasil. É, portanto, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos e privados.
 
@@ -549,8 +525,6 @@ O IPP investiga, em aproximadamente 2 mil empresas, os preços recebidos pelos p
 A divulgação das séries do IPP ocorre mensalmente através do [Banco de dados Sidra](https://sidra.ibge.gov.br/home/ipp/brasil) e é condensada em três comparações básicas, além do número-índice (com base dezembro/2018 = 100): M/M-1 (mês contra mês imaediatamente anterior); acumulado no ano (mês contra dezembro do ano anterior); e M/M-12 (mês contra mesmo mês do ano anterior).
 
 Adotando a Classificação Nacional de Atividades Econômicas (CNAE) 2.0, o IPP gera indicadores para 24 atividades das indústrias extrativas e de transformação, além de reorganizar os mesmos dados em grandes categorias econômicas, abertas em bens de capital, bens intermediários e bens de consumo (duráveis e semiduráveis e não duráveis).
-
-<br>
 
 ```{r}
 shinyWidgets::pickerInput(
@@ -583,18 +557,16 @@ shinyWidgets::radioGroupButtons(
   )
 ```
 
-<br><br>
+<br><br><br>
 
 <span style = "text-align:center;
 display: block;">
 Elaboração: Equipe IPP/IBGE.
 </span>
-
 <span style = "text-align:center;
 display: block;">
 Contato: ipp@ibge.gov.br
 </span>
-
 <span style = "text-align:center;
 display: block;">
 Última atualização: `r format(Sys.Date(), format = "%d/%m/%Y")`
@@ -604,7 +576,7 @@ display: block;">
 knitr::include_graphics("ibge.png")
 ```
 
-Column {data-width=920}
+Column {data-width=700}
 -----------------------------------------------------------------------
 
 ### PRIMEIRA VARIÁVEL {.no-title}
