@@ -27,13 +27,14 @@ library(reactable)
 library(plotly)
 library(scales)
 library(shiny)
+library(WDI)
 ```
 
 
 ```{r}
 # Coleta de dados:
 
-# Taxa de câmbio - Livre - Dólar americano (venda)
+# Taxa de câmbio - Livre - Dólar americano (venda):
 cambio_nom1 <- get_series(
   code = c(valor = 1),
   start_date = "1994-07-01",
@@ -71,7 +72,7 @@ cambio_nom <- cambio_nom %>%
   arrange(desc(date)) %>%
   select(data_fmt, valor, var_mg, date)
 
-# Taxa de câmbio real (IPCA) - Jun/1994 = 100 - Dólar americano (código 11753)
+# Taxa de câmbio real (IPCA) - Jun/1994 = 100 - Dólar americano (código 11753):
 cambio_real_dol <- get_series(
   code = c(valor = 11753),
   start_date = "1994-07-01"
@@ -89,7 +90,7 @@ cambio_real_dol <- get_series(
   arrange(desc(date)) %>%
   select(data_fmt, valor, var_mg, var_12m, date)
 
-# Taxa de câmbio real efetiva (IPCA) - Jun/1994 = 100  (código 11752)
+# Taxa de câmbio real efetiva (IPCA) - Jun/1994 = 100  (código 11752):
 cambio_real_efet <- get_series(
   code = c(valor = 11752),
   start_date = "1994-07-01"
@@ -107,7 +108,7 @@ cambio_real_efet <- get_series(
   arrange(desc(date)) %>%
   select(data_fmt, valor, var_mg, var_12m, date)
 
-# Reservas internacionais (código 3546)
+# Reservas internacionais (código 3546):
 res_int <- get_series(
   code = c(valor = 3546),
   start_date = "1970-12-01"
@@ -124,6 +125,55 @@ res_int <- get_series(
   ) %>%
   arrange(desc(date)) %>%
   select(data_fmt, valor, var_mg, var_12m, date)
+
+# Dívida externa bruta (código 3684):
+div_bruta <- get_series(
+  code = c(valor = 3684),
+  start_date = "1981-01-01"
+) %>%
+  mutate(
+    valor = valor / 1000,
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, date)
+
+# Dívida externa líquida (código 3685):
+div_liq <- get_series(
+  code = c(valor = 3685),
+  start_date = "1987-01-01"
+) %>%
+  mutate(
+    valor = valor / 1000,
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, date)
+
+# Reservas internacionais totais como % da dívida externa total (código FI.RES.TOTL.DT.ZS):
+res_int_div_ext <- WDI(
+  country = "BR",
+  indicator = "FI.RES.TOTL.DT.ZS",
+  start = 1971
+) %>% mutate(
+  ano = year,
+  valor = FI.RES.TOTL.DT.ZS,
+  valor = number(valor, decimal.mark = ",", accuracy = 0.01)
+) %>% select(ano, valor)
+
+# Reservas internacionais (em meses de importações) (código FI.RES.TOTL.MO):
+res_int_imports <- WDI(
+  country = "BR",
+  indicator = "FI.RES.TOTL.MO",
+  start = 1975
+) %>% mutate(
+  ano = year,
+  valor = FI.RES.TOTL.MO,
+  valor = number(valor, decimal.mark = ",", accuracy = 0.01)
+) %>% select(ano, valor)
+
 ```
 
 # Visão geral
@@ -138,8 +188,6 @@ Column {data-width=800}
 ```{r}
 
 ```
-
-
 
 # Taxa de câmbio nominal {data-navmenu="Taxa de câmbio"}
 
@@ -169,7 +217,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Tabela
+### Síntese
 
 ```{r, results='asis'}
 reactable(
@@ -266,7 +314,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Tabela
+### Síntese
 
 ```{r}
 reactable(
@@ -368,7 +416,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Tabela
+### Síntese
 
 ```{r}
 reactable(
@@ -485,9 +533,8 @@ Código 3546 no Sistema Gerenciador de Séries Temporais do Banco Central do Bra
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Nível (US$ bilhões)
+### US$ bilhões
 ```{r}
-
 plot_ly(
   data = res_int, 
   x = ~date, 
@@ -500,10 +547,9 @@ plot_ly(
     xaxis = list(title = " "),
     yaxis = list(title = " ")
   ) %>% rangeslider(thickness = 0.05)
-
 ```
 
-### Variação mensal (%)
+### Var. mensal (%)
 ```{r}
 plot_ly(
   data = res_int, 
@@ -518,7 +564,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Variação em 12 meses (%)
+### Var. 12 meses (%)
 ```{r}
 plot_ly(
   data = res_int, 
@@ -533,10 +579,39 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
+### % dívida externa total
+```{r}
+plot_ly(
+  data = res_int_div_ext, 
+  x = ~ano, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Meses de importações
+```{r}
+plot_ly(
+  data = res_int_imports, 
+  x = ~ano, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Tabela
+### Síntese
 
 ```{r}
 reactable(
@@ -580,5 +655,195 @@ reactable(
 )
 ```
 
+### % dívida externa total
 
-# Dívida externa
+```{r}
+reactable(
+  res_int_div_ext,
+  columns = list(
+    ano = colDef(
+      name = "Ano",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Reservas internacionais (% dívida externa total)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Meses de importações
+
+```{r}
+reactable(
+  res_int_imports,
+  columns = list(
+    ano = colDef(
+      name = "Ano",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Reservas internacionais (meses de importações)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Dívida externa bruta {data-navmenu="Dívida externa"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Dívida externa bruta:** A estatística da dívida externa compreende o total apurado em determinada data dos débitos contratuais efetivamente desembolsados e ainda não quitados, devidos por residentes de uma economia aos não residentes, quando houver a obrigatoriedade de pagamento de principal e/ou juros em algum(s) ponto(s) no futuro. O valor de mercado da dívida externa bruta impacta os valores a partir de dezembro de 2011 e abrange os títulos de dívida emitidos pela República no mercado internacional, ajustados segundo seu preço de mercado, e os demais instrumentos e emissores de dívida externa, apurados em valor nominal. Código 3684 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Nível (US$ bilhões)
+```{r}
+plot_ly(
+  data = div_bruta, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese
+
+```{r}
+reactable(
+  div_bruta[, -3],
+  columns = list(
+    data_fmt = colDef(
+      name = "Data",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Dívida externa bruta (US$ bilhões)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+
+# Dívida externa líquida {data-navmenu="Dívida externa"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Dívida externa líquida:** Refere-se à dívida externa brua excluindo do cálculo os ativos de reservas, os haveres de bancos comerciais e os créditos brasileiros no exterior. Código 3685 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Nível (US$ bilhões)
+```{r}
+plot_ly(
+  data = div_liq, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese
+
+```{r}
+reactable(
+  div_liq[, -3],
+  columns = list(
+    data_fmt = colDef(
+      name = "Data",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Dívida externa líquida (US$ bilhões)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
