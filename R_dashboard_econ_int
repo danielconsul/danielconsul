@@ -174,6 +174,85 @@ res_int_imports <- WDI(
   valor = number(valor, decimal.mark = ",", accuracy = 0.01)
 ) %>% select(ano, valor)
 
+# Câmbio contratado comercial exportação (código 13962):
+cambio_exp1 <- get_series(
+  code = c(valor_exp = 13962),
+  start_date = "2008-09-01",
+  end_date = "2017-12-31"
+) %>%
+  mutate(
+    data_fmt = format(date, "%d/%m/%Y"),
+    valor_exp = number(valor_exp, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  select(data_fmt, valor_exp, date)
+
+cambio_exp2 <- get_series(
+  code = c(valor_exp = 13962),
+  start_date = "2018-01-01"
+) %>%
+  mutate(
+    data_fmt = format(date, "%d/%m/%Y"),
+    valor_exp = number(valor_exp, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  select(data_fmt, valor_exp, date)
+
+cambio_exp <- bind_rows(cambio_exp1, cambio_exp2) %>%
+  arrange(desc(date)) 
+
+# Câmbio contratado comercial importação (código 13966):
+cambio_imp1 <- get_series(
+  code = c(valor_imp = 13966),
+  start_date = "2008-09-01",
+  end_date = "2017-12-31" # No máximo 10 anos
+) %>%
+  mutate(
+    data_fmt = format(date, "%d/%m/%Y"),
+    valor_imp = number(valor_imp, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  select(data_fmt, valor_imp, date)
+
+cambio_imp2 <- get_series(
+  code = c(valor_imp = 13966),
+  start_date = "2018-01-01"
+) %>%
+  mutate(
+    data_fmt = format(date, "%d/%m/%Y"),
+    valor_imp = number(valor_imp, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  select(data_fmt, valor_imp, date)
+
+cambio_imp <- bind_rows(cambio_imp1, cambio_imp2) %>%
+  arrange(desc(date)) 
+
+# Câmbio contratado comercial saldo (código 11047):
+cambio_saldo_com1 <- get_series(
+  code = c(valor_saldo_com = 13967),
+  start_date = "2008-09-01",
+  end_date = "2017-12-31"
+) %>%
+  mutate(
+    data_fmt = format(date, "%d/%m/%Y"),
+    valor_saldo_com = number(valor_saldo_com, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  select(data_fmt, valor_saldo_com, date)
+
+cambio_saldo_com2 <- get_series(
+  code = c(valor_saldo_com = 13967),
+  start_date = "2018-01-01"
+) %>%
+  mutate(
+    data_fmt = format(date, "%d/%m/%Y"),
+    valor_saldo_com = number(valor_saldo_com, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  select(data_fmt, valor_saldo_com, date)
+
+cambio_saldo_com <- bind_rows(cambio_saldo_com1, cambio_saldo_com2) %>%
+  arrange(desc(date))
+
+cambio_com <- left_join(cambio_exp, cambio_imp)
+cambio_com <- left_join(cambio_com, cambio_saldo_com)
+
+cambio_com <- cambio_com %>% select(data_fmt, valor_exp, valor_imp, valor_saldo_com, date)
 ```
 
 # Visão geral
@@ -462,12 +541,63 @@ reactable(
 
 
 # Movimento de câmbio contratado {data-navmenu="Taxa de câmbio"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Câmbio contratado comercial (exportações):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportações de bens. Código 13962 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB).
+
+**Câmbio contratado comercial (importações):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais ao mercado não financeiro relativas a importações de bens. Código 13966 no SGST/BCB.
+
+**Câmbio contratado comercial (saldo):** Resultado líquido de contratações de câmbio comercial de exportação e de importação. Código 13967 no SGST/BCB.
+
+**Câmbio contratado financeiro (compras):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportação de serviços e ingressos de capitais estrangeiros ou retorno de capitais brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Código 13968 no SGST/BCB.
+
+**Câmbio contratado financeiro (vendas):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a importação de serviços e saídas de capitais estrangeiros ou brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Código 13969 no SGST/BCB.
+
+**Câmbio contratado financeiro (saldo):** Resultado líquido de contratações de câmbio financeiro de compra e venda. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Código 13970 no SGST/BCB.
+
+Todos os valores estão em milhões de dólares.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Exportações (1)
 ```{r}
 
 ```
 
+### Importações (2)
+```{r}
 
+```
 
+### Saldo comercial (1-2)
+```{r}
+
+```
+
+### Compras (3)
+```{r}
+
+```
+
+### Vendas (4)
+```{r}
+
+```
+
+### Saldo financeiro (3-4)
+```{r}
+
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese
+```{r}
+
+```
 
 
 # Transações correntes {data-navmenu="Balanço de pagamentos"}
@@ -528,7 +658,7 @@ Também em dezembro de 2024, 84,08% das reservas pelo conceito caixa estavam apl
 
 O prazo médio de investimento em 2024 foi de 3,19 anos.
 
-Código 3546 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+Fonte: Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (código 3546) e DataBank/World Bank.
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -784,7 +914,6 @@ reactable(
   )
 )
 ```
-
 
 # Dívida externa líquida {data-navmenu="Dívida externa"}
 
