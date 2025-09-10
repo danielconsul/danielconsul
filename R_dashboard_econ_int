@@ -224,7 +224,7 @@ cambio_imp2 <- get_series(
 cambio_imp <- bind_rows(cambio_imp1, cambio_imp2) %>%
   arrange(desc(date)) 
 
-# Câmbio contratado comercial saldo (código 11047):
+# Câmbio contratado comercial saldo (código 13967):
 cambio_saldo_com1 <- get_series(
   code = c(valor_saldo_com = 13967),
   start_date = "2008-09-01",
@@ -253,6 +253,113 @@ cambio_com <- left_join(cambio_exp, cambio_imp)
 cambio_com <- left_join(cambio_com, cambio_saldo_com)
 
 cambio_com <- cambio_com %>% select(data_fmt, valor_exp, valor_imp, valor_saldo_com, date)
+
+# Câmbio contratado financeiro compra (código 13968):
+cambio_compra1 <- get_series(
+  code = c(valor_compra = 13968),
+  start_date = "2008-09-01",
+  end_date = "2017-12-31"
+) %>%
+  mutate(
+    data_fmt = format(date, "%d/%m/%Y"),
+    valor_compra = number(valor_compra, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  select(data_fmt, valor_compra, date)
+
+cambio_compra2 <- get_series(
+  code = c(valor_compra = 13968),
+  start_date = "2018-01-01"
+) %>%
+  mutate(
+    data_fmt = format(date, "%d/%m/%Y"),
+    valor_compra = number(valor_compra, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  select(data_fmt, valor_compra, date)
+
+cambio_compra <- bind_rows(cambio_compra1, cambio_compra2) %>% arrange(desc(date))
+
+# Câmbio contratado financeiro venda (código 13968):
+cambio_venda1 <- get_series(
+  code = c(valor_venda = 13969),
+  start_date = "2008-09-01",
+  end_date = "2017-12-31"
+) %>%
+  mutate(
+    data_fmt = format(date, "%d/%m/%Y"),
+    valor_venda = number(valor_venda, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  select(data_fmt, valor_venda, date)
+
+cambio_venda2 <- get_series(
+  code = c(valor_venda = 13969),
+  start_date = "2018-01-01"
+) %>%
+  mutate(
+    data_fmt = format(date, "%d/%m/%Y"),
+    valor_venda = number(valor_venda, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  select(data_fmt, valor_venda, date)
+
+cambio_venda <- bind_rows(cambio_venda1, cambio_venda2) %>% arrange(desc(date))
+
+# Câmbio contratado financeiro saldo (código 13970):
+cambio_saldo_financ1 <- get_series(
+  code = c(valor_saldo_financ = 13970),
+  start_date = "2008-09-01",
+  end_date = "2017-12-31"
+) %>%
+  mutate(
+    data_fmt = format(date, "%d/%m/%Y"),
+    valor_saldo_financ = number(valor_saldo_financ, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  select(data_fmt, valor_saldo_financ, date)
+
+cambio_saldo_financ2 <- get_series(
+  code = c(valor_saldo_financ = 13970),
+  start_date = "2018-01-01"
+) %>%
+  mutate(
+    data_fmt = format(date, "%d/%m/%Y"),
+    valor_saldo_financ = number(valor_saldo_financ, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  select(data_fmt, valor_saldo_financ, date)
+
+cambio_saldo_financ <- bind_rows(cambio_saldo_financ1, cambio_saldo_financ2) %>%
+  arrange(desc(date))
+
+cambio_financ <- left_join(cambio_compra, cambio_venda)
+cambio_financ <- left_join(cambio_financ, cambio_saldo_financ)
+
+cambio_financ <- cambio_financ %>% select(data_fmt, valor_compra, valor_venda, valor_saldo_financ, date)
+
+cambio_contratado <- full_join(cambio_com, cambio_financ) %>% select(-date)
+
+# Câmbio contratado saldo total (código 13961):
+cambio_saldo_total1 <- get_series(
+  code = c(valor_saldo_total = 13961),
+  start_date = "2008-09-01",
+  end_date = "2017-12-31"
+) %>%
+  mutate(
+    data_fmt = format(date, "%d/%m/%Y"),
+    valor_saldo_total = number(valor_saldo_total, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  select(data_fmt, valor_saldo_total, date)
+
+cambio_saldo_total2 <- get_series(
+  code = c(valor_saldo_total = 13961),
+  start_date = "2018-01-01"
+) %>%
+  mutate(
+    data_fmt = format(date, "%d/%m/%Y"),
+    valor_saldo_total = number(valor_saldo_total, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  select(data_fmt, valor_saldo_total, date)
+
+cambio_saldo_total <- bind_rows(cambio_saldo_total1, cambio_saldo_total2) %>%
+  arrange(desc(date))
+
+cambio_contratado <- full_join(cambio_contratado, cambio_saldo_total)
 ```
 
 # Visão geral
@@ -542,7 +649,7 @@ reactable(
 
 # Movimento de câmbio contratado {data-navmenu="Taxa de câmbio"}
 
-Column {.sidebar} {data-width=200}
+Column {.sidebar} {data-width=300}
 -----------------------------------------------------------------------
 **Câmbio contratado comercial (exportações):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportações de bens. Código 13962 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB).
 
@@ -558,47 +665,71 @@ Column {.sidebar} {data-width=200}
 
 Todos os valores estão em milhões de dólares.
 
-Column {data-width=400} {.tabset}
+Column {data-width=700}  {.tabset}
 -----------------------------------------------------------------------
 
-### Exportações (1)
-```{r}
-
+### Síntese (US$ milhões)
+```{r, results='asis'}
+reactable(
+  cambio_contratado[, -9],
+  columns = list(
+    data_fmt = colDef(
+      name = "Data",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_exp = colDef(
+      name = "Comercial exportação (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_imp = colDef(
+      name = "Comercial importação (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo_com = colDef(
+      name = "Saldo comercial (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_compra = colDef(
+      name = "Financeiro compra (4)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_venda = colDef(
+      name = "Financeiro venda (5)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo_financ = colDef(
+      name = "Saldo financeiro (6) (4-5)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo_total = colDef(
+      name = "Saldo câmbio contratado (7) (3+6)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
 ```
-
-### Importações (2)
-```{r}
-
-```
-
-### Saldo comercial (1-2)
-```{r}
-
-```
-
-### Compras (3)
-```{r}
-
-```
-
-### Vendas (4)
-```{r}
-
-```
-
-### Saldo financeiro (3-4)
-```{r}
-
-```
-
-Column {data-width=400}  {.tabset}
------------------------------------------------------------------------
-
-### Síntese
-```{r}
-
-```
-
 
 # Transações correntes {data-navmenu="Balanço de pagamentos"}
 ```{r}
@@ -741,19 +872,19 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese
+### Síntese (US$ bilhões)
 
 ```{r}
 reactable(
   res_int[, -5],
   columns = list(
     data_fmt = colDef(
-      name = "Data",
+      name = "Mês",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor = colDef(
-      name = "Reservas internacionais (US$ bilhões)",
+      name = "Reservas internacionais",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -881,19 +1012,19 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese
+### Síntese (US$ bilhões)
 
 ```{r}
 reactable(
   div_bruta[, -3],
   columns = list(
     data_fmt = colDef(
-      name = "Data",
+      name = "Trimestre",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor = colDef(
-      name = "Dívida externa bruta (US$ bilhões)",
+      name = "Dívida externa bruta",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -943,19 +1074,19 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese
+### Síntese (US$ bilhões)
 
 ```{r}
 reactable(
   div_liq[, -3],
   columns = list(
     data_fmt = colDef(
-      name = "Data",
+      name = "Trimestre",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor = colDef(
-      name = "Dívida externa líquida (US$ bilhões)",
+      name = "Dívida externa líquida",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
