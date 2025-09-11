@@ -1,9 +1,7 @@
 ---
-title: "Economia internacional"
+title: "Contas externas brasileiras"
 output: 
   flexdashboard::flex_dashboard:
-    navbar:
-      - { title: "Autor", href: "http://lattes.cnpq.br/3579437273217709", align: right}
     social: [ "menu" ]
     theme: spacelab
     favicon: icon.png
@@ -14,7 +12,7 @@ runtime: shiny
 
 <style>
 p {
-  text-align: justify;
+  text-align: center;
   margin-right: 10px;
 }
 </style>
@@ -360,31 +358,110 @@ cambio_saldo_total <- bind_rows(cambio_saldo_total1, cambio_saldo_total2) %>%
   arrange(desc(date))
 
 cambio_contratado <- full_join(cambio_contratado, cambio_saldo_total)
+
+# Transações correntes (códigos 22701, 22702 e 22703):
+
+trans_cor_rec <- get_series(
+  code = c(valor_rec = 22702)
+)
+
+trans_cor_desp <- get_series(
+  code = c(valor_desp = 22703)
+)
+
+trans_cor_saldo <- get_series(
+  code = c(valor_saldo = 22701)
+)
+
+trans_cor <- left_join(trans_cor_rec, trans_cor_desp)
+trans_cor <- left_join(trans_cor, trans_cor_saldo)
+
+trans_cor <- trans_cor %>% mutate(
+    valor_rec = valor_rec / 1000,
+    valor_desp = valor_desp / 1000,
+    valor_saldo = valor_saldo / 1000
+) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
+  arrange(desc(date))
+
+# Balança comercial (códigos 22707, 22708 e 22709)
+bc_exp <- get_series(
+  code = c(valor_exp = 22708)
+)
+
+bc_imp <- get_series(
+  code = c(valor_imp = 22709)
+)
+
+bc_saldo <- get_series(
+  code = c(valor_saldo = 22707)
+)
+
+bc <- left_join(bc_exp, bc_imp)
+bc <- left_join(bc, bc_saldo)
+
+bc <- bc %>% mutate(
+    valor_exp = valor_exp / 1000,
+    valor_imp = valor_imp / 1000,
+    valor_saldo = valor_saldo / 1000
+) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_exp = number(valor_exp, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_imp = number(valor_imp, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_exp, valor_imp, valor_saldo, date) %>% 
+  arrange(desc(date))
 ```
 
 # Visão geral
-Column {.sidebar} {data-width=200}
+Columns {.sidebar} {data-width=250}
 -----------------------------------------------------------------------
-O presente _dashboard_ objetiva apresentar de forma centralizada uma série de dados macroeconômicos relacionados às contas externas da economia brasileira. São apresentadas informações referentes à taxa de câmbio, balanço de pagamentos, reservas internacionais e dívida externa. Em geral, os dados apresentam frequência diária ou mensal.
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+O presente _dashboard_ objetiva apresentar de forma centralizada uma série de dados macroeconômicos relacionados às contas externas da economia brasileira nas últimas décadas.
+São apresentadas informações referentes à taxa de câmbio, balanço de pagamentos, reservas internacionais e dívida externa, utilizando como fontes o Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB) e o DataBank do Banco Mundial.
+
+<br><br>
+
+**Autor:** [Daniel Consul de Antoni](http://lattes.cnpq.br/3579437273217709)
+
+**Contato:** daniel.consul@outlook.com
+
+<br><br>
 
 **Última atualização:** `r format(Sys.Date(), format = "%d/%m/%Y")`
 
-Column {data-width=800}
+Columns {data-width=750}
 -----------------------------------------------------------------------
-```{r}
 
+```{r, out.width="90%", fig.align='center', vertical_layout = fill}
+knitr::include_graphics("visao_geral.png")
 ```
 
 # Taxa de câmbio nominal {data-navmenu="Taxa de câmbio"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-**Taxa de câmbio nominal (dólar americano) - Venda:** Série diária do dólar comercial. Taxas administradas e livres. Código 1 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+Série diária do **dólar comercial nominal (venda)**. Taxas administradas e livres.
+
+<br>
+
+**Fonte:** Código 1 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Nível (R$)
+### Taxa de câmbio (R$)
 
 ```{r}
 plot_ly(
@@ -447,12 +524,18 @@ reactable(
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-**Taxa de câmbio real (dólar americano) - Jun/1994 = 100:** Série mensal que reflete a variação da moeda nacional em relação a uma determinada moeda estrangeira, corrigida pelo diferencial entre as inflações do país (IPCA) e do país estrangeiro (IPC). Código 11752 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+Série mensal que reflete a variação da moeda nacional em relação a uma determinada moeda estrangeira, corrigida pelo diferencial entre as inflações do país (IPCA) e do país estrangeiro (IPC). Jun/1994 = 100.
+
+<br>
+
+**Fonte:** Código 11752 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Nível (Índice jun/1994 = 100)
+### Taxa de câmbio real (dólar americano) - Índice jun/1994 = 100
 ```{r}
 plot_ly(
   data = cambio_real_dol, 
@@ -549,12 +632,18 @@ reactable(
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-**Taxa de câmbio real efetiva - Jun/1994 = 100:** Série mensal gerada a partir do cálculo da taxa de câmbio real em relação a um conjunto de países e moedas (uma cesta de países e moedas), em geral escolhidos conforme sua importância no comércio exterior, em vez de realizar o cálculo restrito a uma única relação bilateral. Código 11753 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+Série mensal gerada a partir do cálculo da taxa de câmbio real em relação a um conjunto de países e moedas (uma cesta de países e moedas), em geral escolhidos conforme sua importância no comércio exterior, em vez de realizar o cálculo restrito a uma única relação bilateral. Jun/1994 = 100.
+
+<br>
+
+**Fonte:** Código 11753 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Nível (índice jun/1994 = 100)
+### Taxa de câmbio real efetiva - Índice jun/1994 = 100
 ```{r}
 plot_ly(
   data = cambio_real_efet, 
@@ -649,8 +738,11 @@ reactable(
 
 # Movimento de câmbio contratado {data-navmenu="Taxa de câmbio"}
 
-Column {.sidebar} {data-width=300}
+Column {.sidebar} {data-width=250}
 -----------------------------------------------------------------------
+
+<br><br><br><br><br><br><br><br>
+
 **Câmbio contratado comercial (exportações):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportações de bens. Código 13962 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB).
 
 **Câmbio contratado comercial (importações):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais ao mercado não financeiro relativas a importações de bens. Código 13966 no SGST/BCB.
@@ -665,7 +757,7 @@ Column {.sidebar} {data-width=300}
 
 Todos os valores estão em milhões de dólares.
 
-Column {data-width=700}  {.tabset}
+Column {data-width=750}  {.tabset}
 -----------------------------------------------------------------------
 
 ### Síntese (US$ milhões)
@@ -732,13 +824,227 @@ reactable(
 ```
 
 # Transações correntes {data-navmenu="Balanço de pagamentos"}
-```{r}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+O **balanço de pagamentos** é uma peça contábil que resume as transações econômicas entre residentes no país e não residentes em um determinado período de tempo. A compilação das estatísticas de Balanço de Pagamentos (BP) no Brasil tem como principal fonte de informação as transações financeiras registradas no Sistema Câmbio do BCB (no jargão internacional, um sistema do tipo International Transactions Reporting System (ITRS)). Dessa forma, o BP brasileiro é compilado fundamentalmente a partir dos registros individuais das transações (microdados), permitindo ao Banco Central do Brasil o acompanhamento tempestivo dos fluxos da economia brasileira com o exterior.
+
+<br>
+
+A rubrica de **transações correntes** agrega os seguintes itens: balança comercial (bens), serviços, renda primária e renda secundária, e **registra todas as transações entre os residentes no Brasil e os residentes no exterior, independentemente da moeda utilizada**, realizadas por intermédio do sistema bancário ou de agentes credenciados pelo Banco Central do Brasil.
+
+<br>
+
+Todos os valores estão em bilhões de dólares.
+
+<br>
+
+**Fonte:** Códigos 22702 (receita), 22703 (despesa) e 22701 (saldo = receita - despesa) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Receitas (1)
+```{r}
+plot_ly(
+  data = trans_cor, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rec)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
 ```
 
-# Balança comercial {data-navmenu="Balanço de pagamentos"}
+### Despesas (2)
 ```{r}
+plot_ly(
+  data = trans_cor, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_desp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
+### Saldo em transações correntes (3) (1-2)
+```{r}
+plot_ly(
+  data = trans_cor, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_saldo)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese (US$ bilhões)
+
+```{r}
+reactable(
+  trans_cor[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rec = colDef(
+      name = "Receitas (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_desp = colDef(
+      name = "Despesas (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo = colDef(
+      name = "Saldo transações correntes (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+
+# Balança comercial (bens) {data-navmenu="Balanço de pagamentos"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+A **balança Comercial (bens)** contabiliza as transações de itens que são resultado de atividades produtivas, tangíveis, e sobre os quais direitos de propriedade podem ser estabelecidos e transferidos através de transações. A balança comercial (bens) é dividida em exportações e importações. As **exportações** registram a venda de bens de residentes a não residentes, enquanto as **importações** registram a compra de bens por residentes de não residentes. A rubrica é fundada nas estatísticas de comércio exterior compiladas pelo Ministério do Desenvolvimento, Indústria e Comércio (MDIC), com base nos registros alfandegários do Siscomex, que são ajustadas pelo Banco Central com o intuito de ampliação da cobertura. Por conta disso, às importações publicadas pelo MDIC são incorporadas as compras de energia elétrica sem registro no Siscomex. Adicionalmente, exportações e importações são ajustadas pela inclusão das operações fictas, nas quais o produto é transacionado com um não residente, mas não atravessa a fronteira do país em que se encontra; e, por fim, a balança comercial do balanço de pagamentos incorpora encomendas postais internacionais.
+
+<br> 
+
+Todos os valores estão em bilhões de dólares.
+
+<br>
+
+**Fonte**: Códigos 22708 (exportações), 22709 (importações) e 22707 (saldo balança comercial) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Exportações (1)
+```{r}
+plot_ly(
+  data = bc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_exp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Importações (2)
+```{r}
+plot_ly(
+  data = bc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_imp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Saldo da balança comercial (3) (1-2)
+```{r}
+plot_ly(
+  data = bc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_saldo)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese (US$ bilhões)
+```{r}
+reactable(
+  bc[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_exp = colDef(
+      name = "Exportações (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_imp = colDef(
+      name = "Importações (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo = colDef(
+      name = "Saldo balança comercial (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
 ```
 
 # Exportações {data-navmenu="Balanço de pagamentos"}
@@ -781,20 +1087,30 @@ reactable(
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-**Reservas internacionais**: As reservas internacionais compreendem os ativos externos do país prontamente disponíveis e mantidos pelo Banco Central do Brasil com o objetivo de financiar eventuais déficits do balanço de pagamentos.
+<br><br><br>
+
+As **reservas internacionais** compreendem os ativos externos do país prontamente disponíveis e mantidos pelo Banco Central do Brasil com o objetivo de financiar eventuais déficits do balanço de pagamentos.
+
+<br>
 
 De acordo com o [Relatório de Gestão das Reservas Internacionais](https://www.bcb.gov.br/publicacoes/relgestaoreservas) do Banco Central do Brasil de março de 2025, em dezembro de 2024 a alocação das reservas por moedas se dava da seguinte maneira: 78,45% em dólar americano (USD), 5,31% em renminbi (CNY), 5,23% em euro (EUR), 3,69% em libra esterlina (GBP), 3,55% em ouro, 1,73% em iene (JPY), 1,05% em dólar canadense (CAD) e 0,99% em dólar australiano (AUD).
 
+<br>
+
 Também em dezembro de 2024, 84,08% das reservas pelo conceito caixa estavam aplicadas em títulos governamentais soberanos.
+
+<br>
 
 O prazo médio de investimento em 2024 foi de 3,19 anos.
 
-Fonte: Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (código 3546) e DataBank/World Bank.
+<br>
+
+**Fontes:** Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (código 3546) e DataBank/World Bank.
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### US$ bilhões
+### Reservas internacionais
 ```{r}
 plot_ly(
   data = res_int, 
@@ -988,12 +1304,19 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-**Dívida externa bruta:** A estatística da dívida externa compreende o total apurado em determinada data dos débitos contratuais efetivamente desembolsados e ainda não quitados, devidos por residentes de uma economia aos não residentes, quando houver a obrigatoriedade de pagamento de principal e/ou juros em algum(s) ponto(s) no futuro. O valor de mercado da dívida externa bruta impacta os valores a partir de dezembro de 2011 e abrange os títulos de dívida emitidos pela República no mercado internacional, ajustados segundo seu preço de mercado, e os demais instrumentos e emissores de dívida externa, apurados em valor nominal. Código 3684 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+<br><br><br><br><br><br><br><br><br><br>
+
+A estatística da **dívida externa** compreende o total apurado em determinada data dos débitos contratuais efetivamente desembolsados e ainda não quitados, devidos por residentes de uma economia aos não residentes, quando houver a obrigatoriedade de pagamento de principal e/ou juros em algum(s) ponto(s) no futuro. O valor de mercado da dívida externa bruta impacta os valores a partir de dezembro de 2011 e abrange os títulos de dívida emitidos pela República no mercado internacional, ajustados segundo seu preço de mercado, e os demais instrumentos e emissores de dívida externa, apurados em valor nominal.
+
+<br>
+
+**Fonte:** Código 3684 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Nível (US$ bilhões)
+### Dívida externa bruta (US$ bilhões)
 ```{r}
 plot_ly(
   data = div_bruta, 
@@ -1050,12 +1373,19 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-**Dívida externa líquida:** Refere-se à dívida externa brua excluindo do cálculo os ativos de reservas, os haveres de bancos comerciais e os créditos brasileiros no exterior. Código 3685 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+Refere-se à dívida externa bruta excluindo do cálculo os ativos de reservas, os haveres de bancos comerciais e os créditos brasileiros no exterior.
+
+<br>
+
+**Fonte:** Código 3685 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Nível (US$ bilhões)
+### Dívida externa líquida (US$ bilhões)
 ```{r}
 plot_ly(
   data = div_liq, 
