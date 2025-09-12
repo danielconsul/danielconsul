@@ -533,6 +533,33 @@ cc <- cc %>% mutate(
     valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
   arrange(desc(date))
+
+# Índice de commodities - Brasil (códigos 22574 e 29042)
+commod_bra <- get_series(
+  code = c(valor_rs = 27574)
+) %>% mutate(
+  valor_rs_mg = (valor_rs/lag(valor_rs) - 1) * 100,
+  valor_rs_12m = (valor_rs/lag(valor_rs, 12) - 1) * 100
+)
+
+commod_usd <- get_series(
+  code = c(valor_usd = 29042)
+) %>% mutate(
+  valor_usd_mg = (valor_usd/lag(valor_usd) - 1) * 100,
+  valor_usd_12m = (valor_usd/lag(valor_usd, 12) - 1) * 100
+)
+
+commod <- left_join(commod_bra, commod_usd) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rs = number(valor_rs, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rs_mg = number(valor_rs_mg, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rs_12m = number(valor_rs_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_usd = number(valor_usd, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_usd_mg = number(valor_usd_mg, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_usd_12m = number(valor_usd_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rs, valor_rs_mg, valor_rs_12m, valor_usd, valor_usd_mg, valor_usd_12m, date) %>% 
+  arrange(desc(date))
 ```
 
 # Visão geral
@@ -1047,7 +1074,6 @@ reactable(
   )
 )
 ```
-
 
 # Balança comercial (bens) {data-navmenu="Balanço de pagamentos"}
 
@@ -1670,6 +1696,8 @@ reactable(
 
 # - Conta financeira (Ativos de reserva) {data-navmenu="Balanço de pagamentos"}
 
+# Erros e omissões {data-navmenu="Balanço de pagamentos"}
+
 
 # Reservas internacionais
 
@@ -2020,3 +2048,206 @@ reactable(
   )
 )
 ```
+
+# Índice de commodities - Brasil {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+ 	
+O **Índice de commodities - Brasil** (IC-Br) exprime a média mensal ponderada dos preços em reais e em dólares das commodities relevantes para a dinâmica da inflação brasileira. O IC-Br agrega de forma ponderada os indicadores relativos aos segmentos Agropecuária (série 27575), Metal (série 27576) e Energia (série 27577). Dez/2005 = 100.
+
+<br> 
+
+Tomando como base o mês de janeiro de 2024, os pesos para cada commodity no índice são os seguintes:
+
+Boi Gordo: 21,54%;
+Brent: 12,35%;
+Açúcar: 7,37%;
+Milho: 6,27%;
+Óleo de soja: 6,17%;
+Algodão: 6,11%;
+Suco de Laranja: 4,69%;
+Café: 4,25%;
+Estanho: 4,06%;
+Arroz: 3,82%;
+Cacau: 3,25%;
+Alumínio: 3,24%;
+Carvão: 2,95%.
+Trigo: 2,18%;
+Prata: 2,11%;
+Zinco: 2,10%;
+Gas Natural: 2,05%;
+Cobre: 1,60%;
+Porco: 1,34%;
+Chumbo: 1,12%;
+Minério de Ferro: 0,52%;
+Niquel: 0,50%;
+Ouro: 0,42%.
+
+<br>
+
+**Fonte:** Códigos 27574 (real) e 29042 (dólar) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### IC-Br (real e dólar) - Dez/2005 = 100
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br (real)"
+  ) %>%
+  add_trace(
+    data = commod,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br (dólar)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = " ", autorange = TRUE),
+    legend = list(
+      orientation = "h",  # horizontal
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Var. mensal (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs_mg)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br (real)"
+  ) %>%
+  add_trace(
+    data = commod,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd_mg)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br (dólar)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = " ", autorange = TRUE),
+    legend = list(
+      orientation = "h",  # horizontal
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Var. em 12 meses (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs_12m)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br (real)"
+  ) %>%
+  add_trace(
+    data = commod,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd_12m)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br (dólar)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = " ", autorange = TRUE),
+    legend = list(
+      orientation = "h",  # horizontal
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese IC-Br
+
+```{r}
+reactable(
+  commod[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs = colDef(
+      name = "IC-Br (reais)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs_mg = colDef(
+      name = "IC-Br (reais) - Var. mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs_12m = colDef(
+      name = "IC-Br (reais) - Var. em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd = colDef(
+      name = "IC-Br (dólar)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd_mg = colDef(
+      name = "IC-Br (dólar) - Var. mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd_12m = colDef(
+      name = "IC-Br (dólar) - Var. em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Índice de commodities - IC-Br Agropecuária {data-navmenu="Commodities"}
+
+# Índice de commodities - IC-Br Metal {data-navmenu="Commodities"}
+
+# Índice de commodities - IC-Br Energia {data-navmenu="Commodities"}
