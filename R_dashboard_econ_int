@@ -417,16 +417,134 @@ bc <- bc %>% mutate(
     valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
   ) %>% select(data_fmt, valor_exp, valor_imp, valor_saldo, date) %>% 
   arrange(desc(date))
+
+# Balança de serviços (códigos 22719, 22720 e 22721)
+bs_rec <- get_series(
+  code = c(valor_rec = 22720)
+)
+
+bs_desp <- get_series(
+  code = c(valor_desp = 22721)
+)
+
+bs_saldo <- get_series(
+  code = c(valor_saldo = 22719)
+)
+
+bs <- left_join(bs_rec, bs_desp)
+bs <- left_join(bs, bs_saldo)
+
+bs <- bs %>% mutate(
+    valor_rec = valor_rec / 1000,
+    valor_desp = valor_desp / 1000,
+    valor_saldo = valor_saldo / 1000
+) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
+  arrange(desc(date))
+
+# Renda primária (códigos 22800, 22801 e 22802)
+rp_rec <- get_series(
+  code = c(valor_rec = 22801)
+)
+
+rp_desp <- get_series(
+  code = c(valor_desp = 22802)
+)
+
+rp_saldo <- get_series(
+  code = c(valor_saldo = 22800)
+)
+
+rp <- left_join(rp_rec, rp_desp)
+rp <- left_join(rp, rp_saldo)
+
+rp <- rp %>% mutate(
+    valor_rec = valor_rec / 1000,
+    valor_desp = valor_desp / 1000,
+    valor_saldo = valor_saldo / 1000
+) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
+  arrange(desc(date))
+
+# Renda secundária (códigos 22838, 22839 e 22840)
+rs_rec <- get_series(
+  code = c(valor_rec = 22839)
+)
+
+rs_desp <- get_series(
+  code = c(valor_desp = 22840)
+)
+
+rs_saldo <- get_series(
+  code = c(valor_saldo = 22838)
+)
+
+rs <- left_join(rs_rec, rs_desp)
+rs <- left_join(rs, rs_saldo)
+
+rs <- rs %>% mutate(
+    valor_rec = valor_rec / 1000,
+    valor_desp = valor_desp / 1000,
+    valor_saldo = valor_saldo / 1000
+) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
+  arrange(desc(date))
+
+# Conta capital (códigos 22851, 22852 e 22853)
+cc_rec <- get_series(
+  code = c(valor_rec = 22852)
+)
+
+cc_desp <- get_series(
+  code = c(valor_desp = 22853)
+)
+
+cc_saldo <- get_series(
+  code = c(valor_saldo = 22851)
+)
+
+cc <- left_join(cc_rec, cc_desp)
+cc <- left_join(cc, cc_saldo)
+
+cc <- cc %>% mutate(
+    valor_rec = valor_rec / 1000,
+    valor_desp = valor_desp / 1000,
+    valor_saldo = valor_saldo / 1000
+) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
+  arrange(desc(date))
 ```
 
 # Visão geral
 Columns {.sidebar} {data-width=250}
 -----------------------------------------------------------------------
 
-<br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br>
 
+<div style="font-size:18px">
 O presente _dashboard_ objetiva apresentar de forma centralizada uma série de dados macroeconômicos relacionados às contas externas da economia brasileira nas últimas décadas.
-São apresentadas informações referentes à taxa de câmbio, balanço de pagamentos, reservas internacionais e dívida externa, utilizando como fontes o Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB) e o DataBank do Banco Mundial.
+São apresentadas informações referentes à taxa de câmbio, balanço de pagamentos, reservas internacionais e dívida externa, utilizando como fontes o Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB) e o DataBank do Banco Mundial. O painel é automatizado e atualizado diariamente.
+
 
 <br><br>
 
@@ -437,6 +555,7 @@ São apresentadas informações referentes à taxa de câmbio, balanço de pagam
 <br><br>
 
 **Última atualização:** `r format(Sys.Date(), format = "%d/%m/%Y")`
+</div>
 
 Columns {data-width=750}
 -----------------------------------------------------------------------
@@ -449,8 +568,6 @@ knitr::include_graphics("visao_geral.png")
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
 Série diária do **dólar comercial nominal (venda)**. Taxas administradas e livres.
 
@@ -480,7 +597,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese
+### Síntese taxa de câmbio nominal
 
 ```{r, results='asis'}
 reactable(
@@ -524,9 +641,7 @@ reactable(
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-
-Série mensal que reflete a variação da moeda nacional em relação a uma determinada moeda estrangeira, corrigida pelo diferencial entre as inflações do país (IPCA) e do país estrangeiro (IPC). Jun/1994 = 100.
+A série mensal **taxa de câmbio real** reflete a variação da moeda nacional em relação ao dólar americano, corrigida pelo diferencial entre as inflações do país (IPCA) e do país estrangeiro (IPC). Jun/1994 = 100.
 
 <br>
 
@@ -583,7 +698,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese
+### Síntese taxa de câmbio real
 
 ```{r}
 reactable(
@@ -632,9 +747,7 @@ reactable(
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-
-Série mensal gerada a partir do cálculo da taxa de câmbio real em relação a um conjunto de países e moedas (uma cesta de países e moedas), em geral escolhidos conforme sua importância no comércio exterior, em vez de realizar o cálculo restrito a uma única relação bilateral. Jun/1994 = 100.
+A série mensal **taxa de câmbio real efetiva** é gerada a partir do cálculo da taxa de câmbio real em relação a um conjunto de países e moedas (uma cesta de países e moedas), em geral escolhidos conforme sua importância no comércio exterior, em vez de realizar o cálculo restrito a uma única relação bilateral. Jun/1994 = 100.
 
 <br>
 
@@ -691,7 +804,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese
+### Síntese taxa de câmbio real efetiva
 
 ```{r}
 reactable(
@@ -741,8 +854,6 @@ reactable(
 Column {.sidebar} {data-width=250}
 -----------------------------------------------------------------------
 
-<br><br><br><br><br><br><br><br>
-
 **Câmbio contratado comercial (exportações):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportações de bens. Código 13962 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB).
 
 **Câmbio contratado comercial (importações):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais ao mercado não financeiro relativas a importações de bens. Código 13966 no SGST/BCB.
@@ -760,7 +871,7 @@ Todos os valores estão em milhões de dólares.
 Column {data-width=750}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese (US$ milhões)
+### Síntese câmbio contratado (US$ milhões)
 ```{r, results='asis'}
 reactable(
   cambio_contratado[, -9],
@@ -893,7 +1004,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese (US$ bilhões)
+### Síntese transações correntes (US$ bilhões)
 
 ```{r}
 reactable(
@@ -1004,7 +1115,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese (US$ bilhões)
+### Síntese balança comercial (US$ bilhões)
 ```{r}
 reactable(
   bc[, -5],
@@ -1058,36 +1169,512 @@ reactable(
 ```
 
 # Balança de serviços {data-navmenu="Balanço de pagamentos"}
-```{r}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+A **balança de serviços** é composta por serviços relativos a transportes, viagens internacionais, seguros, financeiros, construção, computação e informações, royalties e licenças, aluguel de equipamentos, serviços pessoais, culturais e de entretenimento e serviços governamentais.
+
+<br> 
+
+Todos os valores estão em bilhões de dólares.
+
+<br>
+
+**Fonte**: Códigos 22720 (receitas), 22721 (despesas) e 22719 (saldo balança de serviços) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Receitas (1)
+```{r}
+plot_ly(
+  data = bs, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rec)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Despesas (2)
+```{r}
+plot_ly(
+  data = bs, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_desp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Saldo da balança de serviços (3) (1-2)
+```{r}
+plot_ly(
+  data = bs, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_saldo)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese balança de serviços (US$ bilhões)
+```{r}
+reactable(
+  bs[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rec = colDef(
+      name = "Receitas (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_desp = colDef(
+      name = "Despesas (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo = colDef(
+      name = "Saldo balança de serviços (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
 ```
 
 # Renda primária {data-navmenu="Balanço de pagamentos"}
-```{r}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+A **renda primária** indica os montantes a pagar ou a receber em troca do uso temporário de recursos financeiros, trabalho ou ativos não financeiros não produzidos, a saber, remuneração de trabalhadores, renda de investimentos e demais rendas primárias. Fazem parte da primeira a remuneração do trabalho assalariado (salários e ordenados); da segunda, renda de investimento direto, renda de investimento em carteira, renda de outros investimentos e renda de ativos de reserva; e da terceira, tributos sobre a produção e importação, subsídios e aluguéis.
+
+<br> 
+
+Todos os valores estão em bilhões de dólares.
+
+<br>
+
+**Fonte**: Códigos 22801 (receitas), 22802 (despesas) e 22800 (saldo renda primária) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Receitas (1)
+```{r}
+plot_ly(
+  data = rp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rec)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Despesas (2)
+```{r}
+plot_ly(
+  data = rp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_desp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Saldo da renda primária (3) (1-2)
+```{r}
+plot_ly(
+  data = rp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_saldo)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese renda primária (US$ bilhões)
+```{r}
+reactable(
+  rp[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rec = colDef(
+      name = "Receitas (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_desp = colDef(
+      name = "Despesas (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo = colDef(
+      name = "Saldo renda primária (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
 ```
 
 # Renda secundária {data-navmenu="Balanço de pagamentos"}
-```{r}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+A **renda secundária**, antes denominada “transferências unilaterais correntes”, tem sua nomenclatura ajustada às contas nacionais, e apresenta a renda gerada em uma economia e distribuída para outra. Setoriza as transferências em dois componentes: governo e demais setores. No primeiro caso, estão registrados os tributos correntes sobre a renda, contribuições e benefícios sociais, cooperação internacional corrente e demais transferências correntes do governo; já no segundo, estão as transferências pessoais (transferências correntes entre famílias residentes e não residentes) e outras transferências correntes.
+
+<br> 
+
+Todos os valores estão em bilhões de dólares.
+
+<br>
+
+**Fonte**: Códigos 22839 (receitas), 22840 (despesas) e 22838 (saldo renda primária) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Receitas (1)
+```{r}
+plot_ly(
+  data = rs, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rec)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Despesas (2)
+```{r}
+plot_ly(
+  data = rs, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_desp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Saldo da renda primária (3) (1-2)
+```{r}
+plot_ly(
+  data = rs, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_saldo)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese renda secundária (US$ bilhões)
+```{r}
+reactable(
+  rs[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rec = colDef(
+      name = "Receitas (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_desp = colDef(
+      name = "Despesas (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo = colDef(
+      name = "Saldo renda secundária (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
 ```
 
 # Conta capital {data-navmenu="Balanço de pagamentos"}
-```{r}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+A **conta capital** registra as transações envolvendo compra e venda de ativos não financeiros não produzidos, e transferências de capital. As transferências de capital relacionadas com patrimônio de migrantes não mais impactam essa conta.
+
+<br> 
+
+Todos os valores estão em bilhões de dólares.
+
+<br>
+
+**Fonte**: Códigos 22852 (receitas), 22853 (despesas) e 22851 (saldo renda primária) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Receitas (1)
+```{r}
+plot_ly(
+  data = cc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rec)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
 ```
+
+### Despesas (2)
+```{r}
+plot_ly(
+  data = cc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_desp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Saldo da conta capital (3) (1-2)
+```{r}
+plot_ly(
+  data = cc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_saldo)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese conta capital (US$ bilhões)
+```{r}
+reactable(
+  cc[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rec = colDef(
+      name = "Receitas (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_desp = colDef(
+      name = "Despesas (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo = colDef(
+      name = "Saldo conta capital (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# - Conta capital (Ativos não financeiros não produzidos) {data-navmenu="Balanço de pagamentos"}
+
+# - Conta capital (Ativos não financeiros não produzidos - Passes de atletas) {data-navmenu="Balanço de pagamentos"}
+
+# - Conta capital (Transferências de capital) {data-navmenu="Balanço de pagamentos"}
 
 # Conta financeira {data-navmenu="Balanço de pagamentos"}
-```{r}
 
-```
+# - Conta financeira (Investimento direto) {data-navmenu="Balanço de pagamentos"}
+
+# - Conta financeira (Investimentos em carteira) {data-navmenu="Balanço de pagamentos"}
+
+# - Conta financeira (Outros investimentos) {data-navmenu="Balanço de pagamentos"}
+
+# - Conta financeira (Ativos de reserva) {data-navmenu="Balanço de pagamentos"}
+
 
 # Reservas internacionais
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
-<br><br><br>
 
 As **reservas internacionais** compreendem os ativos externos do país prontamente disponíveis e mantidos pelo Banco Central do Brasil com o objetivo de financiar eventuais déficits do balanço de pagamentos.
 
@@ -1305,9 +1892,7 @@ reactable(
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-<br><br><br><br><br><br><br><br><br><br>
-
-A estatística da **dívida externa** compreende o total apurado em determinada data dos débitos contratuais efetivamente desembolsados e ainda não quitados, devidos por residentes de uma economia aos não residentes, quando houver a obrigatoriedade de pagamento de principal e/ou juros em algum(s) ponto(s) no futuro. O valor de mercado da dívida externa bruta impacta os valores a partir de dezembro de 2011 e abrange os títulos de dívida emitidos pela República no mercado internacional, ajustados segundo seu preço de mercado, e os demais instrumentos e emissores de dívida externa, apurados em valor nominal.
+A série trimestral **dívida externa bruta** compreende o total apurado em determinada data dos débitos contratuais efetivamente desembolsados e ainda não quitados, devidos por residentes de uma economia aos não residentes, quando houver a obrigatoriedade de pagamento de principal e/ou juros em algum(s) ponto(s) no futuro. O valor de mercado da dívida externa bruta impacta os valores a partir de dezembro de 2011 e abrange os títulos de dívida emitidos pela República no mercado internacional, ajustados segundo seu preço de mercado, e os demais instrumentos e emissores de dívida externa, apurados em valor nominal.
 
 <br>
 
@@ -1335,7 +1920,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese (US$ bilhões)
+### Síntese dívida externa bruta (US$ bilhões)
 
 ```{r}
 reactable(
@@ -1374,9 +1959,7 @@ reactable(
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-
-Refere-se à dívida externa bruta excluindo do cálculo os ativos de reservas, os haveres de bancos comerciais e os créditos brasileiros no exterior.
+A série trimestral **dívida externa líquida** refere-se à dívida externa bruta excluindo do cálculo os ativos de reservas, os haveres de bancos comerciais e os créditos brasileiros no exterior.
 
 <br>
 
@@ -1404,7 +1987,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese (US$ bilhões)
+### Síntese dívida externa líquida (US$ bilhões)
 
 ```{r}
 reactable(
