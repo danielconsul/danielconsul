@@ -1,5 +1,5 @@
 ---
-title: "Variáveis externas brasileiras"
+title: "Estatísticas do setor externo brasileiro"
 output: 
   flexdashboard::flex_dashboard:
     social: [ "menu" ]
@@ -119,38 +119,60 @@ res_int <- get_series(
   ) %>%
   mutate(
     data_fmt = format(date, "%m/%Y"),
-    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
     var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
     var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
   ) %>%
   arrange(desc(date)) %>%
   select(data_fmt, valor, var_mg, var_12m, date)
 
-# Dívida externa bruta (código 3684):
-div_bruta <- get_series(
-  code = c(valor = 3684),
+# Dívida externa bruta (códigos 3684 e 11407):
+div_bruta_usd <- get_series(
+  code = c(valor_usd = 3684),
   start_date = "1981-01-01"
 ) %>%
   mutate(
-    valor = valor / 1000,
+    valor_usd = valor_usd / 1000,
     data_fmt = format(date, "%m/%Y"),
-    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
-  ) %>%
-  arrange(desc(date)) %>%
-  select(data_fmt, valor, date)
+    valor_usd = number(valor_usd, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+  )
+  
 
-# Dívida externa líquida (código 3685):
-div_liq <- get_series(
-  code = c(valor = 3685),
-  start_date = "1987-01-01"
+div_bruta_pib <- get_series(
+  code = c(valor_pib = 11407),
+  start_date = "1981-01-01"
 ) %>%
   mutate(
-    valor = valor / 1000,
     data_fmt = format(date, "%m/%Y"),
-    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
-  ) %>%
-  arrange(desc(date)) %>%
-  select(data_fmt, valor, date)
+    valor_pib = number(valor_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.1)
+  )
+  
+div_bruta <- left_join(div_bruta_usd,div_bruta_pib) %>% arrange(desc(date)) %>%
+  select(data_fmt, valor_usd, valor_pib, date)
+
+# Dívida externa líquida (códigos 3685 e 11409):
+div_liq_usd <- get_series(
+  code = c(valor_usd = 3685),
+  start_date = "1981-01-01"
+) %>%
+  mutate(
+    valor_usd = valor_usd / 1000,
+    data_fmt = format(date, "%m/%Y"),
+    valor_usd = number(valor_usd, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+  )
+  
+
+div_liq_pib <- get_series(
+  code = c(valor_pib = 11409),
+  start_date = "1981-01-01"
+) %>%
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_pib = number(valor_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.1)
+  )
+  
+div_liq <- left_join(div_liq_usd,div_liq_pib) %>% arrange(desc(date)) %>%
+  select(data_fmt, valor_usd, valor_pib, date)
 
 # Reservas internacionais totais como % da dívida externa total (código FI.RES.TOTL.DT.ZS):
 res_int_div_ext <- WDI(
@@ -385,9 +407,9 @@ trans_cor <- trans_cor %>% mutate(
 ) %>% 
   mutate(
     data_fmt = format(date, "%m/%Y"),
-    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
-    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
-    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
   arrange(desc(date))
 
@@ -414,9 +436,9 @@ bc <- bc %>% mutate(
 ) %>% 
   mutate(
     data_fmt = format(date, "%m/%Y"),
-    valor_exp = number(valor_exp, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
-    valor_imp = number(valor_imp, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
-    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+    valor_exp = number(valor_exp, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_imp = number(valor_imp, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>% select(data_fmt, valor_exp, valor_imp, valor_saldo, date) %>% 
   arrange(desc(date))
 
@@ -443,9 +465,9 @@ bs <- bs %>% mutate(
 ) %>% 
   mutate(
     data_fmt = format(date, "%m/%Y"),
-    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
-    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
-    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
   arrange(desc(date))
 
@@ -472,9 +494,9 @@ rp <- rp %>% mutate(
 ) %>% 
   mutate(
     data_fmt = format(date, "%m/%Y"),
-    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
-    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
-    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
   arrange(desc(date))
 
@@ -501,9 +523,9 @@ rs <- rs %>% mutate(
 ) %>% 
   mutate(
     data_fmt = format(date, "%m/%Y"),
-    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
-    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
-    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
   arrange(desc(date))
 
@@ -530,10 +552,124 @@ cc <- cc %>% mutate(
 ) %>% 
   mutate(
     data_fmt = format(date, "%m/%Y"),
-    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
-    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
-    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
+  arrange(desc(date))
+
+# Conta capital - Ativos não financeiros não produzidos (códigos 22854, 22855 e 22856)
+cc_anfnp_rec <- get_series(
+  code = c(valor_rec = 22855)
+)
+
+cc_anfnp_desp <- get_series(
+  code = c(valor_desp = 22856)
+)
+
+cc_anfnp_saldo <- get_series(
+  code = c(valor_saldo = 22854)
+)
+
+cc_anfnp <- left_join(cc_anfnp_rec, cc_anfnp_desp)
+cc_anfnp <- left_join(cc_anfnp, cc_anfnp_saldo)
+
+cc_anfnp <- cc_anfnp %>% mutate(
+    valor_rec = valor_rec / 1000,
+    valor_desp = valor_desp / 1000,
+    valor_saldo = valor_saldo / 1000
+) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+  ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
+  arrange(desc(date))
+
+# Conta capital - Ativos não financeiros não produzidos (passes de atletas) (códigos 22857, 22858 e 22859)
+cc_anfnp_ps_rec <- get_series(
+  code = c(valor_rec = 22858)
+)
+
+cc_anfnp_ps_desp <- get_series(
+  code = c(valor_desp = 22859)
+)
+
+cc_anfnp_ps_saldo <- get_series(
+  code = c(valor_saldo = 22857)
+)
+
+cc_anfnp_ps <- left_join(cc_anfnp_ps_rec, cc_anfnp_ps_desp)
+cc_anfnp_ps <- left_join(cc_anfnp_ps, cc_anfnp_ps_saldo)
+
+cc_anfnp_ps <- cc_anfnp_ps %>% mutate(
+    valor_rec = valor_rec / 1000,
+    valor_desp = valor_desp / 1000,
+    valor_saldo = valor_saldo / 1000
+) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rec = number(valor_rec, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_desp = number(valor_desp, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+  ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
+  arrange(desc(date))
+
+# Conta financeira (código 22863)
+cf <- get_series(
+  code = c(valor = 22863)
+)
+
+cf <- cf %>% mutate(
+    valor = valor / 1000
+) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+  ) %>% select(data_fmt, valor, date) %>% 
+  arrange(desc(date))
+
+# Investimento direto (códigos 22864, 22865 e 22885)
+
+ide <- get_series(
+  code = c(valor_ide = 22865)
+)
+
+idp <- get_series(
+  code = c(valor_idp = 22885)
+)
+
+id <- get_series(
+  code = c(valor_id = 22864)
+)
+
+inv_dir <- left_join(ide, idp)
+inv_dir <- left_join(inv_dir, id)
+
+inv_dir <- inv_dir %>% mutate(
+    valor_ide = valor_ide / 1000,
+    valor_idp = valor_idp / 1000,
+    valor_id = valor_id / 1000
+) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_ide = number(valor_ide, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_idp = number(valor_idp, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_id = number(valor_id, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+  ) %>% select(data_fmt, valor_ide, valor_idp, valor_id, date) %>% 
+  arrange(desc(date))
+
+# Erros e omissões (código 23060)
+eo <- get_series(
+  code = c(valor = 23060)
+) %>% mutate(
+    valor = valor / 1000
+) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+  ) %>% select(data_fmt, valor, date) %>% 
   arrange(desc(date))
 
 # Índice de commodities - Brasil (códigos 22574 e 29042)
@@ -1282,7 +1418,7 @@ Todos os valores estão em bilhões de dólares.
 
 <br>
 
-**Fonte**: Códigos 22852 (receitas), 22853 (despesas) e 22851 (saldo renda primária) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22852 (receitas), 22853 (despesas) e 22851 (saldo conta capital) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -1395,13 +1531,446 @@ reactable(
 
 # - Conta capital (Ativos não financeiros não produzidos) {data-navmenu="Balanço de pagamentos"}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+A **conta capital (ativos não financeiros não produzidos)** inclui ativos intangíveis não produzidos e terrenos e outros ativos materiais não produzidos que podem ser usados na produção de bens e serviços. 
+
+<br> 
+
+Todos os valores estão em bilhões de dólares.
+
+<br>
+
+**Fonte**: Códigos 22855 (receitas), 22856 (despesas) e 22855 (saldo conta capital (ativos não financeiros não produzidos)) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Receitas (1)
+```{r}
+plot_ly(
+  data = cc_anfnp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rec)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Despesas (2)
+```{r}
+plot_ly(
+  data = cc_anfnp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_desp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Saldo da conta capital (ativos não financeiros não produzidos) (3) (1-2)
+```{r}
+plot_ly(
+  data = cc_anfnp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_saldo)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese conta capital (ativos não financeiros não produzidos) (US$ bilhões)
+```{r}
+reactable(
+  cc_anfnp[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rec = colDef(
+      name = "Receitas (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_desp = colDef(
+      name = "Despesas (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo = colDef(
+      name = "Saldo conta capital (ativos não financeiros não produzidos) (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # - Conta capital (Ativos não financeiros não produzidos - Passes de atletas) {data-navmenu="Balanço de pagamentos"}
 
-# - Conta capital (Transferências de capital) {data-navmenu="Balanço de pagamentos"}
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+A **conta capital (ativos não financeiros não produzidos - passes de atletas)** registra as transações de compra e venda de passes de atletas profissionais realizadas entre residentes e não-residentes.
+<br> 
+
+Todos os valores estão em bilhões de dólares.
+
+<br>
+
+**Fonte**: Códigos 22858 (receitas), 22859 (despesas) e 22857 (saldo conta capital (ativos não financeiros não produzidos - passes de atletas)) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Receitas (1)
+```{r}
+plot_ly(
+  data = cc_anfnp_ps, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rec)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Despesas (2)
+```{r}
+plot_ly(
+  data = cc_anfnp_ps, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_desp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Saldo da conta capital (ativos não financeiros não produzidos - passes de atletas) (3) (1-2)
+```{r}
+plot_ly(
+  data = cc_anfnp_ps, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_saldo)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese conta capital (ativos não financeiros não produzidos - passes de atletas) (US$ bilhões)
+```{r}
+reactable(
+  cc_anfnp_ps[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rec = colDef(
+      name = "Receitas (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_desp = colDef(
+      name = "Despesas (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo = colDef(
+      name = "Saldo conta capital (ativos não financeiros não produzidos - passes de atletas) (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # Conta financeira {data-navmenu="Balanço de pagamentos"}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+A **conta financeira** registra fluxos decorrentes de transações com ativos e passivos financeiros entre residentes e não residentes, sendo dividida em cinco grupos funcionais: investimento direto, investimentos em carteira, derivativos financeiros (exclusive reservas) e opções de compra de ações por parte de empregados, outros investimentos e ativos de reserva. Cada conta é desdobrada em ativos e passivos, ou seja, há um item destinado a registrar fluxos envolvendo ativos externos detidos por residentes no Brasil e outro para registrar a emissão de passivos por residentes cujo credor é não residente.
+
+<br> 
+
+Todos os valores estão em bilhões de dólares.
+
+<br>
+
+Obs.: Valores negativos indicam entrada líquida de recursos no país.
+
+<br>
+
+**Fonte**: Código 22863 do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Conta financeira
+```{r}
+plot_ly(
+  data = cf, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese conta financeira (US$ bilhões)
+```{r}
+reactable(
+  cf[, -3],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Conta financeira",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # - Conta financeira (Investimento direto) {data-navmenu="Balanço de pagamentos"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+**Investimento direto no exterior (IDE)** registra os fluxos financeiros de ativos externos detidos por residentes brasileiros, nos quais os agentes institucionais possuem uma relação de controle ou forte poder de influência entre si. Divide-se em dois instrumentos principais: participação no capital e operações intercompanhia.
+
+**Investimento direto no país (IDP)** registra os fluxos financeiros de passivos emitidos por residentes brasileiros para credores não residentes, nos quais os agentes institucionais possuem uma relação de controle ou forte poder de influência entre si. Divide-se em dois instrumentos principais: participação no capital e operações intercompanhia.
+
+**Investimento direto** representa o fluxo líquido entre os investimentos diretos no exterior (ativos) e os investimentos diretos no país (passivos).
+
+<br> 
+
+Todos os valores estão em bilhões de dólares.
+
+<br>
+
+Obs.: Valores negativos indicam entrada líquida de recursos no país.
+
+<br>
+
+**Fonte**: Códigos 22865 (IDE), 22885 (IDP) e 22864 (investimento direto líquido) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Investimento direto no exterior (IDE) (1)
+```{r}
+plot_ly(
+  data = inv_dir, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_ide)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Investimento direto no país (IDP) (2)
+```{r}
+plot_ly(
+  data = inv_dir, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_idp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Investimento direto líquido (3) (1-2)
+```{r}
+plot_ly(
+  data = inv_dir, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_id)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Investimento direto líquido (US$ bilhões)
+
+```{r}
+reactable(
+  inv_dir[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ide = colDef(
+      name = "Investimento direto no exterior (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_idp = colDef(
+      name = "Investimento direto no país (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_id = colDef(
+      name = "Investimento direto líquido (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # - Conta financeira (Investimentos em carteira) {data-navmenu="Balanço de pagamentos"}
 
@@ -1410,6 +1979,76 @@ reactable(
 # - Conta financeira (Ativos de reserva) {data-navmenu="Balanço de pagamentos"}
 
 # Erros e omissões {data-navmenu="Balanço de pagamentos"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+As partidas a crédito e a débito lançadas no balanço de pagamentos provêm de diversas fontes de informações, gerando, na prática, total líquido diferente de zero. A principal razão está nas discrepâncias temporais das diversas origens dos dados utilizados. Com isso, torna-se necessário o lançamento de partida equilibradora para o balanceamento das contas. Os **erros e omissões** se prestam, portanto, a compensar toda sobrestimação ou subestimação dos componentes registrados. É uma conta residual, portanto.
+
+Todos os valores estão em bilhões de dólares.
+
+<br>
+
+**Fonte**: Código 23060 do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Erros e omissões
+```{r}
+plot_ly(
+  data = eo, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese erros e omissões (US$ bilhões)
+```{r}
+reactable(
+  eo[, -3],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Erros e omissões",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # Índice de commodities - Brasil {data-navmenu="Commodities"}
 
@@ -2128,7 +2767,7 @@ Column {data-width=400} {.tabset}
 plot_ly(
   data = div_bruta, 
   x = ~date, 
-  y = ~as.numeric(gsub(",", ".", valor)),
+  y = ~as.numeric(gsub(",", ".", valor_usd)),
   type = "scatter",
   mode = "lines",
   fill = "tozeroy"
@@ -2139,22 +2778,41 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
+### Dívida externa bruta (% PIB)
+```{r}
+plot_ly(
+  data = div_bruta, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_pib)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese dívida externa bruta (US$ bilhões)
+### Síntese dívida externa bruta
 
 ```{r}
 reactable(
-  div_bruta[, -3],
+  div_bruta[, -4],
   columns = list(
     data_fmt = colDef(
       name = "Trimestre",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor = colDef(
-      name = "Dívida externa bruta",
+    valor_usd = colDef(
+      name = "Dívida externa bruta (US$ bilhões)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_pib = colDef(
+      name = "Dívida externa bruta (% PIB)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -2195,7 +2853,7 @@ Column {data-width=400} {.tabset}
 plot_ly(
   data = div_liq, 
   x = ~date, 
-  y = ~as.numeric(gsub(",", ".", valor)),
+  y = ~as.numeric(gsub(",", ".", valor_usd)),
   type = "scatter",
   mode = "lines",
   fill = "tozeroy"
@@ -2206,22 +2864,41 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
+### Dívida externa liq (% PIB)
+```{r}
+plot_ly(
+  data = div_liq, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_pib)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese dívida externa líquida (US$ bilhões)
+### Síntese dívida externa líquida
 
 ```{r}
 reactable(
-  div_liq[, -3],
+  div_liq[, -4],
   columns = list(
     data_fmt = colDef(
       name = "Trimestre",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor = colDef(
-      name = "Dívida externa líquida",
+    valor_usd = colDef(
+      name = "Dívida externa líquida (US$ bilhões)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_pib = colDef(
+      name = "Dívida externa líquida (% PIB)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
