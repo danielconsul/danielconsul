@@ -1,5 +1,5 @@
 ---
-title: "Contas externas brasileiras"
+title: "Variáveis externas brasileiras"
 output: 
   flexdashboard::flex_dashboard:
     social: [ "menu" ]
@@ -70,41 +70,43 @@ cambio_nom <- cambio_nom %>%
   arrange(desc(date)) %>%
   select(data_fmt, valor, var_mg, date)
 
-# Taxa de câmbio real (IPCA) - Jun/1994 = 100 - Dólar americano (código 11753):
+# Taxa de câmbio real (IPCA) - Jun/1994 = 100 - (códigos 11753 e 11752):
 cambio_real_dol <- get_series(
-  code = c(valor = 11753),
+  code = c(valor_dol = 11753),
   start_date = "1994-07-01"
 ) %>%
   mutate(
-    var_mg = (valor / lag(valor) - 1) * 100,
-    var_12m = (valor / lag(valor, 12) - 1) * 100
+    var_mg_dol = (valor_dol / lag(valor_dol) - 1) * 100,
+    var_12m_dol = (valor_dol / lag(valor_dol, 12) - 1) * 100
   ) %>%
   mutate(
     data_fmt = format(date, "%m/%Y"),
-    valor = number(valor, decimal.mark = ",", accuracy = 0.01),
-    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
-    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
-  ) %>%
-  arrange(desc(date)) %>%
-  select(data_fmt, valor, var_mg, var_12m, date)
+    valor_dol = number(valor_dol, decimal.mark = ",", accuracy = 0.01),
+    var_mg_dol = number(var_mg_dol, decimal.mark = ",", accuracy = 0.01),
+    var_12m_dol = number(var_12m_dol, decimal.mark = ",", accuracy = 0.01)
+  )
 
-# Taxa de câmbio real efetiva (IPCA) - Jun/1994 = 100  (código 11752):
 cambio_real_efet <- get_series(
-  code = c(valor = 11752),
+  code = c(valor_efet = 11752),
   start_date = "1994-07-01"
 ) %>%
   mutate(
-    var_mg = (valor / lag(valor) - 1) * 100,
-    var_12m = (valor / lag(valor, 12) - 1) * 100
+    var_mg_efet = (valor_efet / lag(valor_efet) - 1) * 100,
+    var_12m_efet = (valor_efet / lag(valor_efet, 12) - 1) * 100
   ) %>%
   mutate(
     data_fmt = format(date, "%m/%Y"),
-    valor = number(valor, decimal.mark = ",", accuracy = 0.01),
-    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
-    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
-  ) %>%
+    valor_efet = number(valor_efet, decimal.mark = ",", accuracy = 0.01),
+    var_mg_efet = number(var_mg_efet, decimal.mark = ",", accuracy = 0.01),
+    var_12m_efet = number(var_12m_efet, decimal.mark = ",", accuracy = 0.01)
+  )
+
+cambio_real <- left_join(cambio_real_dol, cambio_real_efet)
+
+cambio_real <- cambio_real %>%
   arrange(desc(date)) %>%
-  select(data_fmt, valor, var_mg, var_12m, date)
+  select(data_fmt, valor_dol, var_mg_dol, var_12m_dol,
+         valor_efet, var_mg_efet, var_12m_efet, date)
 
 # Reservas internacionais (código 3546):
 res_int <- get_series(
@@ -560,6 +562,87 @@ commod <- left_join(commod_bra, commod_usd) %>%
     valor_usd_12m = number(valor_usd_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
   ) %>% select(data_fmt, valor_rs, valor_rs_mg, valor_rs_12m, valor_usd, valor_usd_mg, valor_usd_12m, date) %>% 
   arrange(desc(date))
+
+# Índice de commodities - Agropecuária (códigos 22574 e 29042)
+commod_agrop <- get_series(
+  code = c(valor_rs = 27575)
+) %>% mutate(
+  valor_rs_mg = (valor_rs/lag(valor_rs) - 1) * 100,
+  valor_rs_12m = (valor_rs/lag(valor_rs, 12) - 1) * 100
+)
+
+commod_usd_agrop <- get_series(
+  code = c(valor_usd = 29041)
+) %>% mutate(
+  valor_usd_mg = (valor_usd/lag(valor_usd) - 1) * 100,
+  valor_usd_12m = (valor_usd/lag(valor_usd, 12) - 1) * 100
+)
+
+commod_agrop <- left_join(commod_agrop, commod_usd_agrop) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rs = number(valor_rs, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rs_mg = number(valor_rs_mg, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rs_12m = number(valor_rs_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_usd = number(valor_usd, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_usd_mg = number(valor_usd_mg, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_usd_12m = number(valor_usd_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rs, valor_rs_mg, valor_rs_12m, valor_usd, valor_usd_mg, valor_usd_12m, date) %>% 
+  arrange(desc(date))
+
+# Índice de commodities - Metal (códigos 27576 e 29040)
+commod_metal <- get_series(
+  code = c(valor_rs = 27576)
+) %>% mutate(
+  valor_rs_mg = (valor_rs/lag(valor_rs) - 1) * 100,
+  valor_rs_12m = (valor_rs/lag(valor_rs, 12) - 1) * 100
+)
+
+commod_usd_metal <- get_series(
+  code = c(valor_usd = 29040)
+) %>% mutate(
+  valor_usd_mg = (valor_usd/lag(valor_usd) - 1) * 100,
+  valor_usd_12m = (valor_usd/lag(valor_usd, 12) - 1) * 100
+)
+
+commod_metal <- left_join(commod_metal, commod_usd_metal) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rs = number(valor_rs, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rs_mg = number(valor_rs_mg, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rs_12m = number(valor_rs_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_usd = number(valor_usd, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_usd_mg = number(valor_usd_mg, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_usd_12m = number(valor_usd_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rs, valor_rs_mg, valor_rs_12m, valor_usd, valor_usd_mg, valor_usd_12m, date) %>% 
+  arrange(desc(date))
+
+# Índice de commodities - Energia (códigos 27577 e 29039)
+commod_energia <- get_series(
+  code = c(valor_rs = 27577)
+) %>% mutate(
+  valor_rs_mg = (valor_rs/lag(valor_rs) - 1) * 100,
+  valor_rs_12m = (valor_rs/lag(valor_rs, 12) - 1) * 100
+)
+
+commod_usd_energia <- get_series(
+  code = c(valor_usd = 29039)
+) %>% mutate(
+  valor_usd_mg = (valor_usd/lag(valor_usd) - 1) * 100,
+  valor_usd_12m = (valor_usd/lag(valor_usd, 12) - 1) * 100
+)
+
+commod_energia <- left_join(commod_energia, commod_usd_energia) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rs = number(valor_rs, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rs_mg = number(valor_rs_mg, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rs_12m = number(valor_rs_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_usd = number(valor_usd, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_usd_mg = number(valor_usd_mg, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_usd_12m = number(valor_usd_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rs, valor_rs_mg, valor_rs_12m, valor_usd, valor_usd_mg, valor_usd_12m, date) %>% 
+  arrange(desc(date))
 ```
 
 # Visão geral
@@ -589,376 +672,6 @@ Columns {data-width=750}
 
 ```{r, out.width="90%", fig.align='center', vertical_layout = fill}
 knitr::include_graphics("visao_geral.png")
-```
-
-# Taxa de câmbio nominal {data-navmenu="Taxa de câmbio"}
-
-Column {.sidebar} {data-width=200}
------------------------------------------------------------------------
-
-Série diária do **dólar comercial nominal (venda)**. Taxas administradas e livres.
-
-<br>
-
-**Fonte:** Código 1 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
-
-Column {data-width=400} {.tabset}
------------------------------------------------------------------------
-
-### Taxa de câmbio (R$)
-
-```{r}
-plot_ly(
-  data = cambio_nom, 
-  x = ~date, 
-  y = ~valor, 
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = " ", dtick = 30)
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-Column {data-width=400}  {.tabset}
------------------------------------------------------------------------
-
-### Síntese taxa de câmbio nominal
-
-```{r, results='asis'}
-reactable(
-  cambio_nom[, -4],
-  columns = list(
-    data_fmt = colDef(
-      name = "Data",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor = colDef(
-      name = "Taxa de câmbio (R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    var_mg = colDef(
-      name = "Variação diária (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",  # texto
-    backgroundColor = "white",  # fundo
-    borderColor = "black",  # bordas
-    stripedColor = "#D6EAF8",  # faixas alternadas
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-# Taxa de câmbio real (dólar americano) {data-navmenu="Taxa de câmbio"} 
-
-Column {.sidebar} {data-width=200}
------------------------------------------------------------------------
-
-A série mensal **taxa de câmbio real** reflete a variação da moeda nacional em relação ao dólar americano, corrigida pelo diferencial entre as inflações do país (IPCA) e do país estrangeiro (IPC). Jun/1994 = 100.
-
-<br>
-
-**Fonte:** Código 11752 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
-
-Column {data-width=400} {.tabset}
------------------------------------------------------------------------
-
-### Taxa de câmbio real (dólar americano) - Índice jun/1994 = 100
-```{r}
-plot_ly(
-  data = cambio_real_dol, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", valor)), 
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = " ")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-### Variação mensal (%)
-```{r}
-plot_ly(
-  data = cambio_real_dol, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", var_mg)), 
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = " ")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-### Variação em 12 meses (%)
-```{r}
-plot_ly(
-  data = cambio_real_dol, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", var_12m)), 
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = " ", dtick = 10)
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-Column {data-width=400}  {.tabset}
------------------------------------------------------------------------
-
-### Síntese taxa de câmbio real
-
-```{r}
-reactable(
-  cambio_real_dol[, -5],
-  columns = list(
-    data_fmt = colDef(
-      name = "Data",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor = colDef(
-      name = "Câmbio real",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    var_mg = colDef(
-      name = "Variação mensal (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    var_12m = colDef(
-      name = "Variação em 12 meses (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-# Taxa de câmbio real efetiva {data-navmenu="Taxa de câmbio"} 
-
-Column {.sidebar} {data-width=200}
------------------------------------------------------------------------
-
-A série mensal **taxa de câmbio real efetiva** é gerada a partir do cálculo da taxa de câmbio real em relação a um conjunto de países e moedas (uma cesta de países e moedas), em geral escolhidos conforme sua importância no comércio exterior, em vez de realizar o cálculo restrito a uma única relação bilateral. Jun/1994 = 100.
-
-<br>
-
-**Fonte:** Código 11753 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
-
-Column {data-width=400} {.tabset}
------------------------------------------------------------------------
-
-### Taxa de câmbio real efetiva - Índice jun/1994 = 100
-```{r}
-plot_ly(
-  data = cambio_real_efet, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", valor)), 
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = " ")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-### Variação mensal (%)
-```{r}
-plot_ly(
-  data = cambio_real_efet, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", var_mg)), 
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = " ")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-### Variação em 12 meses (%)
-```{r}
-plot_ly(
-  data = cambio_real_efet, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", var_12m)), 
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = " ", dtick = 10)
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-Column {data-width=400}  {.tabset}
------------------------------------------------------------------------
-
-### Síntese taxa de câmbio real efetiva
-
-```{r}
-reactable(
-  cambio_real_efet[, -5],
-  columns = list(
-    data_fmt = colDef(
-      name = "Data",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor = colDef(
-      name = "Câmbio real",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    var_mg = colDef(
-      name = "Variação mensal (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    var_12m = colDef(
-      name = "Variação em 12 meses (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-
-# Movimento de câmbio contratado {data-navmenu="Taxa de câmbio"}
-
-Column {.sidebar} {data-width=250}
------------------------------------------------------------------------
-
-**Câmbio contratado comercial (exportações):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportações de bens. Código 13962 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB).
-
-**Câmbio contratado comercial (importações):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais ao mercado não financeiro relativas a importações de bens. Código 13966 no SGST/BCB.
-
-**Câmbio contratado comercial (saldo):** Resultado líquido de contratações de câmbio comercial de exportação e de importação. Código 13967 no SGST/BCB.
-
-**Câmbio contratado financeiro (compras):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportação de serviços e ingressos de capitais estrangeiros ou retorno de capitais brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Código 13968 no SGST/BCB.
-
-**Câmbio contratado financeiro (vendas):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a importação de serviços e saídas de capitais estrangeiros ou brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Código 13969 no SGST/BCB.
-
-**Câmbio contratado financeiro (saldo):** Resultado líquido de contratações de câmbio financeiro de compra e venda. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Código 13970 no SGST/BCB.
-
-Todos os valores estão em milhões de dólares.
-
-Column {data-width=750}  {.tabset}
------------------------------------------------------------------------
-
-### Síntese câmbio contratado (US$ milhões)
-```{r, results='asis'}
-reactable(
-  cambio_contratado[, -9],
-  columns = list(
-    data_fmt = colDef(
-      name = "Data",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_exp = colDef(
-      name = "Comercial exportação (1)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_imp = colDef(
-      name = "Comercial importação (2)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_saldo_com = colDef(
-      name = "Saldo comercial (3) (1-2)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_compra = colDef(
-      name = "Financeiro compra (4)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_venda = colDef(
-      name = "Financeiro venda (5)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_saldo_financ = colDef(
-      name = "Saldo financeiro (6) (4-5)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_saldo_total = colDef(
-      name = "Saldo câmbio contratado (7) (3+6)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
 ```
 
 # Transações correntes {data-navmenu="Balanço de pagamentos"}
@@ -1075,7 +788,7 @@ reactable(
 )
 ```
 
-# Balança comercial (bens) {data-navmenu="Balanço de pagamentos"}
+# - Balança comercial (bens) {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -1184,17 +897,17 @@ reactable(
 )
 ```
 
-# Exportações {data-navmenu="Balanço de pagamentos"}
+# - - Exportações {data-navmenu="Balanço de pagamentos"}
 ```{r}
 
 ```
 
-# Importações {data-navmenu="Balanço de pagamentos"}
+# - - Importações {data-navmenu="Balanço de pagamentos"}
 ```{r}
 
 ```
 
-# Balança de serviços {data-navmenu="Balanço de pagamentos"}
+# - Balança de serviços {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -1308,7 +1021,7 @@ reactable(
 )
 ```
 
-# Renda primária {data-navmenu="Balanço de pagamentos"}
+# - Renda primária {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -1432,7 +1145,7 @@ reactable(
 )
 ```
 
-# Renda secundária {data-navmenu="Balanço de pagamentos"}
+# - Renda secundária {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -1698,6 +1411,837 @@ reactable(
 
 # Erros e omissões {data-navmenu="Balanço de pagamentos"}
 
+# Índice de commodities - Brasil {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+ 	
+O **Índice de commodities - Brasil** (IC-Br) exprime a média mensal ponderada dos preços em reais e em dólares das commodities relevantes para a dinâmica da inflação brasileira. O IC-Br agrega de forma ponderada os indicadores relativos aos segmentos Agropecuária (série 27575), Metal (série 27576) e Energia (série 27577). Dez/2005 = 100.
+
+<br> 
+
+Tomando como base o mês de janeiro de 2024, os pesos para cada commodity no índice são os seguintes:
+
+Boi Gordo: 21,54%;
+Brent: 12,35%;
+Açúcar: 7,37%;
+Milho: 6,27%;
+Óleo de soja: 6,17%;
+Algodão: 6,11%;
+Suco de Laranja: 4,69%;
+Café: 4,25%;
+Estanho: 4,06%;
+Arroz: 3,82%;
+Cacau: 3,25%;
+Alumínio: 3,24%;
+Carvão: 2,95%.
+Trigo: 2,18%;
+Prata: 2,11%;
+Zinco: 2,10%;
+Gas Natural: 2,05%;
+Cobre: 1,60%;
+Porco: 1,34%;
+Chumbo: 1,12%;
+Minério de Ferro: 0,52%;
+Niquel: 0,50%;
+Ouro: 0,42%.
+
+<br>
+
+**Fonte:** Códigos 27574 (real) e 29042 (dólar) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### IC-Br (real e dólar) - Dez/2005 = 100
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br (real)"
+  ) %>%
+  add_trace(
+    data = commod,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br (dólar)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = " ", autorange = TRUE),
+    legend = list(
+      orientation = "h",  # horizontal
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Var. mensal (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs_mg)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br (real)"
+  ) %>%
+  add_trace(
+    data = commod,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd_mg)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br (dólar)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = " ", autorange = TRUE),
+    legend = list(
+      orientation = "h",  # horizontal
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Var. em 12 meses (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs_12m)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br (real)"
+  ) %>%
+  add_trace(
+    data = commod,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd_12m)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br (dólar)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = " ", autorange = TRUE),
+    legend = list(
+      orientation = "h",  # horizontal
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese IC-Br
+
+```{r}
+reactable(
+  commod[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs = colDef(
+      name = "IC-Br (reais)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs_mg = colDef(
+      name = "IC-Br (reais) - Var. mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs_12m = colDef(
+      name = "IC-Br (reais) - Var. em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd = colDef(
+      name = "IC-Br (dólar)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd_mg = colDef(
+      name = "IC-Br (dólar) - Var. mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd_12m = colDef(
+      name = "IC-Br (dólar) - Var. em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Índice de commodities - IC-Br Agropecuária {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+ 	
+O **IC-Br Agropecuária** é um subíndice do IC-Br (série 27574). É uma média mensal ponderada dos preços em reais de boi gordo, algodão, óleo de soja, trigo, açúcar, milho, café, arroz, porco, suco de laranja e cacau. Dez/2005 = 100.
+
+**Fonte:** Códigos 27575 (real) e 29041 (dólar) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### IC-Br Agropecuária (real e dólar) - Dez/2005 = 100
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod_agrop,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Agropecuária (real)"
+  ) %>%
+  add_trace(
+    data = commod_agrop,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Agropecuária (dólar)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = " ", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Var. mensal (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod_agrop,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs_mg)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Agropecuária (real)"
+  ) %>%
+  add_trace(
+    data = commod_agrop,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd_mg)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Agropecuária (dólar)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = " ", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Var. em 12 meses (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod_agrop,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs_12m)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Agropecuária (real)"
+  ) %>%
+  add_trace(
+    data = commod_agrop,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd_12m)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Agropecuária (dólar)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = " ", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese IC-Br Agropecuária
+
+```{r}
+reactable(
+  commod_agrop[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs = colDef(
+      name = "IC-Br Agropecuária (reais)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs_mg = colDef(
+      name = "IC-Br Agropecuária (reais) - Var. mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs_12m = colDef(
+      name = "IC-Br Agropecuária (reais) - Var. em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd = colDef(
+      name = "IC-Br Agropecuária (dólar)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd_mg = colDef(
+      name = "IC-Br Agropecuária (dólar) - Var. mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd_12m = colDef(
+      name = "IC-Br Agropecuária (dólar) - Var. em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Índice de commodities - IC-Br Metal {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+ 	
+O **IC-Br Metal** é um subíndice do IC-Br (série 27574). É uma média mensal ponderada dos preços em reais de alumínio, minério de ferro, cobre, estanho, zinco, chumbo, níquel, ouro e prata. Dez/2005 = 100.
+
+**Fonte:** Códigos 27576 (real) e 29040 (dólar) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### IC-Br Metal (real e dólar) - Dez/2005 = 100
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod_metal,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Metal (real)"
+  ) %>%
+  add_trace(
+    data = commod_metal,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Metal (dólar)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = " ", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Var. mensal (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod_metal,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs_mg)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Metal (real)"
+  ) %>%
+  add_trace(
+    data = commod_metal,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd_mg)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Metal (dólar)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = " ", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Var. em 12 meses (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod_metal,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs_12m)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Metal (real)"
+  ) %>%
+  add_trace(
+    data = commod_metal,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd_12m)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Metal (dólar)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = " ", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese IC-Br Metal
+
+```{r}
+reactable(
+  commod_metal[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs = colDef(
+      name = "IC-Br Metal (reais)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs_mg = colDef(
+      name = "IC-Br Metal (reais) - Var. mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs_12m = colDef(
+      name = "IC-Br Metal (reais) - Var. em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd = colDef(
+      name = "IC-Br Metal (dólar)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd_mg = colDef(
+      name = "IC-Br Metal (dólar) - Var. mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd_12m = colDef(
+      name = "IC-Br Metal (dólar) - Var. em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Índice de commodities - IC-Br Energia {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+ 	
+O **IC-Br Energia** é um subíndice do IC-Br (série 27574). É uma média mensal ponderada dos preços em reais de petróleo Brent, gás natural e carvão. Dez/2005 = 100.
+
+**Fonte:** Códigos 27577 (real) e 29039 (dólar) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### IC-Br Energia (real e dólar) - Dez/2005 = 100
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod_energia,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Energia (real)"
+  ) %>%
+  add_trace(
+    data = commod_metal,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Energia (dólar)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = " ", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Var. mensal (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod_energia,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs_mg)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Energia (real)"
+  ) %>%
+  add_trace(
+    data = commod_metal,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd_mg)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Energia (dólar)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = " ", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Var. em 12 meses (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod_energia,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs_12m)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Energia (real)"
+  ) %>%
+  add_trace(
+    data = commod_energia,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd_12m)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Energia (dólar)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = " ", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese IC-Br Energia
+
+```{r}
+reactable(
+  commod_energia[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs = colDef(
+      name = "IC-Br Energia (reais)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs_mg = colDef(
+      name = "IC-Br Energia (reais) - Var. mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs_12m = colDef(
+      name = "IC-Br Energia (reais) - Var. em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd = colDef(
+      name = "IC-Br Energia (dólar)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd_mg = colDef(
+      name = "IC-Br Energia (dólar) - Var. mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd_12m = colDef(
+      name = "IC-Br Energia (dólar) - Var. em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Dívida externa bruta {data-navmenu="Dívida externa"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+A série trimestral **dívida externa bruta** compreende o total apurado em determinada data dos débitos contratuais efetivamente desembolsados e ainda não quitados, devidos por residentes de uma economia aos não residentes, quando houver a obrigatoriedade de pagamento de principal e/ou juros em algum(s) ponto(s) no futuro. O valor de mercado da dívida externa bruta impacta os valores a partir de dezembro de 2011 e abrange os títulos de dívida emitidos pela República no mercado internacional, ajustados segundo seu preço de mercado, e os demais instrumentos e emissores de dívida externa, apurados em valor nominal.
+
+<br>
+
+**Fonte:** Código 3684 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Dívida externa bruta (US$ bilhões)
+```{r}
+plot_ly(
+  data = div_bruta, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese dívida externa bruta (US$ bilhões)
+
+```{r}
+reactable(
+  div_bruta[, -3],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Dívida externa bruta",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Dívida externa líquida {data-navmenu="Dívida externa"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+A série trimestral **dívida externa líquida** refere-se à dívida externa bruta excluindo do cálculo os ativos de reservas, os haveres de bancos comerciais e os créditos brasileiros no exterior.
+
+<br>
+
+**Fonte:** Código 3685 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Dívida externa líquida (US$ bilhões)
+```{r}
+plot_ly(
+  data = div_liq, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese dívida externa líquida (US$ bilhões)
+
+```{r}
+reactable(
+  div_liq[, -3],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Dívida externa líquida",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # Reservas internacionais
 
@@ -1915,52 +2459,57 @@ reactable(
 )
 ```
 
-# Dívida externa bruta {data-navmenu="Dívida externa"}
+# Taxa de câmbio nominal {data-navmenu="Taxa de câmbio"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-A série trimestral **dívida externa bruta** compreende o total apurado em determinada data dos débitos contratuais efetivamente desembolsados e ainda não quitados, devidos por residentes de uma economia aos não residentes, quando houver a obrigatoriedade de pagamento de principal e/ou juros em algum(s) ponto(s) no futuro. O valor de mercado da dívida externa bruta impacta os valores a partir de dezembro de 2011 e abrange os títulos de dívida emitidos pela República no mercado internacional, ajustados segundo seu preço de mercado, e os demais instrumentos e emissores de dívida externa, apurados em valor nominal.
+Série diária do **dólar comercial nominal (venda)**. Taxas administradas e livres.
 
 <br>
 
-**Fonte:** Código 3684 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte:** Código 1 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Dívida externa bruta (US$ bilhões)
+### Taxa de câmbio (R$)
+
 ```{r}
 plot_ly(
-  data = div_bruta, 
+  data = cambio_nom, 
   x = ~date, 
-  y = ~as.numeric(gsub(",", ".", valor)),
+  y = ~valor, 
   type = "scatter",
-  mode = "lines",
-  fill = "tozeroy"
+  mode = "lines"
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = " ", dtick = 30)
   ) %>% rangeslider(thickness = 0.05)
 ```
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese dívida externa bruta (US$ bilhões)
+### Síntese taxa de câmbio nominal
 
-```{r}
+```{r, results='asis'}
 reactable(
-  div_bruta[, -3],
+  cambio_nom[, -4],
   columns = list(
     data_fmt = colDef(
-      name = "Trimestre",
+      name = "Data",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor = colDef(
-      name = "Dívida externa bruta",
+      name = "Taxa de câmbio (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação diária (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -1971,10 +2520,10 @@ reactable(
   resizable = TRUE,
   defaultPageSize = 25,
   theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
+    color = "black",  # texto
+    backgroundColor = "white",  # fundo
+    borderColor = "black",  # bordas
+    stripedColor = "#D6EAF8",  # faixas alternadas
     cellPadding = "8px 12px",
     style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
     headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
@@ -1982,139 +2531,44 @@ reactable(
 )
 ```
 
-# Dívida externa líquida {data-navmenu="Dívida externa"}
+# Taxa de câmbio real {data-navmenu="Taxa de câmbio"} 
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-A série trimestral **dívida externa líquida** refere-se à dívida externa bruta excluindo do cálculo os ativos de reservas, os haveres de bancos comerciais e os créditos brasileiros no exterior.
+A série mensal **taxa de câmbio real** reflete a variação da moeda nacional em relação a uma moeda ou a uma cesta de moedas estrangeiras (geralmente ponderada pelo fluxo de comércio exterior), corrigida pelo diferencial entre as inflações doméstica (IPCA) e externa. Jun/1994 = 100.
 
 <br>
 
-**Fonte:** Código 3685 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte:** Códigos 11752 (dólar americano) e 11753 (efetiva) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Dívida externa líquida (US$ bilhões)
-```{r}
-plot_ly(
-  data = div_liq, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", valor)),
-  type = "scatter",
-  mode = "lines",
-  fill = "tozeroy"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = " ")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-Column {data-width=400}  {.tabset}
------------------------------------------------------------------------
-
-### Síntese dívida externa líquida (US$ bilhões)
-
-```{r}
-reactable(
-  div_liq[, -3],
-  columns = list(
-    data_fmt = colDef(
-      name = "Trimestre",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor = colDef(
-      name = "Dívida externa líquida",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-# Índice de commodities - Brasil {data-navmenu="Commodities"}
-
-Column {.sidebar} {data-width=200}
------------------------------------------------------------------------
- 	
-O **Índice de commodities - Brasil** (IC-Br) exprime a média mensal ponderada dos preços em reais e em dólares das commodities relevantes para a dinâmica da inflação brasileira. O IC-Br agrega de forma ponderada os indicadores relativos aos segmentos Agropecuária (série 27575), Metal (série 27576) e Energia (série 27577). Dez/2005 = 100.
-
-<br> 
-
-Tomando como base o mês de janeiro de 2024, os pesos para cada commodity no índice são os seguintes:
-
-Boi Gordo: 21,54%;
-Brent: 12,35%;
-Açúcar: 7,37%;
-Milho: 6,27%;
-Óleo de soja: 6,17%;
-Algodão: 6,11%;
-Suco de Laranja: 4,69%;
-Café: 4,25%;
-Estanho: 4,06%;
-Arroz: 3,82%;
-Cacau: 3,25%;
-Alumínio: 3,24%;
-Carvão: 2,95%.
-Trigo: 2,18%;
-Prata: 2,11%;
-Zinco: 2,10%;
-Gas Natural: 2,05%;
-Cobre: 1,60%;
-Porco: 1,34%;
-Chumbo: 1,12%;
-Minério de Ferro: 0,52%;
-Niquel: 0,50%;
-Ouro: 0,42%.
-
-<br>
-
-**Fonte:** Códigos 27574 (real) e 29042 (dólar) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
-
-Column {data-width=400} {.tabset}
------------------------------------------------------------------------
-
-### IC-Br (real e dólar) - Dez/2005 = 100
+### Taxa de câmbio real - Índice jun/1994 = 100
 ```{r}
 plot_ly() %>%
   add_trace(
-    data = commod,
+    data = cambio_real,
     x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_rs)),
+    y = ~as.numeric(gsub(",", ".", valor_dol)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br (real)"
+    name = "Taxa de câmbio real (USD)"
   ) %>%
   add_trace(
-    data = commod,
+    data = cambio_real,
     x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_usd)),
+    y = ~as.numeric(gsub(",", ".", valor_efet)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br (dólar)"
+    name = "Taxa de câmbio real efetiva"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
     yaxis = list(title = " ", autorange = TRUE),
     legend = list(
-      orientation = "h",  # horizontal
+      orientation = "h",
       x = 0.5,
       y = -0.2,
       xanchor = "center"
@@ -2122,30 +2576,30 @@ plot_ly() %>%
   )
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
-    data = commod,
+    data = cambio_real,
     x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_rs_mg)),
+    y = ~as.numeric(gsub(",", ".", var_mg_dol)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br (real)"
+    name = "Taxa de câmbio real (USD)"
   ) %>%
   add_trace(
-    data = commod,
+    data = cambio_real,
     x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_usd_mg)),
+    y = ~as.numeric(gsub(",", ".", var_mg_efet)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br (dólar)"
+    name = "Taxa de câmbio real efetiva"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
     yaxis = list(title = " ", autorange = TRUE),
     legend = list(
-      orientation = "h",  # horizontal
+      orientation = "h",
       x = 0.5,
       y = -0.2,
       xanchor = "center"
@@ -2153,30 +2607,30 @@ plot_ly() %>%
   )
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
-    data = commod,
+    data = cambio_real,
     x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_rs_12m)),
+    y = ~as.numeric(gsub(",", ".", var_12m_dol)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br (real)"
+    name = "Taxa de câmbio real (USD)"
   ) %>%
   add_trace(
-    data = commod,
+    data = cambio_real,
     x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_usd_12m)),
+    y = ~as.numeric(gsub(",", ".", var_12m_efet)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br (dólar)"
+    name = "Taxa de câmbio real efetiva"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
     yaxis = list(title = " ", autorange = TRUE),
     legend = list(
-      orientation = "h",  # horizontal
+      orientation = "h",
       x = 0.5,
       y = -0.2,
       xanchor = "center"
@@ -2187,44 +2641,44 @@ plot_ly() %>%
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese IC-Br
+### Síntese taxa de câmbio real
 
 ```{r}
 reactable(
-  commod[, -8],
+  cambio_real[, -8],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_rs = colDef(
-      name = "IC-Br (reais)",
+    valor_dol = colDef(
+      name = "Taxa de câmbio real (USD)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_rs_mg = colDef(
-      name = "IC-Br (reais) - Var. mensal (%)",
+    var_mg_dol = colDef(
+      name = "Taxa de câmbio real (USD) -  Var. mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_rs_12m = colDef(
-      name = "IC-Br (reais) - Var. em 12 meses (%)",
+    var_12m_dol = colDef(
+      name = "Taxa de câmbio real (USD) - Var. em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_usd = colDef(
-      name = "IC-Br (dólar)",
+    valor_efet = colDef(
+      name = "Taxa de câmbio real efetiva",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_usd_mg = colDef(
-      name = "IC-Br (dólar) - Var. mensal (%)",
+    var_mg_efet = colDef(
+      name = "Taxa de câmbio real efetiva - Var. mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_usd_12m = colDef(
-      name = "IC-Br (dólar) - Var. em 12 meses (%)",
+    var_12m_efet = colDef(
+      name = "Taxa de câmbio real efetiva - Var. em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -2246,8 +2700,87 @@ reactable(
 )
 ```
 
-# Índice de commodities - IC-Br Agropecuária {data-navmenu="Commodities"}
+# Movimento de câmbio contratado {data-navmenu="Taxa de câmbio"}
 
-# Índice de commodities - IC-Br Metal {data-navmenu="Commodities"}
+Column {.sidebar} {data-width=250}
+-----------------------------------------------------------------------
 
-# Índice de commodities - IC-Br Energia {data-navmenu="Commodities"}
+**Câmbio contratado comercial (exportações):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportações de bens. Código 13962 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB).
+
+**Câmbio contratado comercial (importações):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais ao mercado não financeiro relativas a importações de bens. Código 13966 no SGST/BCB.
+
+**Câmbio contratado comercial (saldo):** Resultado líquido de contratações de câmbio comercial de exportação e de importação. Código 13967 no SGST/BCB.
+
+**Câmbio contratado financeiro (compras):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportação de serviços e ingressos de capitais estrangeiros ou retorno de capitais brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Código 13968 no SGST/BCB.
+
+**Câmbio contratado financeiro (vendas):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a importação de serviços e saídas de capitais estrangeiros ou brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Código 13969 no SGST/BCB.
+
+**Câmbio contratado financeiro (saldo):** Resultado líquido de contratações de câmbio financeiro de compra e venda. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Código 13970 no SGST/BCB.
+
+Todos os valores estão em milhões de dólares.
+
+Column {data-width=750}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese câmbio contratado (US$ milhões)
+```{r, results='asis'}
+reactable(
+  cambio_contratado[, -9],
+  columns = list(
+    data_fmt = colDef(
+      name = "Data",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_exp = colDef(
+      name = "Comercial exportação (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_imp = colDef(
+      name = "Comercial importação (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo_com = colDef(
+      name = "Saldo comercial (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_compra = colDef(
+      name = "Financeiro compra (4)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_venda = colDef(
+      name = "Financeiro venda (5)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo_financ = colDef(
+      name = "Saldo financeiro (6) (4-5)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo_total = colDef(
+      name = "Saldo câmbio contratado (7) (3+6)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
