@@ -33,42 +33,72 @@ library(WDI)
 # Coleta de dados:
 
 # Taxa de câmbio - Livre - Dólar americano (venda):
-cambio_nom1 <- get_series(
-  code = c(valor = 1),
+cambio_venda1 <- get_series(
+  code = c(valor_venda = 1),
   start_date = "1994-07-01",
   end_date = "2002-12-31"
 )
 
-cambio_nom2 <- get_series(
-  code = c(valor = 1),
+cambio_venda2 <- get_series(
+  code = c(valor_venda = 1),
   start_date = "2003-01-01",
   end_date = "2012-12-31"
 )
 
-cambio_nom3 <- get_series(
-  code = c(valor = 1),
+cambio_venda3 <- get_series(
+  code = c(valor_venda = 1),
   start_date = "2013-01-01",
   end_date = "2022-12-31"
 )
 
-cambio_nom4 <- get_series(
-  code = c(valor = 1),
+cambio_venda4 <- get_series(
+  code = c(valor_venda = 1),
   start_date = "2023-01-01"
 )
 
-cambio_nom <- bind_rows(cambio_nom1, cambio_nom2, cambio_nom3, cambio_nom4)
+cambio_compra1 <- get_series(
+  code = c(valor_compra = 10813),
+  start_date = "1994-07-01",
+  end_date = "2002-12-31"
+)
 
-cambio_nom <- cambio_nom %>% 
+cambio_compra2 <- get_series(
+  code = c(valor_compra = 10813),
+  start_date = "2003-01-01",
+  end_date = "2012-12-31"
+)
+
+cambio_compra3 <- get_series(
+  code = c(valor_compra = 10813),
+  start_date = "2013-01-01",
+  end_date = "2022-12-31"
+)
+
+cambio_compra4 <- get_series(
+  code = c(valor_compra = 10813),
+  start_date = "2023-01-01"
+)
+
+cambio_venda <- bind_rows(cambio_venda1, cambio_venda2, cambio_venda3, cambio_venda4)
+cambio_compra <- bind_rows(cambio_compra1, cambio_compra2, cambio_compra3, cambio_compra4)
+
+cambio_nom <- left_join(cambio_venda, cambio_compra)
+
+cambio_nom$cambio_nom <- (cambio_nom$valor_venda + cambio_nom$valor_compra)/2
+
+cambio_nom <- cambio_nom %>%
   mutate(
-    var_mg = (valor / lag(valor) - 1) * 100
-  ) %>%
+    var_mg = (cambio_nom / lag(cambio_nom) - 1) * 100
+  ) %>% 
   mutate(
     data_fmt = format(date, "%d/%m/%Y"),
-    valor = number(valor, decimal.mark = ",", accuracy = 0.01),
+    valor_compra = number(valor_compra, decimal.mark = ",", accuracy = 0.0001),
+    valor_venda = number(valor_venda, decimal.mark = ",", accuracy = 0.0001),
+    cambio_nom = number(cambio_nom, decimal.mark = ",", accuracy = 0.01),
     var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01)
   ) %>%
   arrange(desc(date)) %>%
-  select(data_fmt, valor, var_mg, date)
+  select(data_fmt, valor_compra, valor_venda, cambio_nom, var_mg, date)
 
 # Taxa de câmbio real (IPCA) - Jun/1994 = 100 - (códigos 11753 e 11752):
 cambio_real_dol <- get_series(
@@ -136,7 +166,6 @@ div_bruta_usd <- get_series(
     data_fmt = format(date, "%m/%Y"),
     valor_usd = number(valor_usd, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   )
-  
 
 div_bruta_pib <- get_series(
   code = c(valor_pib = 11407),
@@ -3136,57 +3165,66 @@ reactable(
 )
 ```
 
-# Taxa de câmbio nominal {data-navmenu="Taxa de câmbio"}
+# Taxa de câmbio comercial {data-navmenu="Taxa de câmbio"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-Série diária do **dólar comercial nominal (venda)**. Taxas administradas e livres.
+**Taxa de câmbio comercial (compra e venda) - cotações diárias:** refere-se às taxas administradas até 13 de março de 1990 e às taxas livres a partir dessa data (Resolução 1690, de 18.3.1990). As taxas administradas são aquelas fixadas pelo Banco Central. As taxas livres correspondem à média das taxas efetivas de operações no mercado interbancário, ponderada pelo volume de transações de venda do dia. As transações fechadas em taxas que mais se distanciam da média do mercado (outliers) e aquelas que evidenciam formação artificial de preço ou contrárias às práticas regulares do mercado são excluídas dos cálculos. A partir de março de 1992, essa taxa recebeu a denominação de taxa PTAX (fechamento).
 
 <br>
 
-**Fonte:** Código 1 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte:** Códigos 10813 (compra) e 1 (venda) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Taxa de câmbio (R$)
+### Taxa de câmbio comercial (R$)
 
 ```{r}
 plot_ly(
   data = cambio_nom, 
   x = ~date, 
-  y = ~valor, 
+  y = ~as.numeric(gsub(",", ".", cambio_nom)),
   type = "scatter",
-  mode = "lines"
+  mode = "line"
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ", dtick = 30)
+    yaxis = list(title = " ")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese taxa de câmbio nominal
-
+### Síntese taxa de câmbio comercial
 ```{r, results='asis'}
 reactable(
-  cambio_nom[, -4],
+  cambio_nom[, -6],
   columns = list(
     data_fmt = colDef(
       name = "Data",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor = colDef(
-      name = "Taxa de câmbio (R$)",
+    valor_compra = colDef(
+      name = "Câmbio comercial (compra) (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_venda = colDef(
+      name = "Câmbio comercial (venda) (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    cambio_nom = colDef(
+      name = "Câmbio comercial (média compra e venda) (R$)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     var_mg = colDef(
-      name = "Variação diária (%)",
+      name = "Var. diária câmbio comercial (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -3197,10 +3235,10 @@ reactable(
   resizable = TRUE,
   defaultPageSize = 25,
   theme = reactableTheme(
-    color = "black",  # texto
-    backgroundColor = "white",  # fundo
-    borderColor = "black",  # bordas
-    stripedColor = "#D6EAF8",  # faixas alternadas
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
     cellPadding = "8px 12px",
     style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
     headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
