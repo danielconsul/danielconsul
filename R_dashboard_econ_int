@@ -29,7 +29,7 @@ library(WDI)
 ```
 
 
-```{r}
+```{r, cache=TRUE}
 # Coleta de dados:
 
 # Taxa de câmbio - Livre - Dólar americano (venda):
@@ -189,7 +189,6 @@ div_liq_usd <- get_series(
     data_fmt = format(date, "%m/%Y"),
     valor_usd = number(valor_usd, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   )
-  
 
 div_liq_pib <- get_series(
   code = c(valor_pib = 11409),
@@ -633,9 +632,9 @@ cc_anfnp_ps <- left_join(cc_anfnp_ps_rec, cc_anfnp_ps_desp)
 cc_anfnp_ps <- left_join(cc_anfnp_ps, cc_anfnp_ps_saldo)
 
 cc_anfnp_ps <- cc_anfnp_ps %>% mutate(
-    valor_rec = valor_rec / 1000,
-    valor_desp = valor_desp / 1000,
-    valor_saldo = valor_saldo / 1000
+    valor_rec = valor_rec / 1000 * 1000,
+    valor_desp = valor_desp / 1000 * 1000,
+    valor_saldo = valor_saldo / 1000 * 1000
 ) %>% 
   mutate(
     data_fmt = format(date, "%m/%Y"),
@@ -660,7 +659,6 @@ cf <- cf %>% mutate(
   arrange(desc(date))
 
 # Investimento direto (códigos 22864, 22865 e 22885)
-
 ide <- get_series(
   code = c(valor_ide = 22865)
 )
@@ -687,6 +685,49 @@ inv_dir <- inv_dir %>% mutate(
     valor_idp = number(valor_idp, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
     valor_id = number(valor_id, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>% select(data_fmt, valor_ide, valor_idp, valor_id, date) %>% 
+  arrange(desc(date))
+
+# Investimento em carteira (código 22905)
+inv_cart <- get_series(
+  code = c(valor = 22905)
+)
+
+inv_cart <- inv_cart %>% mutate(
+    valor = valor / 1000
+) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+  ) %>% select(data_fmt, valor, date) %>% 
+  arrange(desc(date))
+
+# Conta financeira (outros investimentos) (códigos 22969, 22970 e 22971)
+outros_inv_ativos <- get_series(
+  code = c(valor_outros_inv_ativos = 22970)
+)
+
+outros_inv_passivos <- get_series(
+  code = c(valor_outros_inv_passivos = 22971)
+)
+
+outros_inv_liq <- get_series(
+  code = c(valor_outros_inv_liq = 22969)
+)
+
+outros_inv <- left_join(outros_inv_ativos, outros_inv_passivos)
+outros_inv <- left_join(outros_inv, outros_inv_liq)
+
+outros_inv <- outros_inv %>% mutate(
+    valor_outros_inv_ativos = valor_outros_inv_ativos / 1000,
+    valor_outros_inv_passivos = valor_outros_inv_passivos / 1000,
+    valor_outros_inv_liq = valor_outros_inv_liq / 1000
+) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_outros_inv_ativos = number(valor_outros_inv_ativos, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_outros_inv_passivos = number(valor_outros_inv_passivos, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
+    valor_outros_inv_liq = number(valor_outros_inv_liq, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+  ) %>% select(data_fmt, valor_outros_inv_ativos, valor_outros_inv_passivos, valor_outros_inv_liq, date) %>% 
   arrange(desc(date))
 
 # Erros e omissões (código 23060)
@@ -1319,7 +1360,7 @@ A **renda secundária**, antes denominada “transferências unilaterais corrent
 
 <br> 
 
-Todos os valores estão em bilhões de dólares.
+Todos os valores estão em milhões de dólares.
 
 <br>
 
@@ -1341,8 +1382,8 @@ plot_ly(
     xaxis = list(title = " "),
     yaxis = list(
       title = " ",
-      tick0 = 0,
-      dtick = 1
+      dtick = 1,
+      range = c(0, 2)
     )
   ) %>%
   rangeslider(thickness = 0.05)
@@ -1361,7 +1402,7 @@ plot_ly(
     xaxis = list(title = " "),
     yaxis = list(
       title = " ",
-      tick0 = 0,
+      range = c(0, 2),
       dtick = 1
     )
   ) %>%
@@ -1381,7 +1422,7 @@ plot_ly(
     xaxis = list(title = " "),
     yaxis = list(
       title = " ",
-      tick0 = 0,
+      range = c(-1, 1),
       dtick = 1
     )
   ) %>%
@@ -1690,7 +1731,7 @@ Column {.sidebar} {data-width=200}
 A **conta capital (ativos não financeiros não produzidos - passes de atletas)** registra as transações de compra e venda de passes de atletas profissionais realizadas entre residentes e não-residentes.
 <br> 
 
-Todos os valores estão em bilhões de dólares.
+Todos os valores estão em milhões de dólares.
 
 <br>
 
@@ -1713,7 +1754,7 @@ plot_ly(
     yaxis = list(
       title = " ",
       tick0 = 0,
-      dtick = 1
+      dtick = 10
     )
   ) %>%
   rangeslider(thickness = 0.05)
@@ -1732,8 +1773,7 @@ plot_ly(
     xaxis = list(title = " "),
     yaxis = list(
       title = " ",
-      tick0 = 0,
-      dtick = 1
+      dtick = 5
     )
   ) %>%
   rangeslider(thickness = 0.05)
@@ -1752,8 +1792,7 @@ plot_ly(
     xaxis = list(title = " "),
     yaxis = list(
       title = " ",
-      tick0 = 0,
-      dtick = 1
+      dtick = 10
     )
   ) %>%
   rangeslider(thickness = 0.05)
@@ -1762,7 +1801,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese conta capital (ativos não financeiros não produzidos - passes de atletas) (US$ bilhões)
+### Síntese conta capital (ativos não financeiros não produzidos - passes de atletas) (US$ milhões)
 ```{r}
 reactable(
   cc_anfnp_ps[, -5],
@@ -2001,9 +2040,197 @@ reactable(
 )
 ```
 
-# - Conta financeira (Investimentos em carteira) {data-navmenu="Balanço de pagamentos"}
+# - Conta financeira (Investimento em carteira) {data-navmenu="Balanço de pagamentos"}
+
+Column {.sidebar} {data-width=300}
+-----------------------------------------------------------------------
+
+**Investimento em carteira** é dividido em ativos e passivos. **Investimento em carteira ativos** são definidos como transações e posições realizadas através de títulos de dívida ou de capital, distintos dos incluídos em investimento direto ou ativos de reserva. São registrados fluxos constituídos pela emissão de títulos de crédito comumente negociados em mercados secundários. Divide-se em dois instrumentos principais: ações e cotas em fundos, e título de renda fixa. Ações e cotas em fundos compreendem todos os instrumentos e registros que reconhecem, uma vez liquidados todos os direitos dos credores, os direitos frente ao valor residual da empresa. Os títulos de participação no capital englobam as ações negociadas ou não em bolsa e outros tipos de participação no capital. Títulos de renda fixa são os instrumentos de dívida que exigem pagamento de juros e/ou principal em algum momento futuro. Os instrumentos de dívida que sensibilizam essa conta são aqueles que podem ser negociados em mercados secundários. Os papéis com prazo de vencimento original inferior a um ano são considerados de curto prazo, e os com vencimento original superior a esse prazo, de longo prazo. **Investimento em carteira passivos** são definidos como transações e posições realizadas através de títulos de dívida ou de capital, distintos dos incluídos em investimento direto. São registrados fluxos constituídos pela emissão de títulos de crédito comumente negociados em mercados secundários. Divide-se em dois instrumentos principais: ações e cotas em fundos e título de renda fixa. Ações e cotas em fundos compreendem todos os instrumentos e registros que reconhecem, uma vez liquidados todos os direitos dos credores, os direitos frente ao valor residual da empresa. Os títulos de participação no capital englobam as ações negociadas ou não em bolsa e outros tipos de participação no capital. Títulos de renda fixa são os instrumentos de dívida exigem pagamento de juros e/ou principal em algum momento futuro. Os instrumentos de dívida que sensibilizam essa conta são aqueles que podem ser negociados em mercados secundários. Os papéis com prazo de vencimento original inferior a um ano são considerados de curto prazo, e os com vencimento original superior a esse prazo, de longo prazo.
+
+<br> 
+
+Todos os valores estão em bilhões de dólares.
+
+<br>
+
+Obs.: Valores negativos indicam entrada líquida de recursos no país.
+
+<br>
+
+**Fonte**: Código 22905 do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=350}  {.tabset}
+-----------------------------------------------------------------------
+
+### Conta financeira (investimento em carteira)
+```{r}
+plot_ly(
+  data = inv_cart, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = " ",
+      tick0 = 0,
+      dtick = 5
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=350}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese conta financeira (investimento em carteira) (US$ bilhões)
+```{r}
+reactable(
+  inv_cart[, -3],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Conta financeira (investimento em carteira)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # - Conta financeira (Outros investimentos) {data-navmenu="Balanço de pagamentos"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+**Outros investimentos** é uma conta residual da conta financeira, dividida em ativos e passivos. Transações não incluídas em investimento direto, de carteira, derivativos financeiros ou ativos de reserva são registradas como outros investimentos, a exemplo de empréstimos, financiamento, créditos comerciais e depósitos. Os fluxos ativos e passivos se classificam principalmente por categorias dos instrumentos, por setores institucionais do residente e por prazo de vencimento.
+
+<br> 
+
+Todos os valores estão em bilhões de dólares.
+
+<br>
+
+Obs.: Valores negativos indicam entrada líquida de recursos no país.
+
+<br>
+
+**Fonte**: Códigos 22970 (ativos), 22971 (passivos) e 22969 (outros investimentos líquidos) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Conta financeira (outros investimentos ativos) (1)
+```{r}
+plot_ly(
+  data = outros_inv, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_outros_inv_ativos)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Conta financeira (outros investimentos passivos) (2)
+```{r}
+plot_ly(
+  data = outros_inv, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_outros_inv_passivos)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Conta financeira (outros investimentos líquido) (3) (1-2)
+```{r}
+plot_ly(
+  data = outros_inv, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_outros_inv_liq)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = " ")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Conta financeira (Outros investimentos) (US$ bilhões)
+
+```{r}
+reactable(
+  outros_inv[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_outros_inv_ativos = colDef(
+      name = "Ativos (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_outros_inv_passivos = colDef(
+      name = "Passivos (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_outros_inv_liq = colDef(
+      name = "Outros investimentos líquidos (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # - Conta financeira (Ativos de reserva) {data-navmenu="Balanço de pagamentos"}
 
@@ -2893,7 +3120,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Dívida externa liq (% PIB)
+### Dívida externa líquida (% PIB)
 ```{r}
 plot_ly(
   data = div_liq, 
