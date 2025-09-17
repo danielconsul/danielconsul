@@ -2140,7 +2140,7 @@ Obs.: Valores negativos indicam entrada líquida de recursos no país.
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Conta financeira (outros investimentos ativos) (1)
+### Ativos (1)
 ```{r}
 plot_ly(
   data = outros_inv, 
@@ -2155,7 +2155,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Conta financeira (outros investimentos passivos) (2)
+### Passivos (2)
 ```{r}
 plot_ly(
   data = outros_inv, 
@@ -2170,7 +2170,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Conta financeira (outros investimentos líquido) (3) (1-2)
+### Saldo da conta financeira (outros investimentos) (3) (1-2)
 ```{r}
 plot_ly(
   data = outros_inv, 
@@ -2188,7 +2188,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Conta financeira (Outros investimentos) (US$ bilhões)
+### Conta financeira (outros investimentos) (US$ bilhões)
 
 ```{r}
 reactable(
