@@ -32,7 +32,7 @@ library(WDI)
 ```{r, cache=TRUE}
 # Coleta de dados:
 
-# Taxa de câmbio - Livre - Dólar americano (venda):
+# Taxa de câmbio - Livre - Diária - Dólar americano (compra e venda):
 cambio_venda1 <- get_series(
   code = c(valor_venda = 1),
   start_date = "1994-07-01",
@@ -99,6 +99,37 @@ cambio_nom <- cambio_nom %>%
   ) %>%
   arrange(desc(date)) %>%
   select(data_fmt, valor_compra, valor_venda, cambio_nom, var_mg, date)
+
+# Taxa de câmbio - Livre - mensal - Dólar americano (compra e venda):
+cambio_venda_mensal <- get_series(
+  code = c(valor_venda = 3696),
+  start_date = "1994-07-01"
+)
+
+cambio_compra_mensal <- get_series(
+  code = c(valor_compra = 3695),
+  start_date = "1994-07-01"
+)
+
+cambio_nom_mensal <- left_join(cambio_venda_mensal, cambio_compra_mensal)
+
+cambio_nom_mensal$cambio_nom_mensal <- (cambio_nom_mensal$valor_venda + cambio_nom_mensal$valor_compra)/2
+
+cambio_nom_mensal <- cambio_nom_mensal %>%
+  mutate(
+    var_mg = (cambio_nom_mensal / lag(cambio_nom_mensal) - 1) * 100,
+    var_12m = (cambio_nom_mensal / lag(cambio_nom_mensal, 12) - 1) * 100
+  ) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_compra = number(valor_compra, decimal.mark = ",", accuracy = 0.01),
+    valor_venda = number(valor_venda, decimal.mark = ",", accuracy = 0.01),
+    cambio_nom_mensal = number(cambio_nom_mensal, decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor_compra, valor_venda, cambio_nom_mensal, var_mg, var_12m, date)
 
 # Taxa de câmbio real (IPCA) - Jun/1994 = 100 - (códigos 11753 e 11752):
 cambio_real_dol <- get_series(
@@ -885,19 +916,15 @@ knitr::include_graphics("visao_geral.png")
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-O **balanço de pagamentos** é uma peça contábil que resume as transações econômicas entre residentes no país e não residentes em um determinado período de tempo. A compilação das estatísticas de Balanço de Pagamentos (BP) no Brasil tem como principal fonte de informação as transações financeiras registradas no Sistema Câmbio do BCB (no jargão internacional, um sistema do tipo International Transactions Reporting System (ITRS)). Dessa forma, o BP brasileiro é compilado fundamentalmente a partir dos registros individuais das transações (microdados), permitindo ao Banco Central do Brasil o acompanhamento tempestivo dos fluxos da economia brasileira com o exterior.
+O **balanço de pagamentos (BP)** é uma peça contábil que resume as transações econômicas entre residentes no país e não residentes em um determinado período de tempo. A compilação das estatísticas de BP no Brasil tem como principal fonte de informação as transações financeiras registradas no Sistema Câmbio do Banco Central do Brasil (BCB) (no jargão internacional, um sistema do tipo International Transactions Reporting System (ITRS)). Dessa forma, o BP brasileiro é compilado fundamentalmente a partir dos registros individuais das transações (microdados), permitindo ao Banco Central do Brasil o acompanhamento tempestivo dos fluxos da economia brasileira com o exterior.
 
 <br>
 
-A rubrica de **transações correntes** agrega os seguintes itens: balança comercial (bens), serviços, renda primária e renda secundária, e **registra todas as transações entre os residentes no Brasil e os residentes no exterior, independentemente da moeda utilizada**, realizadas por intermédio do sistema bancário ou de agentes credenciados pelo Banco Central do Brasil.
+A rubrica de **transações correntes (TC)** agrega os seguintes itens: balança comercial (bens), balança de serviços, renda primária e renda secundária, e **registra todas as transações entre os residentes no Brasil e os residentes no exterior, independentemente da moeda utilizada**, realizadas por intermédio do sistema bancário ou de agentes credenciados pelo Banco Central do Brasil.
 
 <br>
 
-Todos os valores estão em bilhões de dólares.
-
-<br>
-
-**Fonte:** Códigos 22702 (receita), 22703 (despesa) e 22701 (saldo = receita - despesa) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte:** Códigos 22702 (receita), 22703 (despesa) e 22701 (saldo TC) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -913,7 +940,7 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
@@ -928,11 +955,11 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Saldo em transações correntes (3) (1-2)
+### Saldo TC (3) (1-2)
 ```{r}
 plot_ly(
   data = trans_cor, 
@@ -943,15 +970,14 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese transações correntes (US$ bilhões)
-
+### Síntese TC (US$ bilhões)
 ```{r}
 reactable(
   trans_cor[, -5],
@@ -972,7 +998,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_saldo = colDef(
-      name = "Saldo transações correntes (3) (1-2)",
+      name = "Saldo TC (3) (1-2)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -999,15 +1025,11 @@ reactable(
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-A **balança Comercial (bens)** contabiliza as transações de itens que são resultado de atividades produtivas, tangíveis, e sobre os quais direitos de propriedade podem ser estabelecidos e transferidos através de transações. A balança comercial (bens) é dividida em exportações e importações. As **exportações** registram a venda de bens de residentes a não residentes, enquanto as **importações** registram a compra de bens por residentes de não residentes. A rubrica é fundada nas estatísticas de comércio exterior compiladas pelo Ministério do Desenvolvimento, Indústria e Comércio (MDIC), com base nos registros alfandegários do Siscomex, que são ajustadas pelo Banco Central com o intuito de ampliação da cobertura. Por conta disso, às importações publicadas pelo MDIC são incorporadas as compras de energia elétrica sem registro no Siscomex. Adicionalmente, exportações e importações são ajustadas pela inclusão das operações fictas, nas quais o produto é transacionado com um não residente, mas não atravessa a fronteira do país em que se encontra; e, por fim, a balança comercial do balanço de pagamentos incorpora encomendas postais internacionais.
-
-<br> 
-
-Todos os valores estão em bilhões de dólares.
+A **balança Comercial (bens) (BC)** contabiliza as transações de itens que são resultados de atividades produtivas, tangíveis, e sobre os quais direitos de propriedade podem ser estabelecidos e transferidos através de transações. A BC é dividida em exportações e importações. As **exportações** registram a venda de bens de residentes a não residentes, enquanto as **importações** registram a compra de bens por residentes de não residentes. A rubrica é fundada nas estatísticas de comércio exterior compiladas pelo Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC), com base nos registros alfandegários do Siscomex, que são ajustadas pelo Banco Central com o intuito de ampliação da cobertura. Por conta disso, às importações publicadas pelo MDIC são incorporadas as compras de energia elétrica sem registro no Siscomex. Adicionalmente, exportações e importações são ajustadas pela inclusão das operações fictas, nas quais o produto é transacionado com um não residente, mas não atravessa a fronteira do país em que se encontra; e, por fim, a balança comercial do balanço de pagamentos incorpora encomendas postais internacionais.
 
 <br>
 
-**Fonte**: Códigos 22708 (exportações), 22709 (importações) e 22707 (saldo balança comercial) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22708 (exportações), 22709 (importações) e 22707 (saldo BC) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -1023,7 +1045,7 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
@@ -1038,11 +1060,11 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Saldo da balança comercial (3) (1-2)
+### Saldo BC (3) (1-2)
 ```{r}
 plot_ly(
   data = bc, 
@@ -1053,14 +1075,14 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese balança comercial (US$ bilhões)
+### Síntese BC (US$ bilhões)
 ```{r}
 reactable(
   bc[, -5],
@@ -1081,7 +1103,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_saldo = colDef(
-      name = "Saldo balança comercial (3) (1-2)",
+      name = "Saldo BC (3) (1-2)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -1118,15 +1140,11 @@ reactable(
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-A **balança de serviços** é composta por serviços relativos a transportes, viagens internacionais, seguros, financeiros, construção, computação e informações, royalties e licenças, aluguel de equipamentos, serviços pessoais, culturais e de entretenimento e serviços governamentais.
-
-<br> 
-
-Todos os valores estão em bilhões de dólares.
+A **balança de serviços (BS)** é composta por serviços relativos a transportes, viagens internacionais, seguros, financeiros, construção, computação e informações, royalties e licenças, aluguel de equipamentos, serviços pessoais, culturais e de entretenimento e serviços governamentais.
 
 <br>
 
-**Fonte**: Códigos 22720 (receitas), 22721 (despesas) e 22719 (saldo balança de serviços) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22720 (receitas), 22721 (despesas) e 22719 (saldo BS) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -1143,7 +1161,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       tick0 = 0,
       dtick = 1
     )
@@ -1162,11 +1180,11 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Saldo da balança de serviços (3) (1-2)
+### Saldo BS (3) (1-2)
 ```{r}
 plot_ly(
   data = bs, 
@@ -1177,14 +1195,14 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese balança de serviços (US$ bilhões)
+### Síntese da BS (US$ bilhões)
 ```{r}
 reactable(
   bs[, -5],
@@ -1205,7 +1223,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_saldo = colDef(
-      name = "Saldo balança de serviços (3) (1-2)",
+      name = "Saldo BS (3) (1-2)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -1232,15 +1250,11 @@ reactable(
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-A **renda primária** indica os montantes a pagar ou a receber em troca do uso temporário de recursos financeiros, trabalho ou ativos não financeiros não produzidos, a saber, remuneração de trabalhadores, renda de investimentos e demais rendas primárias. Fazem parte da primeira a remuneração do trabalho assalariado (salários e ordenados); da segunda, renda de investimento direto, renda de investimento em carteira, renda de outros investimentos e renda de ativos de reserva; e da terceira, tributos sobre a produção e importação, subsídios e aluguéis.
-
-<br> 
-
-Todos os valores estão em bilhões de dólares.
+A **renda primária (RP)** indica os montantes a pagar ou a receber em troca do uso temporário de recursos financeiros, trabalho ou ativos não financeiros não produzidos, a saber, remuneração de trabalhadores, renda de investimentos e demais rendas primárias. Fazem parte da primeira a remuneração do trabalho assalariado (salários e ordenados); da segunda, renda de investimento direto, renda de investimento em carteira, renda de outros investimentos e renda de ativos de reserva; e da terceira, tributos sobre a produção e importação, subsídios e aluguéis.
 
 <br>
 
-**Fonte**: Códigos 22801 (receitas), 22802 (despesas) e 22800 (saldo renda primária) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22801 (receitas), 22802 (despesas) e 22800 (saldo RP) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -1257,7 +1271,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       tick0 = 0,
       dtick = 1
     )
@@ -1277,7 +1291,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       tick0 = 0,
       dtick = 1
     )
@@ -1285,7 +1299,7 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
-### Saldo da renda primária (3) (1-2)
+### Saldo RP (3) (1-2)
 ```{r}
 plot_ly(
   data = rp, 
@@ -1297,7 +1311,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       tick0 = 0,
       dtick = 1
     )
@@ -1308,7 +1322,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese renda primária (US$ bilhões)
+### Síntese RP (US$ bilhões)
 ```{r}
 reactable(
   rp[, -5],
@@ -1329,7 +1343,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_saldo = colDef(
-      name = "Saldo renda primária (3) (1-2)",
+      name = "Saldo RP (3) (1-2)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -1356,15 +1370,11 @@ reactable(
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-A **renda secundária**, antes denominada “transferências unilaterais correntes”, tem sua nomenclatura ajustada às contas nacionais, e apresenta a renda gerada em uma economia e distribuída para outra. Setoriza as transferências em dois componentes: governo e demais setores. No primeiro caso, estão registrados os tributos correntes sobre a renda, contribuições e benefícios sociais, cooperação internacional corrente e demais transferências correntes do governo; já no segundo, estão as transferências pessoais (transferências correntes entre famílias residentes e não residentes) e outras transferências correntes.
-
-<br> 
-
-Todos os valores estão em milhões de dólares.
+A **renda secundária (RS)**, antes denominada “transferências unilaterais correntes”, tem sua nomenclatura ajustada às contas nacionais, e apresenta a renda gerada em uma economia e distribuída para outra. Setoriza as transferências em dois componentes: governo e demais setores. No primeiro caso, estão registrados os tributos correntes sobre a renda, contribuições e benefícios sociais, cooperação internacional corrente e demais transferências correntes do governo; já no segundo, estão as transferências pessoais (transferências correntes entre famílias residentes e não residentes) e outras transferências correntes.
 
 <br>
 
-**Fonte**: Códigos 22839 (receitas), 22840 (despesas) e 22838 (saldo renda primária) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22839 (receitas), 22840 (despesas) e 22838 (saldo RS) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -1381,7 +1391,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       dtick = 1,
       range = c(0, 2)
     )
@@ -1401,7 +1411,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       range = c(0, 2),
       dtick = 1
     )
@@ -1409,7 +1419,7 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
-### Saldo da renda primária (3) (1-2)
+### Saldo RS (3) (1-2)
 ```{r}
 plot_ly(
   data = rs, 
@@ -1421,7 +1431,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       range = c(-1, 1),
       dtick = 1
     )
@@ -1432,7 +1442,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese renda secundária (US$ bilhões)
+### Síntese RS (US$ bilhões)
 ```{r}
 reactable(
   rs[, -5],
@@ -1453,7 +1463,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_saldo = colDef(
-      name = "Saldo renda secundária (3) (1-2)",
+      name = "Saldo RS (3) (1-2)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -1480,15 +1490,11 @@ reactable(
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-A **conta capital** registra as transações envolvendo compra e venda de ativos não financeiros não produzidos, e transferências de capital. As transferências de capital relacionadas com patrimônio de migrantes não mais impactam essa conta.
-
-<br> 
-
-Todos os valores estão em bilhões de dólares.
+A **conta capital (CC)** registra as transações envolvendo compra e venda de ativos não financeiros não produzidos, e transferências de capital. As transferências de capital relacionadas com patrimônio de migrantes não mais impactam essa conta.
 
 <br>
 
-**Fonte**: Códigos 22852 (receitas), 22853 (despesas) e 22851 (saldo conta capital) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22852 (receitas), 22853 (despesas) e 22851 (saldo CC) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -1505,7 +1511,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       tick0 = 0,
       dtick = 1
     )
@@ -1525,7 +1531,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       tick0 = 0,
       dtick = 1
     )
@@ -1533,7 +1539,7 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
-### Saldo da conta capital (3) (1-2)
+### Saldo CC (3) (1-2)
 ```{r}
 plot_ly(
   data = cc, 
@@ -1545,7 +1551,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       tick0 = 0,
       dtick = 1
     )
@@ -1556,7 +1562,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese conta capital (US$ bilhões)
+### Síntese CC (US$ bilhões)
 ```{r}
 reactable(
   cc[, -5],
@@ -1577,7 +1583,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_saldo = colDef(
-      name = "Saldo conta capital (3) (1-2)",
+      name = "Saldo CC (3) (1-2)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -1606,13 +1612,9 @@ Column {.sidebar} {data-width=200}
 
 A **conta capital (ativos não financeiros não produzidos)** inclui ativos intangíveis não produzidos e terrenos e outros ativos materiais não produzidos que podem ser usados na produção de bens e serviços. 
 
-<br> 
-
-Todos os valores estão em bilhões de dólares.
-
 <br>
 
-**Fonte**: Códigos 22855 (receitas), 22856 (despesas) e 22855 (saldo conta capital (ativos não financeiros não produzidos)) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22855 (receitas), 22856 (despesas) e 22855 (saldo CC (ativos não financeiros não produzidos)) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -1629,7 +1631,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       tick0 = 0,
       dtick = 1
     )
@@ -1649,7 +1651,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       tick0 = 0,
       dtick = 1
     )
@@ -1657,7 +1659,7 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
-### Saldo da conta capital (ativos não financeiros não produzidos) (3) (1-2)
+### Saldo CC (ativos não financeiros não produzidos) (3) (1-2)
 ```{r}
 plot_ly(
   data = cc_anfnp, 
@@ -1669,7 +1671,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       tick0 = 0,
       dtick = 1
     )
@@ -1680,7 +1682,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese conta capital (ativos não financeiros não produzidos) (US$ bilhões)
+### Síntese CC (ativos não financeiros não produzidos) (US$ bilhões)
 ```{r}
 reactable(
   cc_anfnp[, -5],
@@ -1701,7 +1703,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_saldo = colDef(
-      name = "Saldo conta capital (ativos não financeiros não produzidos) (3) (1-2)",
+      name = "Saldo CC (ativos não financeiros não produzidos) (3) (1-2)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -1729,13 +1731,10 @@ Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
 A **conta capital (ativos não financeiros não produzidos - passes de atletas)** registra as transações de compra e venda de passes de atletas profissionais realizadas entre residentes e não-residentes.
-<br> 
-
-Todos os valores estão em milhões de dólares.
 
 <br>
 
-**Fonte**: Códigos 22858 (receitas), 22859 (despesas) e 22857 (saldo conta capital (ativos não financeiros não produzidos - passes de atletas)) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22858 (receitas), 22859 (despesas) e 22857 (saldo CC (ativos não financeiros não produzidos - passes de atletas)) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -1752,7 +1751,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       tick0 = 0,
       dtick = 10
     )
@@ -1772,14 +1771,14 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       dtick = 5
     )
   ) %>%
   rangeslider(thickness = 0.05)
 ```
 
-### Saldo da conta capital (ativos não financeiros não produzidos - passes de atletas) (3) (1-2)
+### Saldo CC (ativos não financeiros não produzidos - passes de atletas) (3) (1-2)
 ```{r}
 plot_ly(
   data = cc_anfnp_ps, 
@@ -1791,7 +1790,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       dtick = 10
     )
   ) %>%
@@ -1801,7 +1800,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese conta capital (ativos não financeiros não produzidos - passes de atletas) (US$ milhões)
+### Síntese CC (ativos não financeiros não produzidos - passes de atletas) (US$ milhões)
 ```{r}
 reactable(
   cc_anfnp_ps[, -5],
@@ -1822,7 +1821,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_saldo = colDef(
-      name = "Saldo conta capital (ativos não financeiros não produzidos - passes de atletas) (3) (1-2)",
+      name = "Saldo CC (ativos não financeiros não produzidos - passes de atletas) (3) (1-2)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -1849,11 +1848,7 @@ reactable(
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-A **conta financeira** registra fluxos decorrentes de transações com ativos e passivos financeiros entre residentes e não residentes, sendo dividida em cinco grupos funcionais: investimento direto, investimentos em carteira, derivativos financeiros (exclusive reservas) e opções de compra de ações por parte de empregados, outros investimentos e ativos de reserva. Cada conta é desdobrada em ativos e passivos, ou seja, há um item destinado a registrar fluxos envolvendo ativos externos detidos por residentes no Brasil e outro para registrar a emissão de passivos por residentes cujo credor é não residente.
-
-<br> 
-
-Todos os valores estão em bilhões de dólares.
+A **conta financeira (CF)** registra fluxos decorrentes de transações com ativos e passivos financeiros entre residentes e não residentes, sendo dividida em cinco grupos funcionais: investimento direto, investimentos em carteira, derivativos financeiros (exclusive reservas) e opções de compra de ações por parte de empregados, outros investimentos e ativos de reserva. Cada conta é desdobrada em ativos e passivos, ou seja, há um item destinado a registrar fluxos envolvendo ativos externos detidos por residentes no Brasil e outro para registrar a emissão de passivos por residentes cujo credor é não residente.
 
 <br>
 
@@ -1878,7 +1873,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       tick0 = 0,
       dtick = 1
     )
@@ -1889,7 +1884,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese conta financeira (US$ bilhões)
+### Síntese CF (US$ bilhões)
 ```{r}
 reactable(
   cf[, -3],
@@ -1900,7 +1895,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor = colDef(
-      name = "Conta financeira",
+      name = "Saldo CF",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -1931,11 +1926,7 @@ Column {.sidebar} {data-width=200}
 
 **Investimento direto no país (IDP)** registra os fluxos financeiros de passivos emitidos por residentes brasileiros para credores não residentes, nos quais os agentes institucionais possuem uma relação de controle ou forte poder de influência entre si. Divide-se em dois instrumentos principais: participação no capital e operações intercompanhia.
 
-**Investimento direto** representa o fluxo líquido entre os investimentos diretos no exterior (ativos) e os investimentos diretos no país (passivos).
-
-<br> 
-
-Todos os valores estão em bilhões de dólares.
+**Investimento direto (ID)** representa o fluxo líquido entre os investimentos diretos no exterior (ativos) e os investimentos diretos no país (passivos).
 
 <br>
 
@@ -1943,12 +1934,12 @@ Obs.: Valores negativos indicam entrada líquida de recursos no país.
 
 <br>
 
-**Fonte**: Códigos 22865 (IDE), 22885 (IDP) e 22864 (investimento direto líquido) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22865 (IDE), 22885 (IDP) e 22864 (saldo ID) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Investimento direto no exterior (IDE) (1)
+### IDE (1)
 ```{r}
 plot_ly(
   data = inv_dir, 
@@ -1959,11 +1950,11 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Investimento direto no país (IDP) (2)
+### IDP (2)
 ```{r}
 plot_ly(
   data = inv_dir, 
@@ -1974,11 +1965,11 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Investimento direto líquido (3) (1-2)
+### Saldo ID (3) (1-2)
 ```{r}
 plot_ly(
   data = inv_dir, 
@@ -1989,14 +1980,14 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Investimento direto líquido (US$ bilhões)
+### Saldo ID (US$ bilhões)
 
 ```{r}
 reactable(
@@ -2008,17 +1999,17 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_ide = colDef(
-      name = "Investimento direto no exterior (1)",
+      name = "IDE (1)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_idp = colDef(
-      name = "Investimento direto no país (2)",
+      name = "IDP (2)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_id = colDef(
-      name = "Investimento direto líquido (3) (1-2)",
+      name = "Saldo ID (3) (1-2)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -2047,10 +2038,6 @@ Column {.sidebar} {data-width=300}
 
 **Investimento em carteira** é dividido em ativos e passivos. **Investimento em carteira ativos** são definidos como transações e posições realizadas através de títulos de dívida ou de capital, distintos dos incluídos em investimento direto ou ativos de reserva. São registrados fluxos constituídos pela emissão de títulos de crédito comumente negociados em mercados secundários. Divide-se em dois instrumentos principais: ações e cotas em fundos, e título de renda fixa. Ações e cotas em fundos compreendem todos os instrumentos e registros que reconhecem, uma vez liquidados todos os direitos dos credores, os direitos frente ao valor residual da empresa. Os títulos de participação no capital englobam as ações negociadas ou não em bolsa e outros tipos de participação no capital. Títulos de renda fixa são os instrumentos de dívida que exigem pagamento de juros e/ou principal em algum momento futuro. Os instrumentos de dívida que sensibilizam essa conta são aqueles que podem ser negociados em mercados secundários. Os papéis com prazo de vencimento original inferior a um ano são considerados de curto prazo, e os com vencimento original superior a esse prazo, de longo prazo. **Investimento em carteira passivos** são definidos como transações e posições realizadas através de títulos de dívida ou de capital, distintos dos incluídos em investimento direto. São registrados fluxos constituídos pela emissão de títulos de crédito comumente negociados em mercados secundários. Divide-se em dois instrumentos principais: ações e cotas em fundos e título de renda fixa. Ações e cotas em fundos compreendem todos os instrumentos e registros que reconhecem, uma vez liquidados todos os direitos dos credores, os direitos frente ao valor residual da empresa. Os títulos de participação no capital englobam as ações negociadas ou não em bolsa e outros tipos de participação no capital. Títulos de renda fixa são os instrumentos de dívida exigem pagamento de juros e/ou principal em algum momento futuro. Os instrumentos de dívida que sensibilizam essa conta são aqueles que podem ser negociados em mercados secundários. Os papéis com prazo de vencimento original inferior a um ano são considerados de curto prazo, e os com vencimento original superior a esse prazo, de longo prazo.
 
-<br> 
-
-Todos os valores estão em bilhões de dólares.
-
 <br>
 
 Obs.: Valores negativos indicam entrada líquida de recursos no país.
@@ -2062,7 +2049,7 @@ Obs.: Valores negativos indicam entrada líquida de recursos no país.
 Column {data-width=350}  {.tabset}
 -----------------------------------------------------------------------
 
-### Conta financeira (investimento em carteira)
+### CF (investimento em carteira)
 ```{r}
 plot_ly(
   data = inv_cart, 
@@ -2074,7 +2061,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       tick0 = 0,
       dtick = 5
     )
@@ -2085,7 +2072,7 @@ plot_ly(
 Column {data-width=350}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese conta financeira (investimento em carteira) (US$ bilhões)
+### Síntese CF (investimento em carteira) (US$ bilhões)
 ```{r}
 reactable(
   inv_cart[, -3],
@@ -2096,7 +2083,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor = colDef(
-      name = "Conta financeira (investimento em carteira)",
+      name = "CF (investimento em carteira)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -2125,17 +2112,13 @@ Column {.sidebar} {data-width=200}
 
 **Outros investimentos** é uma conta residual da conta financeira, dividida em ativos e passivos. Transações não incluídas em investimento direto, de carteira, derivativos financeiros ou ativos de reserva são registradas como outros investimentos, a exemplo de empréstimos, financiamento, créditos comerciais e depósitos. Os fluxos ativos e passivos se classificam principalmente por categorias dos instrumentos, por setores institucionais do residente e por prazo de vencimento.
 
-<br> 
-
-Todos os valores estão em bilhões de dólares.
-
 <br>
 
 Obs.: Valores negativos indicam entrada líquida de recursos no país.
 
 <br>
 
-**Fonte**: Códigos 22970 (ativos), 22971 (passivos) e 22969 (outros investimentos líquidos) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22970 (ativos), 22971 (passivos) e 22969 (saldo outros investimentos) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -2151,7 +2134,7 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
@@ -2166,11 +2149,11 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Saldo da conta financeira (outros investimentos) (3) (1-2)
+### Saldo CF (outros investimentos) (3) (1-2)
 ```{r}
 plot_ly(
   data = outros_inv, 
@@ -2181,14 +2164,14 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Conta financeira (outros investimentos) (US$ bilhões)
+### CF (outros investimentos) (US$ bilhões)
 
 ```{r}
 reactable(
@@ -2210,7 +2193,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_outros_inv_liq = colDef(
-      name = "Outros investimentos líquidos (3) (1-2)",
+      name = "Saldo outros investimentos (3) (1-2)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -2234,14 +2217,14 @@ reactable(
 
 # - Conta financeira (Ativos de reserva) {data-navmenu="Balanço de pagamentos"}
 
+
+
 # Erros e omissões {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-As partidas a crédito e a débito lançadas no balanço de pagamentos provêm de diversas fontes de informações, gerando, na prática, total líquido diferente de zero. A principal razão está nas discrepâncias temporais das diversas origens dos dados utilizados. Com isso, torna-se necessário o lançamento de partida equilibradora para o balanceamento das contas. Os **erros e omissões** se prestam, portanto, a compensar toda sobrestimação ou subestimação dos componentes registrados. É uma conta residual, portanto.
-
-Todos os valores estão em bilhões de dólares.
+As partidas a crédito e a débito lançadas no balanço de pagamentos provêm de diversas fontes de informações, gerando, na prática, total líquido diferente de zero. A principal razão está nas discrepâncias temporais das diversas origens dos dados utilizados. Com isso, torna-se necessário o lançamento de partida equilibradora para o balanceamento das contas. Os **erros e omissões(EOs)** se prestam, portanto, a compensar toda sobrestimação ou subestimação dos componentes registrados. É uma conta residual, portanto.
 
 <br>
 
@@ -2262,7 +2245,7 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(
-      title = " ",
+      title = "US$ bilhões",
       tick0 = 0,
       dtick = 1
     )
@@ -2317,29 +2300,7 @@ O **Índice de commodities - Brasil** (IC-Br) exprime a média mensal ponderada 
 
 Tomando como base o mês de janeiro de 2024, os pesos para cada commodity no índice são os seguintes:
 
-Boi Gordo: 21,54%;
-Brent: 12,35%;
-Açúcar: 7,37%;
-Milho: 6,27%;
-Óleo de soja: 6,17%;
-Algodão: 6,11%;
-Suco de Laranja: 4,69%;
-Café: 4,25%;
-Estanho: 4,06%;
-Arroz: 3,82%;
-Cacau: 3,25%;
-Alumínio: 3,24%;
-Carvão: 2,95%.
-Trigo: 2,18%;
-Prata: 2,11%;
-Zinco: 2,10%;
-Gas Natural: 2,05%;
-Cobre: 1,60%;
-Porco: 1,34%;
-Chumbo: 1,12%;
-Minério de Ferro: 0,52%;
-Niquel: 0,50%;
-Ouro: 0,42%.
+Boi gordo: 21,54%, Brent: 12,35%, Açúcar: 7,37%, Milho: 6,27%, Óleo de soja: 6,17%, Algodão: 6,11%, Suco de laranja: 4,69%, Café: 4,25%, Estanho: 4,06%, Arroz: 3,82%, Cacau: 3,25%, Alumínio: 3,24%, Carvão: 2,95%, Trigo: 2,18%, Prata: 2,11%, Zinco: 2,10%, Gás natural: 2,05%, Cobre: 1,60%, Porco: 1,34%, Chumbo: 1,12%, Minério de ferro: 0,52%, Níquel: 0,50%, Ouro: 0,42%.
 
 <br>
 
@@ -2348,7 +2309,7 @@ Ouro: 0,42%.
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### IC-Br (real e dólar) - Dez/2005 = 100
+### IC-Br (R$ e US$)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -2357,7 +2318,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_rs)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br (real)"
+    name = "IC-Br (R$)"
   ) %>%
   add_trace(
     data = commod,
@@ -2365,11 +2326,11 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_usd)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br (dólar)"
+    name = "IC-Br (US$)"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = " ", autorange = TRUE),
+    yaxis = list(title = "Dez/2005 = 100", autorange = TRUE),
     legend = list(
       orientation = "h",  # horizontal
       x = 0.5,
@@ -2379,7 +2340,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -2388,7 +2349,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_rs_mg)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br (real)"
+    name = "IC-Br (R$)"
   ) %>%
   add_trace(
     data = commod,
@@ -2396,11 +2357,11 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_usd_mg)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br (dólar)"
+    name = "IC-Br (US$)"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = " ", autorange = TRUE),
+    yaxis = list(title = "%", autorange = TRUE),
     legend = list(
       orientation = "h",  # horizontal
       x = 0.5,
@@ -2410,7 +2371,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -2419,7 +2380,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_rs_12m)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br (real)"
+    name = "IC-Br (R$)"
   ) %>%
   add_trace(
     data = commod,
@@ -2427,11 +2388,11 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_usd_12m)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br (dólar)"
+    name = "IC-Br (US$)"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = " ", autorange = TRUE),
+    yaxis = list(title = "%", autorange = TRUE),
     legend = list(
       orientation = "h",  # horizontal
       x = 0.5,
@@ -2456,32 +2417,32 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_rs = colDef(
-      name = "IC-Br (reais)",
+      name = "IC-Br (R$)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_rs_mg = colDef(
-      name = "IC-Br (reais) - Var. mensal (%)",
+      name = "Variação mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_rs_12m = colDef(
-      name = "IC-Br (reais) - Var. em 12 meses (%)",
+      name = "Variação em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_usd = colDef(
-      name = "IC-Br (dólar)",
+      name = "IC-Br (US$)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_usd_mg = colDef(
-      name = "IC-Br (dólar) - Var. mensal (%)",
+      name = "Variação mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_usd_12m = colDef(
-      name = "IC-Br (dólar) - Var. em 12 meses (%)",
+      name = "Variação em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -2515,7 +2476,7 @@ O **IC-Br Agropecuária** é um subíndice do IC-Br (série 27574). É uma médi
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### IC-Br Agropecuária (real e dólar) - Dez/2005 = 100
+### IC-Br Agropecuária (R$ e US$)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -2524,7 +2485,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_rs)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Agropecuária (real)"
+    name = "IC-Br Agropecuária (R$)"
   ) %>%
   add_trace(
     data = commod_agrop,
@@ -2532,11 +2493,11 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_usd)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Agropecuária (dólar)"
+    name = "IC-Br Agropecuária (US$)"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = " ", autorange = TRUE),
+    yaxis = list(title = "Dez/2005 = 100", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -2546,7 +2507,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -2555,7 +2516,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_rs_mg)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Agropecuária (real)"
+    name = "IC-Br Agropecuária (R$)"
   ) %>%
   add_trace(
     data = commod_agrop,
@@ -2563,11 +2524,11 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_usd_mg)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Agropecuária (dólar)"
+    name = "IC-Br Agropecuária (US$)"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = " ", autorange = TRUE),
+    yaxis = list(title = "%", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -2577,7 +2538,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -2586,7 +2547,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_rs_12m)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Agropecuária (real)"
+    name = "IC-Br Agropecuária (R$)"
   ) %>%
   add_trace(
     data = commod_agrop,
@@ -2594,11 +2555,11 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_usd_12m)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Agropecuária (dólar)"
+    name = "IC-Br Agropecuária (US$)"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = " ", autorange = TRUE),
+    yaxis = list(title = "%", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -2623,32 +2584,32 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_rs = colDef(
-      name = "IC-Br Agropecuária (reais)",
+      name = "IC-Br Agropecuária (R$)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_rs_mg = colDef(
-      name = "IC-Br Agropecuária (reais) - Var. mensal (%)",
+      name = "Variação mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_rs_12m = colDef(
-      name = "IC-Br Agropecuária (reais) - Var. em 12 meses (%)",
+      name = "Variação em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_usd = colDef(
-      name = "IC-Br Agropecuária (dólar)",
+      name = "IC-Br Agropecuária (US$)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_usd_mg = colDef(
-      name = "IC-Br Agropecuária (dólar) - Var. mensal (%)",
+      name = "Variação mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_usd_12m = colDef(
-      name = "IC-Br Agropecuária (dólar) - Var. em 12 meses (%)",
+      name = "Variação em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -2682,7 +2643,7 @@ O **IC-Br Metal** é um subíndice do IC-Br (série 27574). É uma média mensal
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### IC-Br Metal (real e dólar) - Dez/2005 = 100
+### IC-Br Metal (R$ e US$)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -2691,7 +2652,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_rs)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Metal (real)"
+    name = "IC-Br Metal (R$)"
   ) %>%
   add_trace(
     data = commod_metal,
@@ -2699,11 +2660,11 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_usd)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Metal (dólar)"
+    name = "IC-Br Metal (US$)"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = " ", autorange = TRUE),
+    yaxis = list(title = "Dez/2005 = 100", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -2713,7 +2674,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -2722,7 +2683,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_rs_mg)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Metal (real)"
+    name = "IC-Br Metal (R$)"
   ) %>%
   add_trace(
     data = commod_metal,
@@ -2730,11 +2691,11 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_usd_mg)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Metal (dólar)"
+    name = "IC-Br Metal (US$)"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = " ", autorange = TRUE),
+    yaxis = list(title = "%", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -2744,7 +2705,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -2753,7 +2714,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_rs_12m)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Metal (real)"
+    name = "IC-Br Metal (R$)"
   ) %>%
   add_trace(
     data = commod_metal,
@@ -2761,11 +2722,11 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_usd_12m)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Metal (dólar)"
+    name = "IC-Br Metal (US$)"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = " ", autorange = TRUE),
+    yaxis = list(title = "%", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -2790,32 +2751,32 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_rs = colDef(
-      name = "IC-Br Metal (reais)",
+      name = "IC-Br Metal (R$)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_rs_mg = colDef(
-      name = "IC-Br Metal (reais) - Var. mensal (%)",
+      name = "Variação mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_rs_12m = colDef(
-      name = "IC-Br Metal (reais) - Var. em 12 meses (%)",
+      name = "Variação em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_usd = colDef(
-      name = "IC-Br Metal (dólar)",
+      name = "IC-Br Metal (US$)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_usd_mg = colDef(
-      name = "IC-Br Metal (dólar) - Var. mensal (%)",
+      name = "Variação mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_usd_12m = colDef(
-      name = "IC-Br Metal (dólar) - Var. em 12 meses (%)",
+      name = "Variação em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -2849,7 +2810,7 @@ O **IC-Br Energia** é um subíndice do IC-Br (série 27574). É uma média mens
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### IC-Br Energia (real e dólar) - Dez/2005 = 100
+### IC-Br Energia (R$ e US$)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -2858,7 +2819,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_rs)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Energia (real)"
+    name = "IC-Br Energia (R$)"
   ) %>%
   add_trace(
     data = commod_metal,
@@ -2866,11 +2827,11 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_usd)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Energia (dólar)"
+    name = "IC-Br Energia (US$)"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = " ", autorange = TRUE),
+    yaxis = list(title = "Dez/2005 = 100", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -2880,7 +2841,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -2889,7 +2850,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_rs_mg)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Energia (real)"
+    name = "IC-Br Energia (R$)"
   ) %>%
   add_trace(
     data = commod_metal,
@@ -2897,11 +2858,11 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_usd_mg)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Energia (dólar)"
+    name = "IC-Br Energia (US$)"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = " ", autorange = TRUE),
+    yaxis = list(title = "%", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -2911,7 +2872,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -2920,7 +2881,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_rs_12m)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Energia (real)"
+    name = "IC-Br Energia (R$)"
   ) %>%
   add_trace(
     data = commod_energia,
@@ -2928,11 +2889,11 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_usd_12m)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Energia (dólar)"
+    name = "IC-Br Energia (US$)"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = " ", autorange = TRUE),
+    yaxis = list(title = "%", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -2957,32 +2918,32 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_rs = colDef(
-      name = "IC-Br Energia (reais)",
+      name = "IC-Br Energia (R$)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_rs_mg = colDef(
-      name = "IC-Br Energia (reais) - Var. mensal (%)",
+      name = "Variação mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_rs_12m = colDef(
-      name = "IC-Br Energia (reais) - Var. em 12 meses (%)",
+      name = "Variação em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_usd = colDef(
-      name = "IC-Br Energia (dólar)",
+      name = "IC-Br Energia (US$)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_usd_mg = colDef(
-      name = "IC-Br Energia (dólar) - Var. mensal (%)",
+      name = "Variação mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_usd_12m = colDef(
-      name = "IC-Br Energia (dólar) - Var. em 12 meses (%)",
+      name = "Variação em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -3018,7 +2979,7 @@ A série trimestral **dívida externa bruta** compreende o total apurado em dete
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Dívida externa bruta (US$ bilhões)
+### US$ bilhões
 ```{r}
 plot_ly(
   data = div_bruta, 
@@ -3030,11 +2991,11 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "% bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Dívida externa bruta (% PIB)
+### % PIB
 ```{r}
 plot_ly(
   data = div_bruta, 
@@ -3044,7 +3005,7 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "% PIB")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
@@ -3063,12 +3024,12 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_usd = colDef(
-      name = "Dívida externa bruta (US$ bilhões)",
+      name = "US$ bilhões",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_pib = colDef(
-      name = "Dívida externa bruta (% PIB)",
+      name = "% PIB",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -3104,7 +3065,7 @@ A série trimestral **dívida externa líquida** refere-se à dívida externa br
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Dívida externa líquida (US$ bilhões)
+### US$ bilhões
 ```{r}
 plot_ly(
   data = div_liq, 
@@ -3116,11 +3077,11 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Dívida externa líquida (% PIB)
+### % PIB
 ```{r}
 plot_ly(
   data = div_liq, 
@@ -3130,7 +3091,7 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "% PIB")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
@@ -3149,12 +3110,12 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_usd = colDef(
-      name = "Dívida externa líquida (US$ bilhões)",
+      name = "US$ bilhões",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_pib = colDef(
-      name = "Dívida externa líquida (% PIB)",
+      name = "% PIB",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -3202,7 +3163,7 @@ O prazo médio de investimento em 2024 foi de 3,19 anos.
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Reservas internacionais
+### US$ bilhões
 ```{r}
 plot_ly(
   data = res_int, 
@@ -3214,11 +3175,11 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly(
   data = res_int, 
@@ -3229,11 +3190,11 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "%")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Var. 12 meses (%)
+### Variação 12 meses (%)
 ```{r}
 plot_ly(
   data = res_int, 
@@ -3244,7 +3205,7 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ", dtick = 20)
+    yaxis = list(title = "%", dtick = 20)
   ) %>% rangeslider(thickness = 0.05)
 ```
 
@@ -3258,7 +3219,7 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "%")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
@@ -3272,7 +3233,7 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "Meses de importações")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
@@ -3280,7 +3241,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese (US$ bilhões)
+### Síntese reservas internacionais
 
 ```{r}
 reactable(
@@ -3292,7 +3253,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor = colDef(
-      name = "Reservas internacionais",
+      name = "US$ bilhões",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -3336,7 +3297,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor = colDef(
-      name = "Reservas internacionais (% dívida externa total)",
+      name = "% dívida externa total",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -3370,7 +3331,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor = colDef(
-      name = "Reservas internacionais (meses de importações)",
+      name = "Meses de importações",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -3397,16 +3358,16 @@ reactable(
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-**Taxa de câmbio comercial (compra e venda) - cotações diárias:** refere-se às taxas administradas até 13 de março de 1990 e às taxas livres a partir dessa data (Resolução 1690, de 18.3.1990). As taxas administradas são aquelas fixadas pelo Banco Central. As taxas livres correspondem à média das taxas efetivas de operações no mercado interbancário, ponderada pelo volume de transações de venda do dia. As transações fechadas em taxas que mais se distanciam da média do mercado (outliers) e aquelas que evidenciam formação artificial de preço ou contrárias às práticas regulares do mercado são excluídas dos cálculos. A partir de março de 1992, essa taxa recebeu a denominação de taxa PTAX (fechamento).
+**Taxa de câmbio comercial (compra e venda) - cotações diárias e mensais:** refere-se às taxas administradas até 13 de março de 1990 e às taxas livres a partir dessa data (Resolução 1690, de 18.3.1990). As taxas administradas são aquelas fixadas pelo Banco Central. As taxas livres correspondem à média das taxas efetivas de operações no mercado interbancário, ponderada pelo volume de transações de venda do dia. As transações fechadas em taxas que mais se distanciam da média do mercado (outliers) e aquelas que evidenciam formação artificial de preço ou contrárias às práticas regulares do mercado são excluídas dos cálculos. A partir de março de 1992, essa taxa recebeu a denominação de taxa PTAX (fechamento). As taxas mensais referem-se aos valores de fim de período.
 
 <br>
 
-**Fonte:** Códigos 10813 (compra) e 1 (venda) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte:** Códigos 10813 (compra diária), 1 (venda diária), 3695 (compra mensal) e 3696 (venda mensal) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Taxa de câmbio comercial (R$)
+### Cotação diária
 
 ```{r}
 plot_ly(
@@ -3418,14 +3379,61 @@ plot_ly(
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = " ")
+    yaxis = list(title = "R$")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+
+### Cotação mensal
+```{r}
+plot_ly(
+  data = cambio_nom_mensal, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", cambio_nom_mensal)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "R$")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = cambio_nom_mensal, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = cambio_nom_mensal, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese taxa de câmbio comercial
+### Síntese taxa diária
 ```{r, results='asis'}
 reactable(
   cambio_nom[, -6],
@@ -3436,22 +3444,75 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_compra = colDef(
-      name = "Câmbio comercial (compra) (R$)",
+      name = "Compra (R$)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_venda = colDef(
-      name = "Câmbio comercial (venda) (R$)",
+      name = "Venda (R$)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     cambio_nom = colDef(
-      name = "Câmbio comercial (média compra e venda) (R$)",
+      name = "Média compra e venda (R$)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     var_mg = colDef(
-      name = "Var. diária câmbio comercial (%)",
+      name = "Variação diária (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Síntese taxa mensal
+```{r, results='asis'}
+reactable(
+  cambio_nom_mensal[, -7],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_compra = colDef(
+      name = "Compra (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_venda = colDef(
+      name = "Venda (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    cambio_nom_mensal = colDef(
+      name = "Média compra e venda (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -3487,7 +3548,7 @@ A série mensal **taxa de câmbio real** reflete a variação da moeda nacional 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Taxa de câmbio real - Índice jun/1994 = 100
+### Taxa de câmbio real
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -3508,7 +3569,7 @@ plot_ly() %>%
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = " ", autorange = TRUE),
+    yaxis = list(title = "Jun/1994 = 100", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -3539,7 +3600,7 @@ plot_ly() %>%
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = " ", autorange = TRUE),
+    yaxis = list(title = "%", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -3570,7 +3631,7 @@ plot_ly() %>%
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = " ", autorange = TRUE),
+    yaxis = list(title = "%", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -3600,12 +3661,12 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     var_mg_dol = colDef(
-      name = "Taxa de câmbio real (USD) -  Var. mensal (%)",
+      name = "Variação mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     var_12m_dol = colDef(
-      name = "Taxa de câmbio real (USD) - Var. em 12 meses (%)",
+      name = "Variação em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -3615,12 +3676,12 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     var_mg_efet = colDef(
-      name = "Taxa de câmbio real efetiva - Var. mensal (%)",
+      name = "Variação mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     var_12m_efet = colDef(
-      name = "Taxa de câmbio real efetiva - Var. em 12 meses (%)",
+      name = "Variação em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
