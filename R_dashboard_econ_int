@@ -26,6 +26,7 @@ library(plotly)
 library(scales)
 library(shiny)
 library(WDI)
+library(ipeadatar)
 ```
 
 
@@ -773,6 +774,18 @@ eo <- get_series(
   ) %>% select(data_fmt, valor, date) %>% 
   arrange(desc(date))
 
+# Ativos de reservas (código 23043)
+ativ_res <- get_series(
+  code = c(valor = 23043)
+) %>% mutate(
+    valor = valor / 1000
+) %>% 
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+  ) %>% select(data_fmt, valor, date) %>% 
+  arrange(desc(date))
+
 # Índice de commodities - Brasil (códigos 22574 e 29042)
 commod_bra <- get_series(
   code = c(valor_rs = 27574)
@@ -880,6 +893,87 @@ commod_energia <- left_join(commod_energia, commod_usd_energia) %>%
     valor_usd_12m = number(valor_usd_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
   ) %>% select(data_fmt, valor_rs, valor_rs_mg, valor_rs_12m, valor_usd, valor_usd_mg, valor_usd_12m, date) %>% 
   arrange(desc(date))
+
+# Petróleo Brent e WTI
+brent <- ipeadata(code = "EIA366_PBRENT366") %>% mutate(
+  var_mg_brent = (value / lag(value) - 1) * 100
+) %>% mutate(
+  data_fmt = format(date, "%d/%m/%Y"),
+  valor_brent = value
+) %>% mutate(
+  valor_brent = number(valor_brent, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  var_mg_brent = number(var_mg_brent, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_brent, var_mg_brent, date) %>%
+    arrange(desc(date))
+
+brent_mensal <- ipeadata(code = "EIA366_PBRENT366") %>% mutate(
+  valor_brent = value,
+  ano_mes = format(date, "%Y-%m")
+) %>% aggregate(
+  valor_brent ~ ano_mes,
+  FUN = "mean"
+) %>% mutate(
+  var_mg_brent = (valor_brent / lag(valor_brent) - 1) * 100,
+  var_12m_brent = (valor_brent / lag(valor_brent, 12) - 1) * 100
+) %>% mutate(
+  valor_brent = number(valor_brent, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  var_mg_brent = number(var_mg_brent, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  var_12m_brent = number(var_12m_brent, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(ano_mes, valor_brent, var_mg_brent, var_12m_brent) %>%
+    arrange(desc(ano_mes))
+
+wti <- wti <- wti <- ipeadata(code = "EIA366_PWTI366") %>% mutate(
+  var_mg_wti = (value / lag(value) - 1) * 100
+) %>% mutate(
+  data_fmt = format(date, "%d/%m/%Y"),
+  valor_wti = value
+) %>% mutate(
+  valor_wti = number(valor_wti, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  var_mg_wti = number(var_mg_wti, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_wti, var_mg_wti, date) %>%
+    arrange(desc(date))
+
+wti_mensal <- ipeadata(code = "EIA366_PWTI366") %>% mutate(
+  valor_wti = value,
+  ano_mes = format(date, "%Y-%m")
+) %>% aggregate(
+  valor_wti ~ ano_mes,
+  FUN = "mean"
+) %>% mutate(
+  var_mg_wti = (valor_wti / lag(valor_wti) - 1) * 100,
+  var_12m_wti = (valor_wti / lag(valor_wti, 12) - 1) * 100
+) %>% mutate(
+  valor_wti = number(valor_wti, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  var_mg_wti = number(var_mg_wti, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  var_12m_wti = number(var_12m_wti, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(ano_mes, valor_wti, var_mg_wti, var_12m_wti) %>%
+    arrange(desc(ano_mes))
+
+petroleo <- left_join(brent, wti) %>% select(
+  data_fmt, valor_brent, var_mg_brent, valor_wti, var_mg_wti, date
+)
+
+petroleo_mensal <- left_join(brent_mensal, wti_mensal) %>% mutate(
+  date = ym(ano_mes)
+) %>% mutate(
+  data_fmt = format(date, "%m/%Y")
+) %>% select(data_fmt, valor_brent, var_mg_brent, var_12m_brent, valor_wti, var_mg_wti, var_12m_wti,
+             date)
+
+# Soja
+soja <- ipeadata(code = "IFS12_SOJAGP12") %>% mutate(
+  var_mg = (value / lag(value) - 1) * 100,
+  var_12m = (value / lag(value, 12) - 1) * 100
+) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor = value
+) %>% mutate(
+  valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  var_mg = number(var_mg, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  var_12m = number(var_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor, var_mg, var_12m, date) %>%
+    arrange(desc(date))
+
 ```
 
 # Visão geral
@@ -890,7 +984,7 @@ Columns {.sidebar} {data-width=250}
 
 <div style="font-size:18px">
 O presente _dashboard_ objetiva apresentar de forma centralizada uma série de dados macroeconômicos relacionados às contas externas da economia brasileira nas últimas décadas.
-São apresentadas informações referentes à taxa de câmbio, balanço de pagamentos, reservas internacionais e dívida externa, utilizando como fontes o Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB) e o DataBank do Banco Mundial. O painel é automatizado e atualizado diariamente.
+São apresentadas informações referentes ao balanço de pagamentos, preços e índices de commodities, dívida externa, reservas internacionais e taxa de câmbio, através de dados com frequências diárias, mensais, trimestrais e anuais. O painel é automatizado e atualizado diariamente.
 
 
 <br><br>
@@ -2217,6 +2311,73 @@ reactable(
 
 # - Conta financeira (Ativos de reserva) {data-navmenu="Balanço de pagamentos"}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+Os **ativos de reserva** compreendem as operações com os ativos externos que estão à disposição imediata e sob controle da autoridade monetária para satisfazer suas necessidades de financiamento de balanço de pagamentos, intervir no mercado de cambio e outros fins conexos. Ativos de reservas é dividido em **ouro monetário, direitos especiais de saque (DES), posição de reserva no FMI, outros ativos de reserva e demais ativos**.
+
+<br>
+
+**Fonte**: Código 23043 do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Ativos de reserva
+```{r}
+plot_ly(
+  data = ativ_res, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 10
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese ativos de reserva (US$ bilhões)
+```{r}
+reactable(
+  ativ_res[, -3],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Ativos de reserva",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 
 # Erros e omissões {data-navmenu="Balanço de pagamentos"}
@@ -2631,6 +2792,173 @@ reactable(
 )
 ```
 
+# Índice de commodities - IC-Br Energia {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+ 	
+O **IC-Br Energia** é um subíndice do IC-Br (série 27574). É uma média mensal ponderada dos preços em reais de petróleo Brent, gás natural e carvão. Dez/2005 = 100.
+
+**Fonte:** Códigos 27577 (real) e 29039 (dólar) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### IC-Br Energia (R$ e US$)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod_energia,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Energia (R$)"
+  ) %>%
+  add_trace(
+    data = commod_metal,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Energia (US$)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "Dez/2005 = 100", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod_energia,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs_mg)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Energia (R$)"
+  ) %>%
+  add_trace(
+    data = commod_metal,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd_mg)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Energia (US$)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = commod_energia,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rs_12m)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Energia (R$)"
+  ) %>%
+  add_trace(
+    data = commod_energia,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_usd_12m)),
+    type = "scatter",
+    mode = "lines",
+    name = "IC-Br Energia (US$)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese IC-Br Energia
+
+```{r}
+reactable(
+  commod_energia[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs = colDef(
+      name = "IC-Br Energia (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rs_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd = colDef(
+      name = "IC-Br Energia (US$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_usd_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # Índice de commodities - IC-Br Metal {data-navmenu="Commodities"}
 
 Column {.sidebar} {data-width=200}
@@ -2798,40 +3126,48 @@ reactable(
 )
 ```
 
-# Índice de commodities - IC-Br Energia {data-navmenu="Commodities"}
+# Petróleo bruto {data-navmenu="Commodities"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
- 	
-O **IC-Br Energia** é um subíndice do IC-Br (série 27574). É uma média mensal ponderada dos preços em reais de petróleo Brent, gás natural e carvão. Dez/2005 = 100.
+Produzido no Mar do Norte (Europa), **Brent** é uma classe de petróleo bruto que serve como benchmark para o preço internacional de diferentes tipos de petróleo.
 
-**Fonte:** Códigos 27577 (real) e 29039 (dólar) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+Produzido no Texas e no sul de Oklahoma, **West Texas Intermediate (WTI)** é uma classe de petróleo bruto que serve como benchmark para o preço internacional de diferentes tipos de petróleo.
+
+Os preços por barris de ambos os tipos de petróleo são _free on board_ (FOB), isto é, desconsideram despesas com fretes e seguros.
+
+As cotações mensais são as médias das cotações diárias.
+
+<br>
+
+**Fonte:** Energy Information Administration (EIA) via Ipeadata.
+
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### IC-Br Energia (R$ e US$)
+### Cotação diária
 ```{r}
 plot_ly() %>%
   add_trace(
-    data = commod_energia,
+    data = petroleo,
     x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_rs)),
+    y = ~as.numeric(gsub(",", ".", valor_brent)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Energia (R$)"
+    name = "Brent"
   ) %>%
   add_trace(
-    data = commod_metal,
+    data = petroleo,
     x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_usd)),
+    y = ~as.numeric(gsub(",", ".", valor_wti)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Energia (US$)"
+    name = "WTI"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "Dez/2005 = 100", autorange = TRUE),
+    yaxis = list(title = "US$", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -2841,28 +3177,59 @@ plot_ly() %>%
   )
 ```
 
-### Variação mensal (%)
+### Cotação Mensal
 ```{r}
 plot_ly() %>%
   add_trace(
-    data = commod_energia,
+    data = petroleo_mensal,
     x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_rs_mg)),
+    y = ~as.numeric(gsub(",", ".", valor_brent)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Energia (R$)"
+    name = "Brent"
   ) %>%
   add_trace(
-    data = commod_metal,
+    data = petroleo_mensal,
     x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_usd_mg)),
+    y = ~as.numeric(gsub(",", ".", valor_wti)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Energia (US$)"
+    name = "WTI"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "%", autorange = TRUE),
+    yaxis = list(title = "US$", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Variação Mensal (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = petroleo_mensal,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", var_mg_brent)),
+    type = "scatter",
+    mode = "lines",
+    name = "Brent"
+  ) %>%
+  add_trace(
+    data = petroleo_mensal,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", var_mg_wti)),
+    type = "scatter",
+    mode = "lines",
+    name = "WTI"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "US$", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -2876,24 +3243,24 @@ plot_ly() %>%
 ```{r}
 plot_ly() %>%
   add_trace(
-    data = commod_energia,
+    data = petroleo_mensal,
     x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_rs_12m)),
+    y = ~as.numeric(gsub(",", ".", var_12m_brent)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Energia (R$)"
+    name = "Brent"
   ) %>%
   add_trace(
-    data = commod_energia,
+    data = petroleo_mensal,
     x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_usd_12m)),
+    y = ~as.numeric(gsub(",", ".", var_12m_wti)),
     type = "scatter",
     mode = "lines",
-    name = "IC-Br Energia (US$)"
+    name = "WTI"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "%", autorange = TRUE),
+    yaxis = list(title = "US$", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -2903,46 +3270,94 @@ plot_ly() %>%
   )
 ```
 
-Column {data-width=400}  {.tabset}
+
+Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese IC-Br Energia
-
+### Síntese cotação diária
 ```{r}
 reactable(
-  commod_energia[, -8],
+  petroleo[, -6],
+  columns = list(
+    data_fmt = colDef(
+      name = "Data",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_brent = colDef(
+      name = "Brent (US$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg_brent = colDef(
+      name = "Variação diária (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_wti = colDef(
+      name = "WTI (US$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg_wti = colDef(
+      name = "Variação diária (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Síntese cotação mensal
+```{r}
+reactable(
+  petroleo_mensal[, -8],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_rs = colDef(
-      name = "IC-Br Energia (R$)",
+    valor_brent = colDef(
+      name = "Brent (US$)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_rs_mg = colDef(
+    var_mg_brent = colDef(
       name = "Variação mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_rs_12m = colDef(
+    var_12m_brent = colDef(
       name = "Variação em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_usd = colDef(
-      name = "IC-Br Energia (US$)",
+    valor_wti = colDef(
+      name = "WTI (US$)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_usd_mg = colDef(
+    var_mg_wti = colDef(
       name = "Variação mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_usd_12m = colDef(
+    var_12m_wti = colDef(
       name = "Variação em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
@@ -2964,6 +3379,112 @@ reactable(
   )
 )
 ```
+
+# Soja em grãos {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+Preço dos contratos futuros da soja negociados na bolsa de Chicago (Chicago Board of Trade - CBOT), contrato futuro mais próximo (primeiro vencimento), tipo padrão No. 2 yellow, cotado em **dólares por tonelada métrica**.
+
+<br>
+
+**Fonte:** International Financial Statistics (FMI/IFS) via Ipeadata.
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Cotação mensal
+```{r}
+plot_ly(
+  data = soja, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US$")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = soja, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = soja, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese soja em grãos
+```{r}
+reactable(
+  soja[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Data",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Soja em grãos (US$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 
 # Dívida externa bruta {data-navmenu="Dívida externa"}
 
@@ -3433,7 +3954,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese taxa diária
+### Síntese cotação diária
 ```{r, results='asis'}
 reactable(
   cambio_nom[, -6],
@@ -3481,7 +4002,7 @@ reactable(
 )
 ```
 
-### Síntese taxa mensal
+### Síntese cotação mensal
 ```{r, results='asis'}
 reactable(
   cambio_nom_mensal[, -7],
@@ -3557,7 +4078,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", valor_dol)),
     type = "scatter",
     mode = "lines",
-    name = "Taxa de câmbio real (USD)"
+    name = "Taxa de câmbio real (US$)"
   ) %>%
   add_trace(
     data = cambio_real,
@@ -3588,7 +4109,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", var_mg_dol)),
     type = "scatter",
     mode = "lines",
-    name = "Taxa de câmbio real (USD)"
+    name = "Taxa de câmbio real (US$)"
   ) %>%
   add_trace(
     data = cambio_real,
@@ -3619,7 +4140,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", var_12m_dol)),
     type = "scatter",
     mode = "lines",
-    name = "Taxa de câmbio real (USD)"
+    name = "Taxa de câmbio real (US$)"
   ) %>%
   add_trace(
     data = cambio_real,
@@ -3656,7 +4177,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_dol = colDef(
-      name = "Taxa de câmbio real (USD)",
+      name = "Taxa de câmbio real (US$)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
