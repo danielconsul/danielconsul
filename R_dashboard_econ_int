@@ -502,6 +502,59 @@ bc <- bc %>% mutate(
   ) %>% select(data_fmt, valor_exp, valor_imp, valor_saldo, date) %>% 
   arrange(desc(date))
 
+# Importações
+imp <- ipeadata(code = "SECEX12_MVTOT12") %>% mutate(
+  valor_imp = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  valor_imp = valor_imp / 1000
+) %>% mutate(
+  valor_imp = number(valor_imp, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+)%>% select(data_fmt, valor_imp, date) %>% 
+  arrange(desc(date))
+
+# Importações de bens de capital
+bk1 <- ipeadata(code = "FUNCEX12_MDVBKGCE12") %>% mutate(
+  valor_bk = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  valor_bk = valor_bk / 1000
+) %>% mutate(
+  valor_bk = number(valor_bk, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+)%>% select(data_fmt, valor_bk, date) %>% 
+  arrange(desc(date))
+
+bk2 <- ipeadata(code = "FUNCEX12_MDPBKGCE12") %>% mutate(
+  ind_bk = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  ind_bk = number(ind_bk, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, ind_bk, date) %>% 
+  arrange(desc(date))
+
+bk3 <- ipeadata(code = "FUNCEX12_MDQBKGCE12") %>% mutate(
+  qt_bk = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  qt_bk = number(qt_bk, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, qt_bk, date) %>% 
+  arrange(desc(date))
+
+bk <- left_join(bk1, bk2)
+bk <- left_join(bk, bk3)
+
+bk <- bk %>% select(data_fmt, valor_bk, ind_bk, qt_bk, date)
+
+# Importações de bens intermediários
+
+# Importações de bens de consumo
+
+# Importações de bens de consumo duráveis
+
+# Importações de bens de consumo não duráveis
+
+# Importações de combustíveis
+
 # Balança de serviços (códigos 22719, 22720 e 22721)
 bs_rec <- get_series(
   code = c(valor_rec = 22720)
@@ -1005,7 +1058,7 @@ Columns {data-width=750}
 knitr::include_graphics("visao_geral.png")
 ```
 
-# Transações correntes {data-navmenu="Balanço de pagamentos"}
+# 1) Transações correntes {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -1114,7 +1167,7 @@ reactable(
 )
 ```
 
-# - Balança comercial (bens) {data-navmenu="Balanço de pagamentos"}
+# 1.1) Balança comercial (bens) {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -1219,17 +1272,192 @@ reactable(
 )
 ```
 
-# - - Exportações {data-navmenu="Balanço de pagamentos"}
+# 1.1.1) Exportações {data-navmenu="Balanço de pagamentos"}
+
+# 1.1.1.1) Bens de capital {data-navmenu="Balanço de pagamentos"}
+
+# 1.1.1.2) Bens intermediários {data-navmenu="Balanço de pagamentos"}
+
+# 1.1.1.3) Bens de consumo {data-navmenu="Balanço de pagamentos"}
+
+# 1.1.1.3.1) Bens de consumo duráveis {data-navmenu="Balanço de pagamentos"}
+
+# 1.1.1.3.2) Bens de consumo não duráveis {data-navmenu="Balanço de pagamentos"}
+
+# 1.1.1.4) Combustíveis {data-navmenu="Balanço de pagamentos"}
+
+
+# 1.1.2) Importações {data-navmenu="Balanço de pagamentos"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+As **importações** correspondem às compras de mercadorias por residentes no país, registradas na Balança Comercial. O valor _free on board_ (FOB) representa o preço em dólares no embarque, sendo o importador responsável pelo frete, seguro e custos posteriores. Neste caso, considera-se a importação referente ao volume total do país.
+
+<br>
+
+**Fonte:** Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) via Ipeadata.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### US$ bilhões
 ```{r}
 
 ```
 
-# - - Importações {data-navmenu="Balanço de pagamentos"}
+### Índíce de preços
 ```{r}
 
 ```
 
-# - Balança de serviços {data-navmenu="Balanço de pagamentos"}
+### Índice de quantum
+```{r}
+
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese importações totais
+```{r}
+
+```
+
+# 1.1.2.1) Bens de capital {data-navmenu="Balanço de pagamentos"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+O setor de importação de **bens de capital** (BK) é utilizado para a produção de outros bens e inclui, por exemplo, máquinas e ferramentas, tratores e material de transporte.
+
+O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito das variações das quantidades físicas importadas sobre a evolução do valor de importação. São obtidos, implicitamente, por meio do deflacionamento dos valores importados pelas variações dos índices de preço de importação.
+
+<br>
+
+**Fonte:** Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) via Ipeadata.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### US$ bilhões
+```{r}
+plot_ly(
+  data = bk, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_bk)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índice de preços
+```{r}
+plot_ly(
+  data = bk, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", ind_bk)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 10
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índice de quantum
+```{r}
+plot_ly(
+  data = bk, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", qt_bk)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 50
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese importações de bens de capital
+```{r}
+reactable(
+  bk[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_bk = colDef(
+      name = "US$ bilhões",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    ind_bk = colDef(
+      name = "Índice de preços",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    qt_bk = colDef(
+      name = "Índice de quantum",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# 1.1.2.2) Bens intermediários {data-navmenu="Balanço de pagamentos"}
+
+# 1.1.2.3) Bens de consumo {data-navmenu="Balanço de pagamentos"}
+
+# 1.1.2.3.1) Bens de consumo duráveis {data-navmenu="Balanço de pagamentos"}
+
+# 1.1.2.3.2) Bens de consumo não duráveis {data-navmenu="Balanço de pagamentos"}
+
+# 1.1.2.4) Combustíveis {data-navmenu="Balanço de pagamentos"}
+
+
+# 1.2) Balança de serviços {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -1339,7 +1567,7 @@ reactable(
 )
 ```
 
-# - Renda primária {data-navmenu="Balanço de pagamentos"}
+# 1.3) Renda primária {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -1459,7 +1687,7 @@ reactable(
 )
 ```
 
-# - Renda secundária {data-navmenu="Balanço de pagamentos"}
+# 1.4 Renda secundária {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -1579,7 +1807,7 @@ reactable(
 )
 ```
 
-# Conta capital {data-navmenu="Balanço de pagamentos"}
+# 2) Conta capital {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -1699,7 +1927,7 @@ reactable(
 )
 ```
 
-# - Conta capital (Ativos não financeiros não produzidos) {data-navmenu="Balanço de pagamentos"}
+# 2.1) Ativos não financeiros não produzidos {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -1819,7 +2047,7 @@ reactable(
 )
 ```
 
-# - Conta capital (Ativos não financeiros não produzidos - Passes de atletas) {data-navmenu="Balanço de pagamentos"}
+# 2.1.1) Passes de atletas {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -1937,7 +2165,7 @@ reactable(
 )
 ```
 
-# Conta financeira {data-navmenu="Balanço de pagamentos"}
+# 3) Conta financeira {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -2011,7 +2239,7 @@ reactable(
 )
 ```
 
-# - Conta financeira (Investimento direto) {data-navmenu="Balanço de pagamentos"}
+# 3.1) Investimento direto {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -2125,7 +2353,7 @@ reactable(
 )
 ```
 
-# - Conta financeira (Investimento em carteira) {data-navmenu="Balanço de pagamentos"}
+# 3.2) Investimento em carteira {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=300}
 -----------------------------------------------------------------------
@@ -2199,7 +2427,7 @@ reactable(
 )
 ```
 
-# - Conta financeira (Outros investimentos) {data-navmenu="Balanço de pagamentos"}
+# 3.3) Outros investimentos {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -2309,7 +2537,7 @@ reactable(
 )
 ```
 
-# - Conta financeira (Ativos de reserva) {data-navmenu="Balanço de pagamentos"}
+# 3.4) Ativos de reserva {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -2380,7 +2608,7 @@ reactable(
 ```
 
 
-# Erros e omissões {data-navmenu="Balanço de pagamentos"}
+# 4) Erros e omissões {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
