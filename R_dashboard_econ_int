@@ -29,7 +29,6 @@ library(WDI)
 library(ipeadatar)
 ```
 
-
 ```{r, cache=TRUE}
 # Coleta de dados:
 
@@ -546,6 +545,36 @@ bk <- left_join(bk, bk3)
 bk <- bk %>% select(data_fmt, valor_bk, ind_bk, qt_bk, date)
 
 # Importações de bens intermediários
+bi1 <- ipeadata(code = "FUNCEX12_MDVBIGCE12") %>% mutate(
+  valor_bi = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  valor_bi = valor_bi / 1000
+) %>% mutate(
+  valor_bi = number(valor_bi, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+)%>% select(data_fmt, valor_bi, date) %>% 
+  arrange(desc(date))
+
+bi2 <- ipeadata(code = "FUNCEX12_MDPBIGCE12") %>% mutate(
+  ind_bi = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  ind_bi = number(ind_bi, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, ind_bi, date) %>% 
+  arrange(desc(date))
+
+bi3 <- ipeadata(code = "FUNCEX12_MDQBIGCE12") %>% mutate(
+  qt_bi = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  qt_bi = number(qt_bi, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, qt_bi, date) %>% 
+  arrange(desc(date))
+
+bi <- left_join(bi1, bi2)
+bi <- left_join(bi, bi3)
+
+bi <- bi %>% select(data_fmt, valor_bi, ind_bi, qt_bi, date)
 
 # Importações de bens de consumo
 
@@ -1335,7 +1364,7 @@ O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito
 
 <br>
 
-**Fonte:** Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) via Ipeadata.
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -1447,6 +1476,126 @@ reactable(
 ```
 
 # 1.1.2.2) Bens intermediários {data-navmenu="Balanço de pagamentos"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+O setor de importação de **bens intermediários** (BI) é utilizado como insumo para a produção de outros bens e incluem, entre outros itens, partes e peças para veículos, componentes eletro-eletrônicos, minérios e produtos siderúrgicos básicos, elementos e compostos químicos e soja em grão. 
+
+O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito das variações das quantidades físicas importadas sobre a evolução do valor de importação. São obtidos, implicitamente, por meio do deflacionamento dos valores importados pelas variações dos índices de preço de importação.
+
+<br>
+
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### US$ bilhões
+```{r}
+plot_ly(
+  data = bi, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_bi)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 2
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índice de preços
+```{r}
+plot_ly(
+  data = bi, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", ind_bi)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 10
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índice de quantum
+```{r}
+plot_ly(
+  data = bi, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", qt_bi)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 20
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese importações de bens intermediários
+```{r}
+reactable(
+  bi[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_bi = colDef(
+      name = "US$ bilhões",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    ind_bi = colDef(
+      name = "Índice de preços",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    qt_bi = colDef(
+      name = "Índice de quantum",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # 1.1.2.3) Bens de consumo {data-navmenu="Balanço de pagamentos"}
 
@@ -4107,7 +4256,11 @@ reactable(
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-**Taxa de câmbio comercial (compra e venda) - cotações diárias e mensais:** refere-se às taxas administradas até 13 de março de 1990 e às taxas livres a partir dessa data (Resolução 1690, de 18.3.1990). As taxas administradas são aquelas fixadas pelo Banco Central. As taxas livres correspondem à média das taxas efetivas de operações no mercado interbancário, ponderada pelo volume de transações de venda do dia. As transações fechadas em taxas que mais se distanciam da média do mercado (outliers) e aquelas que evidenciam formação artificial de preço ou contrárias às práticas regulares do mercado são excluídas dos cálculos. A partir de março de 1992, essa taxa recebeu a denominação de taxa PTAX (fechamento). As taxas mensais referem-se aos valores de fim de período.
+**Taxa de câmbio comercial (compra e venda) - cotações diárias e mensais:** refere-se às taxas administradas até 13 de março de 1990 e às taxas livres a partir dessa data (Resolução 1.690, de 18.03.1990). As taxas administradas são aquelas fixadas pelo Banco Central. As taxas livres correspondem à média das taxas efetivas de operações no mercado interbancário, ponderada pelo volume de transações de venda do dia. As transações fechadas em taxas que mais se distanciam da média do mercado (outliers) e aquelas que evidenciam formação artificial de preço ou contrárias às práticas regulares do mercado são excluídas dos cálculos. A partir de março de 1992, essa taxa recebeu a denominação de **taxa PTAX (fechamento)**, isto é, a partir de 01.07.2011, é a média aritmética das taxas de compra e das taxas de venda dos boletins do dia, conforme Circulares 3.506, de 23.09.2010, e 3.537, de 25.05.2011. Até 30.06.2011, é a taxa média ponderada dos negócios realizados no mercado interbancário de câmbio com liquidação em dois dias úteis, calculada pelo Banco Central do Brasil, conforme Comunicado N. 6.815/99. 
+
+<br>
+
+As taxas mensais referem-se aos valores de fim de período.
 
 <br>
 
