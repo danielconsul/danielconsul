@@ -485,10 +485,10 @@ bc_saldo <- get_series(
   code = c(valor_saldo = 22707)
 )
 
-bc <- left_join(bc_exp, bc_imp)
-bc <- left_join(bc, bc_saldo)
+bal_com <- left_join(bc_exp, bc_imp)
+bal_com <- left_join(bal_com, bc_saldo)
 
-bc <- bc %>% mutate(
+bal_com <- bal_com %>% mutate(
     valor_exp = valor_exp / 1000,
     valor_imp = valor_imp / 1000,
     valor_saldo = valor_saldo / 1000
@@ -502,7 +502,7 @@ bc <- bc %>% mutate(
   arrange(desc(date))
 
 # Importações
-imp <- ipeadata(code = "SECEX12_MVTOT12") %>% mutate(
+imp1 <- ipeadata(code = "SECEX12_MVTOT12") %>% mutate(
   valor_imp = value,
   data_fmt = format(date, "%m/%Y")
 ) %>% mutate(
@@ -511,6 +511,25 @@ imp <- ipeadata(code = "SECEX12_MVTOT12") %>% mutate(
   valor_imp = number(valor_imp, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
 )%>% select(data_fmt, valor_imp, date) %>% 
   arrange(desc(date))
+
+imp2 <- ipeadata(code = "FUNCEX12_MDPT12") %>% mutate(
+  ind_imp = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  ind_imp = number(ind_imp, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, ind_imp, date) %>% 
+  arrange(desc(date))
+
+imp3 <- ipeadata(code = "FUNCEX12_MDQT12") %>% mutate(
+  qt_imp = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  qt_imp = number(qt_imp, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, qt_imp, date) %>% 
+  arrange(desc(date))
+
+import <- left_join(imp1, imp2)
+import <- left_join(import, imp3) %>% select(data_fmt, valor_imp, ind_imp, qt_imp, date)
 
 # Importações de bens de capital
 bk1 <- ipeadata(code = "FUNCEX12_MDVBKGCE12") %>% mutate(
@@ -577,10 +596,57 @@ bi <- left_join(bi, bi3)
 bi <- bi %>% select(data_fmt, valor_bi, ind_bi, qt_bi, date)
 
 # Importações de bens de consumo
+bc <- ipeadata(code = "SECEX12_MBENCONGCE12") %>% mutate(
+  valor_bc = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  valor_bc = valor_bc / 1000
+) %>% mutate(
+  valor_bc = number(valor_bc, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+)%>% select(data_fmt, valor_bc, date) %>% 
+  arrange(desc(date))
 
 # Importações de bens de consumo duráveis
+bcd1 <- ipeadata(code = "FUNCEX12_MDVBCDGCE12") %>% mutate(
+  valor_bcd = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  valor_bcd = valor_bcd / 1000
+) %>% mutate(
+  valor_bcd = number(valor_bcd, bcdg.mark = ".", decimal.mark = ",", accuracy = 0.001)
+)%>% select(data_fmt, valor_bcd, date) %>% 
+  arrange(desc(date))
+
+bcd2 <- ipeadata(code = "FUNCEX12_MDQBCDGCE12") %>% mutate(
+  qt_bcd = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  qt_bcd = number(qt_bcd, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, qt_bcd, date) %>% 
+  arrange(desc(date))
+
+bcd <- left_join(bcd1, bcd2) %>% select(data_fmt, valor_bcd, qt_bcd, date)
 
 # Importações de bens de consumo não duráveis
+bcnd1 <- ipeadata(code = "FUNCEX12_MDVBCNDGCE12") %>% mutate(
+  valor_bcnd = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  valor_bcnd = valor_bcnd / 1000
+) %>% mutate(
+  valor_bcnd = number(valor_bcnd, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+)%>% select(data_fmt, valor_bcnd, date) %>% 
+  arrange(desc(date))
+
+bcnd2 <- ipeadata(code = "FUNCEX12_MDQBCNDGCE12") %>% mutate(
+  qt_bcnd = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  qt_bcnd = number(qt_bcnd, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, qt_bcnd, date) %>% 
+  arrange(desc(date))
+
+bcnd <- left_join(bcnd1, bcnd2) %>% select(data_fmt, valor_bcnd, qt_bcnd, date)
 
 # Importações de combustíveis
 
@@ -835,14 +901,15 @@ outros_inv <- outros_inv %>% mutate(
     valor_outros_inv_ativos = valor_outros_inv_ativos / 1000,
     valor_outros_inv_passivos = valor_outros_inv_passivos / 1000,
     valor_outros_inv_liq = valor_outros_inv_liq / 1000
-) %>% 
-  mutate(
+) %>% mutate(
     data_fmt = format(date, "%m/%Y"),
-    valor_outros_inv_ativos = number(valor_outros_inv_ativos, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
-    valor_outros_inv_passivos = number(valor_outros_inv_passivos, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
-    valor_outros_inv_liq = number(valor_outros_inv_liq, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
-  ) %>% select(data_fmt, valor_outros_inv_ativos, valor_outros_inv_passivos, valor_outros_inv_liq, date) %>% 
-  arrange(desc(date))
+    valor_outros_inv_ativos = number(valor_outros_inv_ativos, big.mark = ".",
+                                     decimal.mark = ",", accuracy = 0.001),
+    valor_outros_inv_passivos = number(valor_outros_inv_passivos, big.mark = ".",
+                                       decimal.mark = ",", accuracy = 0.001),
+    valor_outros_inv_liq = number(valor_outros_inv_liq, big.mark = ".",
+                                  decimal.mark = ",", accuracy = 0.001)) %>% select(
+                                    data_fmt, valor_outros_inv_ativos, valor_outros_inv_passivos, valor_outros_inv_liq, date) %>% arrange(desc(date))
 
 # Erros e omissões (código 23060)
 eo <- get_series(
@@ -1213,7 +1280,7 @@ Column {data-width=400}  {.tabset}
 ### Exportações (1)
 ```{r}
 plot_ly(
-  data = bc, 
+  data = bal_com, 
   x = ~date, 
   y = ~as.numeric(gsub(",", ".", valor_exp)),
   type = "scatter",
@@ -1228,7 +1295,7 @@ plot_ly(
 ### Importações (2)
 ```{r}
 plot_ly(
-  data = bc, 
+  data = bal_com, 
   x = ~date, 
   y = ~as.numeric(gsub(",", ".", valor_imp)),
   type = "scatter",
@@ -1243,7 +1310,7 @@ plot_ly(
 ### Saldo BC (3) (1-2)
 ```{r}
 plot_ly(
-  data = bc, 
+  data = bal_com, 
   x = ~date, 
   y = ~as.numeric(gsub(",", ".", valor_saldo)),
   type = "scatter",
@@ -1261,7 +1328,7 @@ Column {data-width=400}  {.tabset}
 ### Síntese BC (US$ bilhões)
 ```{r}
 reactable(
-  bc[, -5],
+  bal_com[, -5],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -1325,24 +1392,69 @@ As **importações** correspondem às compras de mercadorias por residentes no p
 
 <br>
 
-**Fonte:** Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) via Ipeadata.
+**Fonte:** Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) e Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
 ### US$ bilhões
 ```{r}
-
+plot_ly(
+  data = import, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_imp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 5
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
 ```
 
 ### Índíce de preços
 ```{r}
-
+plot_ly(
+  data = import, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", ind_imp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 10
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
 ```
 
 ### Índice de quantum
 ```{r}
-
+plot_ly(
+  data = import, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", qt_imp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 20
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
 ```
 
 Column {data-width=400}  {.tabset}
@@ -1350,7 +1462,45 @@ Column {data-width=400}  {.tabset}
 
 ### Síntese importações totais
 ```{r}
-
+reactable(
+  import[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_imp = colDef(
+      name = "US$ bilhões",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    ind_imp = colDef(
+      name = "Índice de preços",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    qt_imp = colDef(
+      name = "Índice de quantum",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
 ```
 
 # 1.1.2.1) Bens de capital {data-navmenu="Balanço de pagamentos"}
@@ -1599,9 +1749,267 @@ reactable(
 
 # 1.1.2.3) Bens de consumo {data-navmenu="Balanço de pagamentos"}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+A importação de **bens de consumo** refere-se a bens duráveis e não duráveis destinados ao uso de consumidores finais.
+
+<br>
+
+**Fonte:** Secretaria de Comércio Exterior (SECEX) do Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) via Ipeadata.
+
+Column {data-width=600} {.tabset}
+-----------------------------------------------------------------------
+
+### US$ bilhões
+```{r}
+plot_ly(
+  data = bc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_bc)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=200} {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese importações de bens de consumo
+```{r}
+reactable(
+  bc[, -3],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_bc = colDef(
+      name = "US$ bilhões",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # 1.1.2.3.1) Bens de consumo duráveis {data-navmenu="Balanço de pagamentos"}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+O setor de importação de **bens de consumo duráveis** compreende bens que possuem uma vida útil esperada de 1 a 3 anos ou mais e com valores relativamente elevados, tais como refrigeradores, máquinas de lavar, automóveis de passeio, motocicletas, aparelhos eletrodomésticos e aparelhos celulares.
+
+O índice de quantum (média 2018 = 100) capta o efeito das variações das quantidades físicas importadas sobre a evolução do valor de importação. É obtido, implicitamente, por meio do deflacionamento dos valores importados pelas variações dos índices de preço de importação.
+
+<br>
+
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### US$ bilhões
+```{r}
+plot_ly(
+  data = bcd, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_bcd)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índice de quantum
+```{r}
+plot_ly(
+  data = bcd, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", qt_bcd)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 40
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese importações de bens de consumo duráveis
+```{r}
+reactable(
+  bcd[, -4],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_bcd = colDef(
+      name = "US$ bilhões",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    qt_bcd = colDef(
+      name = "Índice de quantum",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # 1.1.2.3.2) Bens de consumo não duráveis {data-navmenu="Balanço de pagamentos"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+O setor de **bens de consumo não duráveis** compreende bens que possuem uma vida útil inferior a um ano e incluem produtos de alimentação e bebidas em geral, os artigos de vestuário e os brinquedos, entre outros.
+
+O índice de quantum (média 2018 = 100) capta o efeito das variações das quantidades físicas importadas sobre a evolução do valor de importação. É obtido, implicitamente, por meio do deflacionamento dos valores importados pelas variações dos índices de preço de importação.
+
+<br>
+
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### US$ bilhões
+```{r}
+plot_ly(
+  data = bcnd, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_bcnd)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 2
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índice de quantum
+```{r}
+plot_ly(
+  data = bcnd, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", qt_bcnd)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 20
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese importações de bens de consumo não duráveis
+```{r}
+reactable(
+  bcnd[, -4],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_bcnd = colDef(
+      name = "US$ bilhões",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    qt_bcnd = colDef(
+      name = "Índice de quantum",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # 1.1.2.4) Combustíveis {data-navmenu="Balanço de pagamentos"}
 
