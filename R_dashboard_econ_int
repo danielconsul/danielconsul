@@ -531,6 +531,57 @@ imp3 <- ipeadata(code = "FUNCEX12_MDQT12") %>% mutate(
 import <- left_join(imp1, imp2)
 import <- left_join(import, imp3) %>% select(data_fmt, valor_imp, ind_imp, qt_imp, date)
 
+# Exportações
+exp1 <- ipeadata(code = "SECEX12_XVTOT12") %>% mutate(
+  valor_exp = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  valor_exp = valor_exp / 1000
+) %>% mutate(
+  valor_exp = number(valor_exp, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+)%>% select(data_fmt, valor_exp, date) %>% 
+  arrange(desc(date))
+
+exp2 <- ipeadata(code = "FUNCEX12_XPT12") %>% mutate(
+  ind_exp = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  ind_exp = number(ind_exp, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, ind_exp, date) %>% 
+  arrange(desc(date))
+
+exp3 <- ipeadata(code = "FUNCEX12_XQT12") %>% mutate(
+  qt_exp = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  qt_exp = number(qt_exp, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, qt_exp, date) %>% 
+  arrange(desc(date))
+
+export <- left_join(exp1, exp2)
+export <- left_join(export, exp3) %>% select(data_fmt, valor_exp, ind_exp, qt_exp, date)
+
+# Exportações de bens de capital
+bk1_exp <- ipeadata(code = "FUNCEX12_XVBKGCE12") %>% mutate(
+  valor_bk = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  valor_bk = valor_bk / 1000
+) %>% mutate(
+  valor_bk = number(valor_bk, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+)%>% select(data_fmt, valor_bk, date) %>% 
+  arrange(desc(date))
+
+bk2_exp <- ipeadata(code = "FUNCEX12_XQBKGCE12") %>% mutate(
+  qt_bk = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  qt_bk = number(qt_bk, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, qt_bk, date) %>% 
+  arrange(desc(date))
+
+bk_exp <- left_join(bk1_exp, bk2_exp) %>% select(data_fmt, valor_bk, qt_bk, date)
+
 # Importações de bens de capital
 bk1 <- ipeadata(code = "FUNCEX12_MDVBKGCE12") %>% mutate(
   valor_bk = value,
@@ -595,8 +646,40 @@ bi <- left_join(bi, bi3)
 
 bi <- bi %>% select(data_fmt, valor_bi, ind_bi, qt_bi, date)
 
+# Exportações de bens intermediários
+bi1_exp <- ipeadata(code = "FUNCEX12_XVBIGCE12") %>% mutate(
+  valor_bi = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  valor_bi = valor_bi / 1000
+) %>% mutate(
+  valor_bi = number(valor_bi, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+)%>% select(data_fmt, valor_bi, date) %>% 
+  arrange(desc(date))
+
+bi2_exp <- ipeadata(code = "FUNCEX12_XQBIGCE12") %>% mutate(
+  qt_bi = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  qt_bi = number(qt_bi, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, qt_bi, date) %>% 
+  arrange(desc(date))
+
+bi_exp <- left_join(bi1_exp, bi2_exp) %>% select(data_fmt, valor_bi, qt_bi, date)
+
 # Importações de bens de consumo
 bc <- ipeadata(code = "SECEX12_MBENCONGCE12") %>% mutate(
+  valor_bc = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  valor_bc = valor_bc / 1000
+) %>% mutate(
+  valor_bc = number(valor_bc, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+)%>% select(data_fmt, valor_bc, date) %>% 
+  arrange(desc(date))
+
+# Exportações de bens de consumo
+exp_bc <- ipeadata(code = "SECEX12_XBENCONGCE12") %>% mutate(
   valor_bc = value,
   data_fmt = format(date, "%m/%Y")
 ) %>% mutate(
@@ -627,6 +710,38 @@ bcd2 <- ipeadata(code = "FUNCEX12_MDQBCDGCE12") %>% mutate(
 
 bcd <- left_join(bcd1, bcd2) %>% select(data_fmt, valor_bcd, qt_bcd, date)
 
+# Exportações de bens de consumo duráveis
+bcd1_exp <- ipeadata(code = "FUNCEX12_XVBCDGCE12") %>% mutate(
+  valor_bcd = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  valor_bcd = valor_bcd / 1000
+) %>% mutate(
+  valor_bcd = number(valor_bcd, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+)%>% select(data_fmt, valor_bcd, date) %>% 
+  arrange(desc(date))
+
+bcd2_exp <- ipeadata(code = "FUNCEX12_XPBCDGCE12") %>% mutate(
+  ind_bcd = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  ind_bcd = number(ind_bcd, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, ind_bcd, date) %>% 
+  arrange(desc(date))
+
+bcd3_exp <- ipeadata(code = "FUNCEX12_XQBCDGCE12") %>% mutate(
+  qt_bcd = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  qt_bcd = number(qt_bcd, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, qt_bcd, date) %>% 
+  arrange(desc(date))
+
+bcd_exp <- left_join(bcd1_exp, bcd2_exp)
+bcd_exp <- left_join(bcd_exp, bcd3_exp)
+
+bcd_exp <- bcd_exp %>% select(data_fmt, valor_bcd, ind_bcd, qt_bcd, date)
+
 # Importações de bens de consumo não duráveis
 bcnd1 <- ipeadata(code = "FUNCEX12_MDVBCNDGCE12") %>% mutate(
   valor_bcnd = value,
@@ -649,6 +764,36 @@ bcnd2 <- ipeadata(code = "FUNCEX12_MDQBCNDGCE12") %>% mutate(
 bcnd <- left_join(bcnd1, bcnd2) %>% select(data_fmt, valor_bcnd, qt_bcnd, date)
 
 # Importações de combustíveis
+comb1 <- ipeadata(code = "FUNCEX12_MDVCOMBGCE12") %>% mutate(
+  valor_comb = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  valor_comb = valor_comb / 1000
+) %>% mutate(
+  valor_comb = number(valor_comb, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+)%>% select(data_fmt, valor_comb, date) %>% 
+  arrange(desc(date))
+
+comb2 <- ipeadata(code = "FUNCEX12_MDPCOMBGCE12") %>% mutate(
+  ind_comb = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  ind_comb = number(ind_comb, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, ind_comb, date) %>% 
+  arrange(desc(date))
+
+comb3 <- ipeadata(code = "FUNCEX12_MDQCOMBGCE12") %>% mutate(
+  qt_comb = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  qt_comb = number(qt_comb, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, qt_comb, date) %>% 
+  arrange(desc(date))
+
+comb <- left_join(comb1, comb2)
+comb <- left_join(comb, comb3)
+
+comb <- comb %>% select(data_fmt, valor_comb, ind_comb, qt_comb, date)
 
 # Balança de serviços (códigos 22719, 22720 e 22721)
 bs_rec <- get_series(
@@ -1370,13 +1515,509 @@ reactable(
 
 # 1.1.1) Exportações {data-navmenu="Balanço de pagamentos"}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+As **exportações** são os valores das vendas para o exterior e outras remessas de bens de propriedade de residentes no país, registrado na Balança Comercial do Balanço de Pagamentos. O valor _free on board_ (FOB) representa o preço em dólares no embarque, sendo o importador responsável pelo frete, seguro e custos posteriores. Neste caso, considera-se a exportação referente ao volume total do país.
+
+<br>
+
+**Fonte:** Secretaria de Comércio Exterior (SECEX) do Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) e Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### US$ bilhões
+```{r}
+plot_ly(
+  data = export, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_exp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 5
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índíce de preços
+```{r}
+plot_ly(
+  data = export, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", ind_exp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 10
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índice de quantum
+```{r}
+plot_ly(
+  data = export, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", qt_exp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 20
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese exportações totais
+```{r}
+reactable(
+  export[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_exp = colDef(
+      name = "US$ bilhões",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    ind_exp = colDef(
+      name = "Índice de preços",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    qt_exp = colDef(
+      name = "Índice de quantum",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # 1.1.1.1) Bens de capital {data-navmenu="Balanço de pagamentos"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+O setor de exportação de **bens de capital** (BK) é utilizado para a produção de outros bens e inclui, por exemplo, máquinas e ferramentas, tratores e material de transporte.
+
+O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito das variações das quantidades físicas exportadas sobre a evolução do valor de exportação. São obtidos, implicitamente, por meio do deflacionamento dos valores exportados pelas variações dos índices de preço de exportação.
+
+<br>
+
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### US$ bilhões
+```{r}
+plot_ly(
+  data = bk_exp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_bk)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índice de quantum
+```{r}
+plot_ly(
+  data = bk_exp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", qt_bk)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 20
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese exportações de bens de capital
+```{r}
+reactable(
+  bk_exp[, -4],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_bk = colDef(
+      name = "US$ bilhões",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    qt_bk = colDef(
+      name = "Índice de quantum",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # 1.1.1.2) Bens intermediários {data-navmenu="Balanço de pagamentos"}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+O setor de exportação de **bens intermediários** (BI) é utilizado como insumo para a produção de outros bens e incluem, entre outros itens, partes e peças para veículos, componentes eletro-eletrônicos, minérios e produtos siderúrgicos básicos, elementos e compostos químicos e soja em grão. 
+
+O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito das variações das quantidades físicas exportadas sobre a evolução do valor de exportação. São obtidos, implicitamente, por meio do deflacionamento dos valores exportados pelas variações dos índices de preço de exportação.
+
+<br>
+
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### US$ bilhões
+```{r}
+plot_ly(
+  data = bi_exp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_bi)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 2
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índice de quantum
+```{r}
+plot_ly(
+  data = bi_exp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", qt_bi)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 20
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese exportações de bens intermediários
+```{r}
+reactable(
+  bi_exp[, -4],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_bi = colDef(
+      name = "US$ bilhões",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    qt_bi = colDef(
+      name = "Índice de quantum",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # 1.1.1.3) Bens de consumo {data-navmenu="Balanço de pagamentos"}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+A exportação de **bens de consumo** refere-se a bens duráveis e não duráveis destinados ao uso de consumidores finais.
+
+<br>
+
+**Fonte:** Secretaria de Comércio Exterior (SECEX) do Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) via Ipeadata.
+
+Column {data-width=600} {.tabset}
+-----------------------------------------------------------------------
+
+### US$ bilhões
+```{r}
+plot_ly(
+  data = exp_bc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_bc)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=200} {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese exportações de bens de consumo
+```{r}
+reactable(
+  exp_bc[, -3],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_bc = colDef(
+      name = "US$ bilhões",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # 1.1.1.3.1) Bens de consumo duráveis {data-navmenu="Balanço de pagamentos"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+O setor de exportação de **bens de consumo duráveis** compreende bens que possuem uma vida útil esperada de 1 a 3 anos ou mais e com valores relativamente elevados, tais como refrigeradores, máquinas de lavar, automóveis de passeio, motocicletas, aparelhos eletrodomésticos e aparelhos celulares.
+
+Os índices de preços e de quantum (médias 2018 = 100) captam o efeito das variações das quantidades físicas exportadas sobre a evolução do valor de exportação. São obtidos, implicitamente, por meio do deflacionamento dos valores exportados pelas variações dos índices de preço de exportação.
+
+<br>
+
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### US$ bilhões
+```{r}
+plot_ly(
+  data = bcd_exp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_bcd)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 0.1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índice de preços
+```{r}
+plot_ly(
+  data = bcd_exp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", ind_bcd)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 5
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índice de quantum
+```{r}
+plot_ly(
+  data = bcd_exp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", qt_bcd)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 10
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese exportações de bens de consumo duráveis
+```{r}
+reactable(
+  bcd_exp[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_bcd = colDef(
+      name = "US$ bilhões",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+      ind_bcd = colDef(
+      name = "Índice de preços",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    qt_bcd = colDef(
+      name = "Índice de quantum",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # 1.1.1.3.2) Bens de consumo não duráveis {data-navmenu="Balanço de pagamentos"}
 
@@ -2012,6 +2653,126 @@ reactable(
 ```
 
 # 1.1.2.4) Combustíveis {data-navmenu="Balanço de pagamentos"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+Estão agregados, entre outros, na grande categoria econômica **combustíveis** os óleos brutos de petróleo, a gasolina e o álcool carburante e também os combustíveis e lubrificantes utilizados em aeronaves e embarcações de trânsito internacional, ou seja, aqueles considerados como consumo de bordo. 
+
+O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito das variações das quantidades físicas importadas sobre a evolução do valor de importação. São obtidos, implicitamente, por meio do deflacionamento dos valores importados pelas variações dos índices de preço de importação.
+
+<br>
+
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### US$ bilhões
+```{r}
+plot_ly(
+  data = comb, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_comb)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índice de preços
+```{r}
+plot_ly(
+  data = comb, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", ind_comb)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 20
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índice de quantum
+```{r}
+plot_ly(
+  data = comb, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", qt_comb)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 20
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese importações de combustíveis
+```{r}
+reactable(
+  comb[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_comb = colDef(
+      name = "US$ bilhões",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    ind_comb = colDef(
+      name = "Índice de preços",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    qt_comb = colDef(
+      name = "Índice de quantum",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 
 # 1.2) Balança de serviços {data-navmenu="Balanço de pagamentos"}
