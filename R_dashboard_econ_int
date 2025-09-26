@@ -27,10 +27,83 @@ library(scales)
 library(shiny)
 library(WDI)
 library(ipeadatar)
+library(fredr)
 ```
 
 ```{r, cache=TRUE}
 # Coleta de dados:
+
+fredr_set_key("0087fc9b146c214d78104e3737039ea4")
+
+# Trigo
+trigo <- fredr(
+  series_id = "PWHEAMTUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, date)
+
+# Minério de ferro
+miner_ferro <- fredr(
+  series_id = "PIORECRUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, date)
+
+# Café
+cafe_arab <- fredr(
+  series_id = "PCOFFOTMUSDM"
+) %>% mutate(
+  valor_arab = value
+) %>% mutate(
+  var_mg_arab = (valor_arab / lag(valor_arab) - 1) * 100,
+  var_12m_arab = (valor_arab / lag(valor_arab, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_arab = number(valor_arab, decimal.mark = ",", accuracy = 0.01),
+    var_mg_arab = number(var_mg_arab, decimal.mark = ",", accuracy = 0.01),
+    var_12m_arab = number(var_12m_arab, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor_arab, var_mg_arab, var_12m_arab, date)
+
+cafe_rob <- fredr(
+  series_id = "PCOFFROBUSDM"
+) %>% mutate(
+  valor_rob = value
+) %>% mutate(
+  var_mg_rob = (valor_rob / lag(valor_rob) - 1) * 100,
+  var_12m_rob = (valor_rob / lag(valor_rob, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rob = number(valor_rob, decimal.mark = ",", accuracy = 0.01),
+    var_mg_rob = number(var_mg_rob, decimal.mark = ",", accuracy = 0.01),
+    var_12m_rob = number(var_12m_rob, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor_rob, var_mg_rob, var_12m_rob, date)
+
+cafe <- left_join(cafe_arab, cafe_rob) %>% drop_na() %>%
+  select(data_fmt, valor_arab, var_mg_arab, var_12m_arab, valor_rob, var_mg_rob, var_12m_rob, date)
 
 # Taxa de câmbio - Livre - Diária - Dólar americano (compra e venda):
 cambio_venda1 <- get_series(
@@ -168,6 +241,20 @@ cambio_real <- cambio_real %>%
   arrange(desc(date)) %>%
   select(data_fmt, valor_dol, var_mg_dol, var_12m_dol,
          valor_efet, var_mg_efet, var_12m_efet, date)
+
+# Termos de troca
+tt <- ipeadata(code = "FUNCEX12_TTR12") %>% mutate(valor_tt = value) %>% mutate(
+    var_mg_tt = (valor_tt / lag(valor_tt) - 1) * 100,
+    var_12m_tt = (valor_tt / lag(valor_tt, 12) - 1) * 100
+  ) %>%
+  mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_tt = number(valor_tt, decimal.mark = ",", accuracy = 0.01),
+    var_mg_tt = number(var_mg_tt, decimal.mark = ",", accuracy = 0.01),
+    var_12m_tt = number(var_12m_tt, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor_tt, var_mg_tt, var_12m_tt, date)
 
 # Reservas internacionais (código 3546):
 res_int <- get_series(
@@ -763,6 +850,27 @@ bcnd2 <- ipeadata(code = "FUNCEX12_MDQBCNDGCE12") %>% mutate(
 
 bcnd <- left_join(bcnd1, bcnd2) %>% select(data_fmt, valor_bcnd, qt_bcnd, date)
 
+# Exportações de bens de consumo não duráveis
+bcnd1_exp <- ipeadata(code = "FUNCEX12_XVBCNDGCE12") %>% mutate(
+  valor_bcnd = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  valor_bcnd = valor_bcnd / 1000
+) %>% mutate(
+  valor_bcnd = number(valor_bcnd, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+)%>% select(data_fmt, valor_bcnd, date) %>% 
+  arrange(desc(date))
+
+bcnd2_exp <- ipeadata(code = "FUNCEX12_XQBCNDGCE12") %>% mutate(
+  qt_bcnd = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  qt_bcnd = number(qt_bcnd, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, qt_bcnd, date) %>% 
+  arrange(desc(date))
+
+bcnd_exp <- left_join(bcnd1_exp, bcnd2_exp) %>% select(data_fmt, valor_bcnd, qt_bcnd, date)
+
 # Importações de combustíveis
 comb1 <- ipeadata(code = "FUNCEX12_MDVCOMBGCE12") %>% mutate(
   valor_comb = value,
@@ -794,6 +902,38 @@ comb <- left_join(comb1, comb2)
 comb <- left_join(comb, comb3)
 
 comb <- comb %>% select(data_fmt, valor_comb, ind_comb, qt_comb, date)
+
+# Exportações de combustíveis
+comb1_exp <- ipeadata(code = "FUNCEX12_XVCOMBGCE12") %>% mutate(
+  valor_comb = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  valor_comb = valor_comb / 1000
+) %>% mutate(
+  valor_comb = number(valor_comb, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+)%>% select(data_fmt, valor_comb, date) %>% 
+  arrange(desc(date))
+
+comb2_exp <- ipeadata(code = "FUNCEX12_XPCOMBGCE12") %>% mutate(
+  ind_comb = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  ind_comb = number(ind_comb, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, ind_comb, date) %>% 
+  arrange(desc(date))
+
+comb3_exp <- ipeadata(code = "FUNCEX12_XQCOMBGCE12") %>% mutate(
+  qt_comb = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  qt_comb = number(qt_comb, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+)%>% select(data_fmt, qt_comb, date) %>% 
+  arrange(desc(date))
+
+comb_exp <- left_join(comb1_exp, comb2_exp)
+comb_exp <- left_join(comb_exp, comb3_exp)
+
+comb_exp <- comb_exp %>% select(data_fmt, valor_comb, ind_comb, qt_comb, date)
 
 # Balança de serviços (códigos 22719, 22720 e 22721)
 bs_rec <- get_series(
@@ -2021,8 +2161,222 @@ reactable(
 
 # 1.1.1.3.2) Bens de consumo não duráveis {data-navmenu="Balanço de pagamentos"}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+O setor de exportação de **bens de consumo não duráveis** é compreendido por bens que possuem uma vida útil inferior a um ano e inclui produtos de alimentação e bebidas em geral, os artigos de vestuário e os brinquedos, entre outros.
+
+O índice de quantum (média 2018 = 100) capta o efeito das variações das quantidades físicas exportadas sobre a evolução do valor de exportação. É obtido, implicitamente, por meio do deflacionamento dos valores exportados pelas variações dos índices de preço de exportação.
+
+<br>
+
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### US$ bilhões
+```{r}
+plot_ly(
+  data = bcnd_exp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_bcnd)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índice de quantum
+```{r}
+plot_ly(
+  data = bcnd_exp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", qt_bcnd)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 10
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese exportações de bens de consumo não duráveis
+```{r}
+reactable(
+  bcnd_exp[, -4],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_bcnd = colDef(
+      name = "US$ bilhões",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    qt_bcnd = colDef(
+      name = "Índice de quantum",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # 1.1.1.4) Combustíveis {data-navmenu="Balanço de pagamentos"}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+Estão agregados, entre outros, na grande categoria econômica **combustíveis** os óleos brutos de petróleo, a gasolina e o álcool carburante e também os combustíveis e lubrificantes utilizados em aeronaves e embarcações de trânsito internacional, ou seja, aqueles considerados como consumo de bordo. 
+
+O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito das variações das quantidades físicas importadas sobre a evolução do valor de importação. São obtidos, implicitamente, por meio do deflacionamento dos valores importados pelas variações dos índices de preço de importação.
+
+<br>
+
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### US$ bilhões
+```{r}
+plot_ly(
+  data = comb_exp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_comb)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índice de preços
+```{r}
+plot_ly(
+  data = comb_exp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", ind_comb)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 20
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Índice de quantum
+```{r}
+plot_ly(
+  data = comb_exp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", qt_comb)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "Média 2018 = 100",
+      tick0 = 0,
+      dtick = 20
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese exportações de combustíveis
+```{r}
+reactable(
+  comb_exp[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_comb = colDef(
+      name = "US$ bilhões",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    ind_comb = colDef(
+      name = "Índice de preços",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    qt_comb = colDef(
+      name = "Índice de quantum",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # 1.1.2) Importações {data-navmenu="Balanço de pagamentos"}
 
@@ -2842,7 +3196,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese da BS (US$ bilhões)
+### Síntese BS (US$ bilhões)
 ```{r}
 reactable(
   bs[, -5],
@@ -4672,6 +5026,279 @@ reactable(
 )
 ```
 
+# Café {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of coffee (other mild arabica and robustas)**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars (cents per pound).
+
+<br>
+
+**Fonte:** Federal Reserve Economic Data (FRED).
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Cotação
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = cafe,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_arab)),
+    type = "scatter",
+    mode = "lines",
+    name = "Other mild arabica"
+  ) %>%
+  add_trace(
+    data = cafe,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rob)),
+    type = "scatter",
+    mode = "lines",
+    name = "Robustas"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "US$", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = cafe,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", var_mg_arab)),
+    type = "scatter",
+    mode = "lines",
+    name = "Other mild arabica"
+  ) %>%
+  add_trace(
+    data = cafe,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", var_mg_rob)),
+    type = "scatter",
+    mode = "lines",
+    name = "Robustas"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = cafe,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", var_12m_arab)),
+    type = "scatter",
+    mode = "lines",
+    name = "Other nukd arabica"
+  ) %>%
+  add_trace(
+    data = cafe,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", var_12m_rob)),
+    type = "scatter",
+    mode = "lines",
+    name = "Robustas"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese cotação mensal
+```{r}
+reactable(
+  cafe[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Data",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_arab = colDef(
+      name = "Other mild arabica (US$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg_arab = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m_arab = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rob = colDef(
+      name = "Robustas (US$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg_rob = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m_rob = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )   
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Minério de ferro {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of iron ore**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+**Fonte:** Federal Reserve Economic Data (FRED).
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Cotação
+```{r}
+plot_ly(
+  data = miner_ferro, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US$")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = miner_ferro, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = miner_ferro, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese cotação mensal
+```{r}
+reactable(
+  miner_ferro[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Data",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Minério de ferro (US$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ) 
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # Petróleo bruto {data-navmenu="Commodities"}
 
 Column {.sidebar} {data-width=200}
@@ -5031,6 +5658,112 @@ reactable(
 )
 ```
 
+# Trigo {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+**Global price of wheat**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars per metric ton.
+
+<br>
+
+**Fonte:** Federal Reserve Economic Data (FRED).
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Cotação mensal
+```{r}
+plot_ly(
+  data = trigo, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US$")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = trigo, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = trigo, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese soja em grãos
+```{r}
+reactable(
+  soja[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Data",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Trigo (US$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # Dívida externa bruta {data-navmenu="Dívida externa"}
 
@@ -5838,6 +6571,112 @@ reactable(
     ),
     valor_saldo_total = colDef(
       name = "Saldo câmbio contratado (7) (3+6)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Termos de troca
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+Os **termos de troca** são definidos como a relação entre os preços das exportações do país (PX) e os das suas importações (PM).
+
+<br>
+
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX).
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Termos de troca
+```{r}
+plot_ly(
+  data = tt, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_tt)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Média 2018 = 100")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = tt, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg_tt)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = tt, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m_tt)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese termos de troca
+
+```{r}
+reactable(
+  tt[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_tt = colDef(
+      name = "Termos de troca",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg_tt = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m_tt = colDef(
+      name = "Variação em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
