@@ -1660,7 +1660,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     trans_corr_pib = colDef(
-      name = "% PIB",
+      name = "% do PIB",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
