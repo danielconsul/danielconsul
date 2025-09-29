@@ -28,11 +28,13 @@ library(shiny)
 library(WDI)
 library(ipeadatar)
 library(fredr)
+library(zoo)
 ```
 
 ```{r, cache=TRUE}
 # Coleta de dados:
 
+# API key FRED
 fredr_set_key("0087fc9b146c214d78104e3737039ea4")
 
 # Trigo
@@ -559,6 +561,41 @@ trans_cor <- trans_cor %>% mutate(
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
   arrange(desc(date))
 
+# Transações correntes como % do PIB:
+
+pib_dol <- get_series(
+  code = c(valor_pib_dol = 4385)
+)
+
+pib_dol <- pib_dol %>% mutate(
+  pib_dol_12m = rollsum(valor_pib_dol, k = 12,  align = "right", na.pad = TRUE)
+)
+
+trans_corr_12m <- get_series(
+  code = c(valor_trans_corr_12m = 22701)
+)
+
+trans_corr_12m <- trans_corr_12m %>% mutate(
+  trans_corr_12m = rollsum(valor_trans_corr_12m, k = 12,  align = "right", na.pad = TRUE)
+)
+
+trans_corr_pib <- left_join(as_tibble(trans_corr_12m), as_tibble(pib_dol)) %>% drop_na() %>% select(
+  date, trans_corr_12m, pib_dol_12m
+) %>% mutate(
+  trans_corr_pib = (trans_corr_12m/pib_dol_12m) * 100
+)
+
+trans_corr_pib <- trans_corr_pib %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    trans_corr_pib = number(trans_corr_pib, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, trans_corr_pib, date)
+
+trans_cor <- left_join(trans_cor, trans_corr_pib) %>%
+  select(data_fmt, valor_rec, valor_desp, valor_saldo, trans_corr_pib, date)
+
+
 # Balança comercial (códigos 22707, 22708 e 22709)
 bc_exp <- get_series(
   code = c(valor_exp = 22708)
@@ -587,6 +624,32 @@ bal_com <- bal_com %>% mutate(
     valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>% select(data_fmt, valor_exp, valor_imp, valor_saldo, date) %>% 
   arrange(desc(date))
+
+# Balança comercial como % do PIB:
+
+bal_com_12m <- get_series(
+  code = c(valor_bal_com_12m = 22707)
+)
+
+bal_com_12m <- bal_com_12m %>% mutate(
+  bal_com_12m = rollsum(valor_bal_com_12m, k = 12,  align = "right", na.pad = TRUE)
+)
+
+bal_com_pib <- left_join(as_tibble(bal_com_12m), as_tibble(pib_dol)) %>% drop_na() %>% select(
+  date, bal_com_12m, pib_dol_12m
+) %>% mutate(
+  bal_com_pib = (bal_com_12m/pib_dol_12m) * 100
+)
+
+bal_com_pib <- bal_com_pib %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    bal_com_pib = number(bal_com_pib, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, bal_com_pib, date)
+
+bal_com <- left_join(bal_com, bal_com_pib) %>%
+  select(data_fmt, valor_exp, valor_imp, valor_saldo, bal_com_pib, date)
 
 # Importações
 imp1 <- ipeadata(code = "SECEX12_MVTOT12") %>% mutate(
@@ -1452,7 +1515,11 @@ A rubrica de **transações correntes (TC)** agrega os seguintes itens: balança
 
 <br>
 
-**Fonte:** Códigos 22702 (receita), 22703 (despesa) e 22701 (saldo TC) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+Os dados como % do PIB referem-se ao acumulado em 12 meses.
+
+<br>
+
+**Fonte:** Códigos 22702 (receita), 22703 (despesa), 22701 (saldo TC) e 4385 (PIB em dólares) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -1502,13 +1569,27 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
+### % do PIB
+```{r}
+plot_ly(
+  data = trans_corr_pib, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", trans_corr_pib)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "% do PIB")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese TC (US$ bilhões)
+### Síntese TC
 ```{r}
 reactable(
-  trans_cor[, -5],
+  trans_cor[, -6],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -1527,6 +1608,11 @@ reactable(
     ),
     valor_saldo = colDef(
       name = "Saldo TC (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    trans_corr_pib = colDef(
+      name = "% PIB",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -1557,7 +1643,11 @@ A **balança Comercial (bens) (BC)** contabiliza as transações de itens que s�
 
 <br>
 
-**Fonte**: Códigos 22708 (exportações), 22709 (importações) e 22707 (saldo BC) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+Os dados como % do PIB referem-se ao acumulado em 12 meses.
+
+<br>
+
+**Fonte**: Códigos 22708 (exportações), 22709 (importações), 22707 (saldo BC) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -1607,13 +1697,27 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
+### % do PIB
+```{r}
+plot_ly(
+  data = bal_com, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", bal_com_pib)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "% do PIB")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese BC (US$ bilhões)
+### Síntese BC
 ```{r}
 reactable(
-  bal_com[, -5],
+  bal_com[, -6],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -1632,6 +1736,11 @@ reactable(
     ),
     valor_saldo = colDef(
       name = "Saldo BC (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    bal_com_pib = colDef(
+      name = "% do PIB",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
