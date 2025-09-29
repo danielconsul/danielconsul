@@ -1,0 +1,221 @@
+library(rbcb)
+library(sidrar)
+library(tidyverse)
+library(forecast)
+library(ipeadatar)
+
+
+# COLETA DE DADOS ---------------------------------------------------------
+
+# IPP
+ipp_ig <- sidrar::get_sidra(
+  api = "/t/6903/n1/all/v/1396/p/all/c842/46608,46609,46610/d/v1396%202"
+) %>% mutate(
+  date = lubridate::ym(`Mês (Código)`),
+  ipp_ig = Valor,
+  secao = `Indústria geral, indústrias extrativas e indústrias de transformação e atividades (CNAE 2.0)`
+) %>% dplyr::filter(secao == "Indústria Geral") %>% select(
+  date, ipp_ig
+) %>% drop_na()
+
+ipp_it <- sidrar::get_sidra(
+  api = "/t/6903/n1/all/v/1396/p/all/c842/46608,46609,46610/d/v1396%202"
+) %>% mutate(
+  date = lubridate::ym(`Mês (Código)`),
+  ipp_it = Valor,
+  secao = `Indústria geral, indústrias extrativas e indústrias de transformação e atividades (CNAE 2.0)`
+) %>% dplyr::filter(secao == "C Indústrias de Transformação") %>% select(
+  date, ipp_it
+) %>% drop_na()
+
+ipp_ie <- sidrar::get_sidra(
+  api = "/t/6903/n1/all/v/1396/p/all/c842/46608,46609,46610/d/v1396%202"
+) %>% mutate(
+  date = lubridate::ym(`Mês (Código)`),
+  ipp_ie = Valor,
+  secao = `Indústria geral, indústrias extrativas e indústrias de transformação e atividades (CNAE 2.0)`
+) %>% dplyr::filter(secao == "B Indústrias Extrativas") %>% select(
+  date, ipp_ie
+) %>% drop_na()
+
+# PIM
+pim_ig <- sidrar::get_sidra(
+  api = "/t/8888/n1/all/v/11601/p/all/c544/129314,129315,129316/d/v11601%201"
+) %>% mutate(
+  date = lubridate::ym(`Mês (Código)`),
+  pim_ig = Valor,
+  secao = `Seções e atividades industriais (CNAE 2.0)`
+) %>% dplyr::filter(secao == "1 Indústria geral") %>% select(
+  date, pim_ig
+) %>% drop_na()
+
+pim_it <- sidrar::get_sidra(
+  api = "/t/8888/n1/all/v/11601/p/all/c544/129314,129315,129316/d/v11601%201"
+) %>% mutate(
+  date = lubridate::ym(`Mês (Código)`),
+  pim_it = Valor,
+  secao = `Seções e atividades industriais (CNAE 2.0)`
+) %>% dplyr::filter(secao == "3 Indústrias de transformação") %>% select(
+  date, pim_it
+) %>% drop_na()
+
+pim_ie <- sidrar::get_sidra(
+  api = "/t/8888/n1/all/v/11601/p/all/c544/129314,129315,129316/d/v11601%201"
+) %>% mutate(
+  date = lubridate::ym(`Mês (Código)`),
+  pim_ie = Valor,
+  secao = `Seções e atividades industriais (CNAE 2.0)`
+) %>% dplyr::filter(secao == "2 Indústrias extrativas") %>% select(
+  date, pim_ie
+) %>% drop_na()
+
+# IPCA
+ipca <- sidrar::get_sidra(
+  api = "/t/118/n1/all/v/all/p/all/d/v306%202"
+) %>% mutate(
+  date = lubridate::ym(`Mês (Código)`),
+  ipca = Valor
+) %>% select(
+  date, ipca
+) %>% drop_na()
+
+# CÂMBIO NOMINAL
+cambio_venda_mensal <- get_series(
+  code = c(valor_venda = 3696),
+  start_date = "1994-07-01"
+)
+
+cambio_compra_mensal <- get_series(
+  code = c(valor_compra = 3695),
+  start_date = "1994-07-01"
+)
+
+cambio_nom_mensal <- left_join(cambio_venda_mensal, cambio_compra_mensal)
+
+cambio_nom_mensal$cambio_nom_mensal <- (cambio_nom_mensal$valor_venda + cambio_nom_mensal$valor_compra)/2
+
+cambio_nom_mensal <- cambio_nom_mensal %>%
+  mutate(
+    var_mg_cambio = (cambio_nom_mensal / lag(cambio_nom_mensal) - 1) * 100
+  ) %>% mutate(
+    cambio = cambio_nom_mensal
+  ) %>% select(date, cambio, var_mg_cambio)
+
+# SELIC:
+selic <- get_series(
+  code = c(selic = 3696),
+  start_date = "1994-07-01"
+) %>% mutate(
+  var_mg_selic = selic - lag(selic)
+)
+
+# MASSA SALARIAL REAL NA INDÚSTRIA:
+massa_sal <- ipeadata(code = "CNI12_REMR12") %>% mutate(
+  massa_sal = value
+) %>% mutate(
+  massa_sal_mg = (massa_sal / lag(massa_sal, 1) - 1) * 100
+) %>% select(
+  date, massa_sal, massa_sal_mg
+)
+
+tabelas <- list(cambio_nom_mensal, ipca, ipp_ig, ipp_it,
+                ipp_ie, pim_ig, pim_it, pim_ie, selic, massa_sal)
+
+dados <- reduce(tabelas, inner_join, by = "date")
+
+# MODELO DE PROJEÇÃO IPP INDÚSTRIA GERAL ----------------------------------
+
+### AGOSTO/2025 - INDÚSTRIA GERAL -------------------------------------------
+
+ipp_ig_ts <- ts(dados$ipp_ig, start = c(2014, 1), frequency = 12)
+
+# Criar matriz de regressores:
+xreg_ig <- dados %>%
+  select(var_mg_cambio, ipca, pim_ig, var_mg_selic, massa_sal_mg) %>%
+  as.matrix()
+
+# Ajustar modelo ARIMA com regressores externos:
+arima_ig <- auto.arima(ipp_ig_ts, xreg = xreg_ig)
+
+summary(arima_ig)
+
+# Selecionar os regressores de julho/2025 para prever agosto/2025
+xreg_ig_projecao <- xreg_ig[nrow(xreg_ig), , drop = FALSE]
+
+forecast(arima_ig, xreg = xreg_ig_projecao, h = 1)
+#             Point Forecast  Lo 80    Hi 80    Lo 95    Hi 95
+# Aug 2025    -0.07877245 -1.378687 1.221142 -2.06682 1.909276
+
+# Projeção IPP indústria geral agosto/2025: -0.08
+
+### SETEMBRO/2025 - INDÚSTRIA GERAL -----------------------------------------
+
+
+# MODELO DE PROJEÇÃO IPP INDÚSTRIA DE TRANSFORMAÇÃO ----------------------------------
+
+### AGOSTO/2025 - INDÚSTRIA DE TRANSFORMAÇÃO -------------------------------------------
+
+ipp_it_ts <- ts(dados$ipp_it, start = c(2014, 1), frequency = 12)
+
+# Criar matriz de regressores:
+xreg_it <- dados %>%
+  select(var_mg_cambio, ipca, pim_it, var_mg_selic, massa_sal_mg) %>%
+  as.matrix()
+
+# Ajustar modelo ARIMA com regressores externos:
+arima_it <- auto.arima(ipp_it_ts, xreg = xreg_it)
+
+summary(arima_it)
+
+# Selecionar os regressores de julho/2025 para prever agosto/2025
+xreg_it_projecao <- xreg_it[nrow(xreg_it), , drop = FALSE]
+
+forecast(arima_it, xreg = xreg_it_projecao, h = 1)
+#              Point Forecast Lo 80    Hi 80     Lo 95    Hi 95
+# Aug 2025     -0.0198247 -1.13139 1.091741 -1.719817 1.680168
+
+# Projeção IPP indústria de transformação agosto/2025: -0.02
+
+### SETEMBRO/2025 - INDÚSTRIA DE TRANSFORMAÇÃO -----------------------------------------
+
+
+# MODELO DE PROJEÇÃO IPP INDÚSTRIA EXTRATIVA ----------------------------------
+
+### AGOSTO/2025 - INDÚSTRIA EXTRATIVA -------------------------------------------
+
+ipp_ie_ts <- ts(dados$ipp_ie, start = c(2014, 1), frequency = 12)
+
+# Criar matriz de regressores:
+xreg_ie <- dados %>%
+  select(var_mg_cambio, ipca, pim_ie, var_mg_selic, massa_sal_mg) %>%
+  as.matrix()
+
+# Ajustar modelo ARIMA com regressores externos:
+arima_ie <- auto.arima(ipp_ie_ts, xreg = xreg_ie)
+
+summary(arima_ie)
+
+# Selecionar os regressores de julho/2025 para prever agosto/2025
+xreg_ie_projecao <- xreg_ie[nrow(xreg_ie), , drop = FALSE]
+
+forecast(arima_ie, xreg = xreg_ie_projecao, h = 1)
+#             Point Forecast  Lo 80    Hi 80     Lo 95   Hi 95
+# Aug 2025      0.2838673 -9.268267 9.836001 -14.32486 14.8926
+
+# Projeção IPP indústria extrativa agosto/2025: 0,23
+
+### SETEMBRO/2025 - INDÚSTRIA EXTRATIVA -------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
