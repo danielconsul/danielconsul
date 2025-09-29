@@ -562,7 +562,6 @@ trans_cor <- trans_cor %>% mutate(
   arrange(desc(date))
 
 # Transações correntes como % do PIB:
-
 pib_dol <- get_series(
   code = c(valor_pib_dol = 4385)
 )
@@ -626,7 +625,6 @@ bal_com <- bal_com %>% mutate(
   arrange(desc(date))
 
 # Balança comercial como % do PIB:
-
 bal_com_12m <- get_series(
   code = c(valor_bal_com_12m = 22707)
 )
@@ -681,6 +679,31 @@ imp3 <- ipeadata(code = "FUNCEX12_MDQT12") %>% mutate(
 import <- left_join(imp1, imp2)
 import <- left_join(import, imp3) %>% select(data_fmt, valor_imp, ind_imp, qt_imp, date)
 
+# Importações como % do PIB:
+imp_12m <- get_series(
+  code = c(valor_imp_12m = 22712)
+)
+
+imp_12m <- imp_12m %>% mutate(
+  imp_12m = rollsum(valor_imp_12m, k = 12,  align = "right", na.pad = TRUE)
+)
+
+imp_pib <- left_join(as_tibble(imp_12m), as_tibble(pib_dol)) %>% drop_na() %>% select(
+  date, imp_12m, pib_dol_12m
+) %>% mutate(
+  imp_pib = (imp_12m/pib_dol_12m) * 100
+)
+
+imp_pib <- imp_pib %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    imp_pib = number(imp_pib, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, imp_pib, date)
+
+import <- left_join(import, imp_pib) %>%
+  select(data_fmt, valor_imp, ind_imp, qt_imp, imp_pib, date)
+
 # Exportações
 exp1 <- ipeadata(code = "SECEX12_XVTOT12") %>% mutate(
   valor_exp = value,
@@ -710,6 +733,31 @@ exp3 <- ipeadata(code = "FUNCEX12_XQT12") %>% mutate(
 
 export <- left_join(exp1, exp2)
 export <- left_join(export, exp3) %>% select(data_fmt, valor_exp, ind_exp, qt_exp, date)
+
+# Exportações como % do PIB:
+exp_12m <- get_series(
+  code = c(valor_exp_12m = 22711)
+)
+
+exp_12m <- exp_12m %>% mutate(
+  exp_12m = rollsum(valor_exp_12m, k = 12,  align = "right", na.pad = TRUE)
+)
+
+exp_pib <- left_join(as_tibble(exp_12m), as_tibble(pib_dol)) %>% drop_na() %>% select(
+  date, exp_12m, pib_dol_12m
+) %>% mutate(
+  exp_pib = (exp_12m/pib_dol_12m) * 100
+)
+
+exp_pib <- exp_pib %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    exp_pib = number(exp_pib, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, exp_pib, date)
+
+export <- left_join(export, exp_pib) %>%
+  select(data_fmt, valor_exp, ind_exp, qt_exp, exp_pib, date)
 
 # Exportações de bens de capital
 bk1_exp <- ipeadata(code = "FUNCEX12_XVBKGCE12") %>% mutate(
@@ -1481,7 +1529,7 @@ Columns {.sidebar} {data-width=250}
 
 <div style="font-size:18px">
 O presente _dashboard_ objetiva apresentar de forma centralizada uma série de dados macroeconômicos relacionados às contas externas da economia brasileira nas últimas décadas.
-São apresentadas informações referentes ao balanço de pagamentos, preços e índices de commodities, dívida externa, reservas internacionais e taxa de câmbio, através de dados com frequências diárias, mensais, trimestrais e anuais. O painel é automatizado e atualizado diariamente.
+São apresentadas informações referentes ao balanço de pagamentos, preços e índices de commodities, dívida externa, reservas internacionais, taxa de câmbio e termos de troca, através de dados com frequências diárias, mensais, trimestrais e anuais. O painel é automatizado e atualizado diariamente.
 
 
 <br><br>
@@ -1771,7 +1819,11 @@ As **exportações** são os valores das vendas para o exterior e outras remessa
 
 <br>
 
-**Fonte:** Secretaria de Comércio Exterior (SECEX) do Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) e Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+Os dados como % do PIB referem-se ao acumulado em 12 meses.
+
+<br>
+
+**Fonte:** Secretaria de Comércio Exterior (SECEX) do Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC), Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata e códigos 22711 (exportações) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB).
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -1836,13 +1888,32 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
+### % do PIB
+```{r}
+plot_ly(
+  data = export, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", exp_pib)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "% do PIB",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
 ### Síntese exportações totais
 ```{r}
 reactable(
-  export[, -5],
+  export[, -6],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -1861,6 +1932,11 @@ reactable(
     ),
     qt_exp = colDef(
       name = "Índice de quantum",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    exp_pib = colDef(
+      name = "% do PIB",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -2496,7 +2572,11 @@ As **importações** correspondem às compras de mercadorias por residentes no p
 
 <br>
 
-**Fonte:** Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) e Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+Os dados como % do PIB referem-se ao acumulado em 12 meses.
+
+<br>
+
+**Fonte:** Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC), Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata e códigos 22712 (importações) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB).
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -2561,13 +2641,32 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
+### % do PIB
+```{r}
+plot_ly(
+  data = import, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", imp_pib)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
 ### Síntese importações totais
 ```{r}
 reactable(
-  import[, -5],
+  import[, -6],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -2586,6 +2685,11 @@ reactable(
     ),
     qt_imp = colDef(
       name = "Índice de quantum",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    imp_pib = colDef(
+      name = "% do PIB",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
