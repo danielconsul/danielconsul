@@ -1104,6 +1104,31 @@ rp <- rp %>% mutate(
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
   arrange(desc(date))
 
+# Renda primária como % do PIB:
+rp_12m <- get_series(
+  code = c(valor_rp_12m = 22800)
+)
+
+rp_12m <- rp_12m %>% mutate(
+  rp_12m = rollsum(valor_rp_12m, k = 12,  align = "right", na.pad = TRUE)
+)
+
+rp_pib <- left_join(as_tibble(rp_12m), as_tibble(pib_dol)) %>% drop_na() %>% select(
+  date, rp_12m, pib_dol_12m
+) %>% mutate(
+  rp_pib = (rp_12m/pib_dol_12m) * 100
+)
+
+rp_pib <- rp_pib %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    rp_pib = number(rp_pib, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, rp_pib, date)
+
+rp <- left_join(rp, rp_pib) %>%
+  select(data_fmt, valor_rec, valor_desp, valor_saldo, rp_pib, date)
+
 # Renda secundária (códigos 22838, 22839 e 22840)
 rs_rec <- get_series(
   code = c(valor_rec = 22839)
@@ -1161,6 +1186,31 @@ cc <- cc %>% mutate(
     valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
   arrange(desc(date))
+
+# Conta capital como % do PIB:
+cc_12m <- get_series(
+  code = c(valor_cc_12m = 22851)
+)
+
+cc_12m <- cc_12m %>% mutate(
+  cc_12m = rollsum(valor_cc_12m, k = 12,  align = "right", na.pad = TRUE)
+)
+
+cc_pib <- left_join(as_tibble(cc_12m), as_tibble(pib_dol)) %>% drop_na() %>% select(
+  date, cc_12m, pib_dol_12m
+) %>% mutate(
+  cc_pib = (cc_12m/pib_dol_12m) * 100
+)
+
+cc_pib <- cc_pib %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    cc_pib = number(cc_pib, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, cc_pib, date)
+
+cc <- left_join(cc, cc_pib) %>%
+  select(data_fmt, valor_rec, valor_desp, valor_saldo, cc_pib, date)
 
 # Conta capital - Ativos não financeiros não produzidos (códigos 22854, 22855 e 22856)
 cc_anfnp_rec <- get_series(
@@ -1233,6 +1283,31 @@ cf <- cf %>% mutate(
     valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>% select(data_fmt, valor, date) %>% 
   arrange(desc(date))
+
+# Conta financeira como % do PIB:
+cf_12m <- get_series(
+  code = c(valor_cf_12m = 22863)
+)
+
+cf_12m <- cf_12m %>% mutate(
+  cf_12m = rollsum(valor_cf_12m, k = 12,  align = "right", na.pad = TRUE)
+)
+
+cf_pib <- left_join(as_tibble(cf_12m), as_tibble(pib_dol)) %>% drop_na() %>% select(
+  date, cf_12m, pib_dol_12m
+) %>% mutate(
+  cf_pib = (cf_12m/pib_dol_12m) * 100
+)
+
+cf_pib <- cf_pib %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    cf_pib = number(cf_pib, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, cf_pib, date)
+
+cf <- left_join(cf, cf_pib) %>%
+  select(data_fmt, valor, cf_pib, date)
 
 # Investimento direto (códigos 22864, 22865 e 22885)
 ide <- get_series(
@@ -3461,7 +3536,11 @@ A **renda primária (RP)** indica os montantes a pagar ou a receber em troca do 
 
 <br>
 
-**Fonte**: Códigos 22801 (receitas), 22802 (despesas) e 22800 (saldo RP) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+Os dados como % do PIB referem-se ao acumulado em 12 meses.
+
+<br>
+
+**Fonte**: Códigos 22801 (receitas), 22802 (despesas), 22800 (saldo RP) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -3526,13 +3605,32 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
+### % do PIB
+```{r}
+plot_ly(
+  data = rp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", rp_pib)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 0.5
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
 ### Síntese RP (US$ bilhões)
 ```{r}
 reactable(
-  rp[, -5],
+  rp[, -6],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -3551,6 +3649,11 @@ reactable(
     ),
     valor_saldo = colDef(
       name = "Saldo RP (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    rp_pib = colDef(
+      name = "% do PIB",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -3701,7 +3804,11 @@ A **conta capital (CC)** registra as transações envolvendo compra e venda de a
 
 <br>
 
-**Fonte**: Códigos 22852 (receitas), 22853 (despesas) e 22851 (saldo CC) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+Os dados como % do PIB referem-se ao acumulado em 12 meses.
+
+<br>
+
+**Fonte**: Códigos 22852 (receitas), 22853 (despesas), 22851 (saldo CC) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -3766,13 +3873,32 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
+### % do PIB
+```{r}
+plot_ly(
+  data = cc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", cc_pib)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 0.1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
 ### Síntese CC (US$ bilhões)
 ```{r}
 reactable(
-  cc[, -5],
+  cc[, -6],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -3791,6 +3917,11 @@ reactable(
     ),
     valor_saldo = colDef(
       name = "Saldo CC (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    cc_pib = colDef(
+      name = "% do PIB",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -4063,7 +4194,11 @@ Obs.: Valores negativos indicam entrada líquida de recursos no país.
 
 <br>
 
-**Fonte**: Código 22863 do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+Os dados como % do PIB referem-se ao acumulado em 12 meses.
+
+<br>
+
+**Fonte**: Códigos 22863 (conta financeira) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -4088,13 +4223,32 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
+### % do PIB
+```{r}
+plot_ly(
+  data = cf, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", cf_pib)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
 ### Síntese CF (US$ bilhões)
 ```{r}
 reactable(
-  cf[, -3],
+  cf[, -4],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -4103,6 +4257,11 @@ reactable(
     ),
     valor = colDef(
       name = "Saldo CF",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    cf_pib = colDef(
+      name = "% do PIB",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
