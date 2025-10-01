@@ -1075,6 +1075,31 @@ bs <- bs %>% mutate(
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
   arrange(desc(date))
 
+# Balança de serviços como % do PIB:
+bs_12m <- get_series(
+  code = c(valor_bs_12m = 22719)
+)
+
+bs_12m <- bs_12m %>% mutate(
+  bs_12m = rollsum(valor_bs_12m, k = 12,  align = "right", na.pad = TRUE)
+)
+
+bs_pib <- left_join(as_tibble(bs_12m), as_tibble(pib_dol)) %>% drop_na() %>% select(
+  date, bs_12m, pib_dol_12m
+) %>% mutate(
+  bs_pib = (bs_12m/pib_dol_12m) * 100
+)
+
+bs_pib <- bs_pib %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    bs_pib = number(bs_pib, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, bs_pib, date)
+
+bs <- left_join(bs, bs_pib) %>%
+  select(data_fmt, valor_rec, valor_desp, valor_saldo, bs_pib, date)
+
 # Renda primária (códigos 22800, 22801 e 22802)
 rp_rec <- get_series(
   code = c(valor_rec = 22801)
@@ -1157,6 +1182,31 @@ rs <- rs %>% mutate(
     valor_saldo = number(valor_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
   arrange(desc(date))
+
+# Renda secundária como % do PIB:
+rs_12m <- get_series(
+  code = c(valor_rs_12m = 22838)
+)
+
+rs_12m <- rs_12m %>% mutate(
+  rs_12m = rollsum(valor_rs_12m, k = 12,  align = "right", na.pad = TRUE)
+)
+
+rs_pib <- left_join(as_tibble(rs_12m), as_tibble(pib_dol)) %>% drop_na() %>% select(
+  date, rs_12m, pib_dol_12m
+) %>% mutate(
+  rs_pib = (rs_12m/pib_dol_12m) * 100
+)
+
+rs_pib <- rs_pib %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    rs_pib = number(rs_pib, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, rs_pib, date)
+
+rs <- left_join(rs, rs_pib) %>%
+  select(data_fmt, valor_rec, valor_desp, valor_saldo, rs_pib, date)
 
 # Conta capital (códigos 22851, 22852 e 22853)
 cc_rec <- get_series(
@@ -1337,6 +1387,93 @@ inv_dir <- inv_dir %>% mutate(
     valor_id = number(valor_id, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>% select(data_fmt, valor_ide, valor_idp, valor_id, date) %>% 
   arrange(desc(date))
+
+# IDE como % do PIB:
+ide_12m <- get_series(
+  code = c(valor_ide_12m = 22865)
+)
+
+ide_12m <- ide_12m %>% mutate(
+  ide_12m = rollsum(valor_ide_12m, k = 12,  align = "right", na.pad = TRUE)
+)
+
+ide_pib <- left_join(as_tibble(ide_12m), as_tibble(pib_dol)) %>% drop_na() %>% select(
+  date, ide_12m, pib_dol_12m
+) %>% mutate(
+  ide_pib = (ide_12m/pib_dol_12m) * 100
+)
+
+ide_pib <- ide_pib %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    ide_pib = number(ide_pib, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, ide_pib, date)
+
+ide <- left_join(ide, ide_pib) %>%
+  select(data_fmt, valor_ide, ide_pib, date) %>% drop_na()
+
+# IDP como % do PIB:
+idp_12m <- get_series(
+  code = c(valor_idp_12m = 22885)
+)
+
+idp_12m <- idp_12m %>% mutate(
+  idp_12m = rollsum(valor_idp_12m, k = 12,  align = "right", na.pad = TRUE)
+)
+
+idp_pib <- left_join(as_tibble(idp_12m), as_tibble(pib_dol)) %>% drop_na() %>% select(
+  date, idp_12m, pib_dol_12m
+) %>% mutate(
+  idp_pib = (idp_12m/pib_dol_12m) * 100
+)
+
+idp_pib <- idp_pib %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    idp_pib = number(idp_pib, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, idp_pib, date)
+
+idp <- left_join(idp, idp_pib) %>%
+  select(data_fmt, valor_idp, idp_pib, date) %>% drop_na()
+
+# ID como % do PIB:
+id_12m <- get_series(
+  code = c(valor_id_12m = 22864)
+)
+
+id_12m <- id_12m %>% mutate(
+  id_12m = rollsum(valor_id_12m, k = 12,  align = "right", na.pad = TRUE)
+)
+
+id_pib <- left_join(as_tibble(id_12m), as_tibble(pib_dol)) %>% drop_na() %>% select(
+  date, id_12m, pib_dol_12m
+) %>% mutate(
+  id_pib = (id_12m/pib_dol_12m) * 100
+)
+
+id_pib <- id_pib %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    id_pib = number(id_pib, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, id_pib, date)
+
+id <- left_join(id, id_pib) %>%
+  select(data_fmt, valor_id, id_pib, date) %>% drop_na()
+
+inv_dir <- left_join(inv_dir, ide, by = "date")
+inv_dir <- left_join(inv_dir, idp, by = "date")
+inv_dir <- left_join(inv_dir, id, by = "date")
+
+names(inv_dir)[names(inv_dir) == "data_fmt.x"] <- "data_fmt"
+names(inv_dir)[names(inv_dir) == "valor_ide.x"] <- "valor_ide"
+names(inv_dir)[names(inv_dir) == "valor_idp.x"] <- "valor_idp"
+names(inv_dir)[names(inv_dir) == "valor_id.x"] <- "valor_id"
+
+inv_dir <- inv_dir %>% dplyr::select(data_fmt, valor_ide, valor_idp,
+                         valor_id, ide_pib, idp_pib, id_pib, date)
 
 # Investimento em carteira (código 22905)
 inv_cart <- get_series(
@@ -3426,7 +3563,11 @@ A **balança de serviços (BS)** é composta por serviços relativos a transport
 
 <br>
 
-**Fonte**: Códigos 22720 (receitas), 22721 (despesas) e 22719 (saldo BS) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+Os dados como % do PIB referem-se ao acumulado em 12 meses.
+
+<br>
+
+**Fonte**: Códigos 22720 (receitas), 22721 (despesas), 22719 (saldo BS) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -3481,13 +3622,27 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
+### % do PIB
+```{r}
+plot_ly(
+  data = bs, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", bs_pib)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
 ### Síntese BS (US$ bilhões)
 ```{r}
 reactable(
-  bs[, -5],
+  bs[, -6],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -3506,6 +3661,11 @@ reactable(
     ),
     valor_saldo = colDef(
       name = "Saldo BS (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    bs_pib = colDef(
+      name = "% do PIB",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -3675,7 +3835,7 @@ reactable(
 )
 ```
 
-# 1.4 Renda secundária {data-navmenu="Balanço de pagamentos"}
+# 1.4) Renda secundária {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -3684,7 +3844,11 @@ A **renda secundária (RS)**, antes denominada “transferências unilaterais co
 
 <br>
 
-**Fonte**: Códigos 22839 (receitas), 22840 (despesas) e 22838 (saldo RS) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+Os dados como % do PIB referem-se ao acumulado em 12 meses.
+
+<br>
+
+**Fonte**: Códigos 22839 (receitas), 22840 (despesas), 22838 (saldo RS) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -3749,13 +3913,31 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
+### % do PIB
+```{r}
+plot_ly(
+  data = rs, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", rs_pib)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      dtick = 0.1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
 ### Síntese RS (US$ bilhões)
 ```{r}
 reactable(
-  rs[, -5],
+  rs[, -6],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -3774,6 +3956,11 @@ reactable(
     ),
     valor_saldo = colDef(
       name = "Saldo RS (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    rs_pib = colDef(
+      name = "% do PIB",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -4300,7 +4487,13 @@ Obs.: Valores negativos indicam entrada líquida de recursos no país.
 
 <br>
 
-**Fonte**: Códigos 22865 (IDE), 22885 (IDP) e 22864 (saldo ID) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+<br>
+
+Os dados como % do PIB referem-se ao acumulado em 12 meses.
+
+<br>
+
+**Fonte**: Códigos 22865 (IDE), 22885 (IDP), 22864 (saldo ID) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -4350,6 +4543,48 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
+### IDE % do PIB
+```{r}
+plot_ly(
+  data = inv_dir, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", ide_pib)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### IDP % do PIB
+```{r}
+plot_ly(
+  data = inv_dir, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", idp_pib)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### ID % do PIB
+```{r}
+plot_ly(
+  data = inv_dir, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", id_pib)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
@@ -4357,7 +4592,7 @@ Column {data-width=400}  {.tabset}
 
 ```{r}
 reactable(
-  inv_dir[, -5],
+  inv_dir[, -8],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -4376,6 +4611,21 @@ reactable(
     ),
     valor_id = colDef(
       name = "Saldo ID (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    ide_pib = colDef(
+      name = "IDE % do PIB",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    idp_pib = colDef(
+      name = "IDP % do PIB",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    id_pib = colDef(
+      name = "ID % do PIB",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
