@@ -1,9 +1,8 @@
 ---
-title: "Estatísticas do setor externo brasileiro"
+title: "Estatísticas macroeconômicas brasileiras"
 output: 
   flexdashboard::flex_dashboard:
-    social: [ "menu" ]
-    theme: spacelab
+    theme: readable
     favicon: icon.png
     orientation: columns
     vertical_layout: fill
@@ -1737,12 +1736,15 @@ soja <- ipeadata(code = "IFS12_SOJAGP12") %>% mutate(
 Columns {.sidebar} {data-width=250}
 -----------------------------------------------------------------------
 
-<br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br>
 
 <div style="font-size:18px">
-O presente _dashboard_ objetiva apresentar de forma centralizada uma série de dados macroeconômicos relacionados às contas externas da economia brasileira nas últimas décadas.
-São apresentadas informações referentes ao balanço de pagamentos, preços e índices de commodities, dívida externa, reservas internacionais, taxa de câmbio e termos de troca, através de dados com frequências diárias, mensais, trimestrais e anuais. O painel é automatizado e atualizado diariamente.
+O presente _dashboard_ objetiva apresentar de forma centralizada uma série de dados macroeconômicos brasileiros nas últimas décadas.
+São apresentadas informações referentes ao balanço de pagamentos, preços e índices de commodities, dívida externa, inflação, produção, reservas internacionais, taxa de câmbio e termos de troca através de dados com frequências diárias, mensais, trimestrais e anuais.
 
+<br>
+
+O painel é automatizado e atualizado diariamente.
 
 <br><br>
 
@@ -1767,7 +1769,7 @@ knitr::include_graphics("visao_geral.png")
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
-O **balanço de pagamentos (BP)** é uma peça contábil que resume as transações econômicas entre residentes no país e não residentes em um determinado período de tempo. A compilação das estatísticas de BP no Brasil tem como principal fonte de informação as transações financeiras registradas no Sistema Câmbio do Banco Central do Brasil (BCB) (no jargão internacional, um sistema do tipo International Transactions Reporting System (ITRS)). Dessa forma, o BP brasileiro é compilado fundamentalmente a partir dos registros individuais das transações (microdados), permitindo ao Banco Central do Brasil o acompanhamento tempestivo dos fluxos da economia brasileira com o exterior.
+O **balanço de pagamentos (BP)** é uma peça contábil que resume as transações econômicas entre residentes no país e não residentes em um determinado período de tempo. O BP brasileiro é compilado fundamentalmente a partir dos registros individuais das transações (microdados), permitindo ao Banco Central do Brasil o acompanhamento tempestivo dos fluxos da economia brasileira com o exterior.
 
 <br>
 
@@ -6558,6 +6560,26 @@ reactable(
   )
 )
 ```
+
+# Índice de Preços ao Consumidor Amplo (IPCA) {data-navmenu="Inflação"}
+
+# Índice Nacional de Preços ao Consumidor (INPC) {data-navmenu="Inflação"}
+
+# Índice de Preços ao Produtor (IPP) {data-navmenu="Inflação"}
+
+# Índice Geral de Preços do Mercado (IGP-M) {data-navmenu="Inflação"}
+
+
+
+# PIB (ótica da oferta) {data-navmenu="Produção"}
+
+# PIB (ótica da demanda) {data-navmenu="Produção"}
+
+# Pesquisa Industrial Mensal - Produção física (PIM-PF) {data-navmenu="Produção"}
+
+# Pesquisa Mensal do Comércio (PMC) {data-navmenu="Produção"}
+
+# Pesquisa Mensal de Serviços (PMS) {data-navmenu="Produção"}
 
 # Reservas internacionais
 
