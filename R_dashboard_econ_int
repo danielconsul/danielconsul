@@ -33,6 +33,178 @@ library(zoo)
 ```{r, cache=TRUE}
 # Coleta de dados:
 
+# PIB (taxa trimestre contra mesmo trimestre do ano anterior)
+pib_var_ano <- sidrar::get_sidra(
+  api = "/t/5932/n1/all/v/6561/p/all/c11255/90687,90691,90692,90693,90694,90695,90696,90697,90698,90699,90700,90701,90702,90703,90705,90706,90707/d/v6561%201"
+)
+
+pib_var_ano <- pib_var_ano %>% mutate(
+  data = lubridate::ym(`Trimestre (Código)`),
+  variavel = Variável,
+  setores = `Setores e subsetores`,
+  valor = Valor,
+  .keep = "none",
+  variavel = dplyr::recode(
+    .x = variavel,
+    "Taxa trimestral (em relação ao mesmo período do ano anterior)" = "Variação em relação ao mesmo trimestre do ano anterior (%)")
+) %>% pivot_wider(names_from = setores, values_from = valor) %>% select(-variavel) %>% mutate(
+  data_fmt = format(data, "%m/%Y"),
+  `Agropecuária - total` = number(`Agropecuária - total`, decimal.mark = ",", accuracy = 0.01),
+  `Indústria - total` = number(`Indústria - total`, decimal.mark = ",", accuracy = 0.01),
+  `Indústrias extrativas` = number(`Indústrias extrativas`, decimal.mark = ",", accuracy = 0.01),
+  `Indústrias de transformação` = number(`Indústrias de transformação`, decimal.mark = ",", accuracy = 0.01),
+  `Construção` = number(`Construção`, decimal.mark = ",", accuracy = 0.01),
+  `Eletricidade e gás, água, esgoto, atividades de gestão de resíduos` = number(`Eletricidade e gás, água, esgoto, atividades de gestão de resíduos`, decimal.mark = ",", accuracy = 0.01),
+  `Serviços - total` = number(`Serviços - total`, decimal.mark = ",", accuracy = 0.01),
+  `Comércio` = number(`Comércio`, decimal.mark = ",", accuracy = 0.01),
+  `Transporte, armazenagem e correio` = number(`Transporte, armazenagem e correio`, decimal.mark = ",", accuracy = 0.01),
+  `Informação e comunicação` = number(`Informação e comunicação`, decimal.mark = ",", accuracy = 0.01),
+  `Atividades financeiras, de seguros e serviços relacionados` = number(`Atividades financeiras, de seguros e serviços relacionados`, decimal.mark = ",", accuracy = 0.01),
+  `Outras atividades de serviços` = number(`Outras atividades de serviços`, decimal.mark = ",", accuracy = 0.01),
+  `Atividades imobiliárias` = number(`Atividades imobiliárias`, decimal.mark = ",", accuracy = 0.01),
+  `Administração, saúde e educação públicas e seguridade social` = number(`Administração, saúde e educação públicas e seguridade social`, decimal.mark = ",", accuracy = 0.01),
+  `Valor adicionado a preços básicos` = number(`Valor adicionado a preços básicos`, decimal.mark = ",", accuracy = 0.01),
+  `Impostos líquidos sobre produtos` = number(`Impostos líquidos sobre produtos`, decimal.mark = ",", accuracy = 0.01),
+  `PIB a preços de mercado` = number(`PIB a preços de mercado`, decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, `Agropecuária - total`, `Indústria - total`, `Indústrias extrativas`,
+             `Indústrias de transformação`, `Construção`,
+             `Eletricidade e gás, água, esgoto, atividades de gestão de resíduos`,
+             `Serviços - total`, `Comércio`, `Transporte, armazenagem e correio`,
+             `Informação e comunicação`, `Atividades financeiras, de seguros e serviços relacionados`,
+             `Outras atividades de serviços`, `Atividades imobiliárias`,
+             `Administração, saúde e educação públicas e seguridade social`, `Valor adicionado a preços básicos`,
+             `Impostos líquidos sobre produtos`, `PIB a preços de mercado`, data) %>% 
+  arrange(desc(data))
+
+
+# PIB (taxa acumulada em quatro trimestres)
+pib_var_acum4t <- sidrar::get_sidra(
+  api = "/t/5932/n1/all/v/6562/p/all/c11255/90687,90691,90692,90693,90694,90695,90696,90697,90698,90699,90700,90701,90702,90703,90705,90706,90707/d/v6562%201"
+)
+
+pib_var_acum4t <- pib_var_acum4t %>% mutate(
+  data = lubridate::ym(`Trimestre (Código)`),
+  variavel = Variável,
+  setores = `Setores e subsetores`,
+  valor = Valor,
+  .keep = "none",
+  variavel = dplyr::recode(
+    .x = variavel,
+    "Taxa acumulada em quatro trimestres (em relação ao mesmo período do ano anterior)" = "Taxa acumulada em quatro trimestres (em relação ao mesmo período do ano anterior) (%)")
+) %>% pivot_wider(names_from = setores, values_from = valor) %>% select(-variavel) %>% mutate(
+  data_fmt = format(data, "%m/%Y"),
+  `Agropecuária - total` = number(`Agropecuária - total`, decimal.mark = ",", accuracy = 0.01),
+  `Indústria - total` = number(`Indústria - total`, decimal.mark = ",", accuracy = 0.01),
+  `Indústrias extrativas` = number(`Indústrias extrativas`, decimal.mark = ",", accuracy = 0.01),
+  `Indústrias de transformação` = number(`Indústrias de transformação`, decimal.mark = ",", accuracy = 0.01),
+  `Construção` = number(`Construção`, decimal.mark = ",", accuracy = 0.01),
+  `Eletricidade e gás, água, esgoto, atividades de gestão de resíduos` = number(`Eletricidade e gás, água, esgoto, atividades de gestão de resíduos`, decimal.mark = ",", accuracy = 0.01),
+  `Serviços - total` = number(`Serviços - total`, decimal.mark = ",", accuracy = 0.01),
+  `Comércio` = number(`Comércio`, decimal.mark = ",", accuracy = 0.01),
+  `Transporte, armazenagem e correio` = number(`Transporte, armazenagem e correio`, decimal.mark = ",", accuracy = 0.01),
+  `Informação e comunicação` = number(`Informação e comunicação`, decimal.mark = ",", accuracy = 0.01),
+  `Atividades financeiras, de seguros e serviços relacionados` = number(`Atividades financeiras, de seguros e serviços relacionados`, decimal.mark = ",", accuracy = 0.01),
+  `Outras atividades de serviços` = number(`Outras atividades de serviços`, decimal.mark = ",", accuracy = 0.01),
+  `Atividades imobiliárias` = number(`Atividades imobiliárias`, decimal.mark = ",", accuracy = 0.01),
+  `Administração, saúde e educação públicas e seguridade social` = number(`Administração, saúde e educação públicas e seguridade social`, decimal.mark = ",", accuracy = 0.01),
+  `Valor adicionado a preços básicos` = number(`Valor adicionado a preços básicos`, decimal.mark = ",", accuracy = 0.01),
+  `Impostos líquidos sobre produtos` = number(`Impostos líquidos sobre produtos`, decimal.mark = ",", accuracy = 0.01),
+  `PIB a preços de mercado` = number(`PIB a preços de mercado`, decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, `Agropecuária - total`, `Indústria - total`, `Indústrias extrativas`,
+             `Indústrias de transformação`, `Construção`,
+             `Eletricidade e gás, água, esgoto, atividades de gestão de resíduos`,
+             `Serviços - total`, `Comércio`, `Transporte, armazenagem e correio`,
+             `Informação e comunicação`, `Atividades financeiras, de seguros e serviços relacionados`,
+             `Outras atividades de serviços`, `Atividades imobiliárias`,
+             `Administração, saúde e educação públicas e seguridade social`, `Valor adicionado a preços básicos`,
+             `Impostos líquidos sobre produtos`, `PIB a preços de mercado`, data) %>% 
+  arrange(desc(data))
+
+# PIB (taxa acumulada ao longo do ano)
+pib_var_acum_ano <- sidrar::get_sidra(
+  api = "/t/5932/n1/all/v/6563/p/all/c11255/90687,90691,90692,90693,90694,90695,90696,90697,90698,90699,90700,90701,90702,90703,90705,90706,90707/d/v6563%201"
+)
+
+pib_var_acum_ano <- pib_var_acum_ano %>% mutate(
+  data = lubridate::ym(`Trimestre (Código)`),
+  variavel = Variável,
+  setores = `Setores e subsetores`,
+  valor = Valor,
+  .keep = "none",
+  variavel = dplyr::recode(
+    .x = variavel,
+    "Taxa acumulada ao longo do ano (em relação ao mesmo período do ano anterior)" = "Taxa acumulada ao longo do ano (em relação ao mesmo período do ano anterior) (%)")
+) %>% pivot_wider(names_from = setores, values_from = valor) %>% select(-variavel) %>% mutate(
+  data_fmt = format(data, "%m/%Y"),
+  `Agropecuária - total` = number(`Agropecuária - total`, decimal.mark = ",", accuracy = 0.01),
+  `Indústria - total` = number(`Indústria - total`, decimal.mark = ",", accuracy = 0.01),
+  `Indústrias extrativas` = number(`Indústrias extrativas`, decimal.mark = ",", accuracy = 0.01),
+  `Indústrias de transformação` = number(`Indústrias de transformação`, decimal.mark = ",", accuracy = 0.01),
+  `Construção` = number(`Construção`, decimal.mark = ",", accuracy = 0.01),
+  `Eletricidade e gás, água, esgoto, atividades de gestão de resíduos` = number(`Eletricidade e gás, água, esgoto, atividades de gestão de resíduos`, decimal.mark = ",", accuracy = 0.01),
+  `Serviços - total` = number(`Serviços - total`, decimal.mark = ",", accuracy = 0.01),
+  `Comércio` = number(`Comércio`, decimal.mark = ",", accuracy = 0.01),
+  `Transporte, armazenagem e correio` = number(`Transporte, armazenagem e correio`, decimal.mark = ",", accuracy = 0.01),
+  `Informação e comunicação` = number(`Informação e comunicação`, decimal.mark = ",", accuracy = 0.01),
+  `Atividades financeiras, de seguros e serviços relacionados` = number(`Atividades financeiras, de seguros e serviços relacionados`, decimal.mark = ",", accuracy = 0.01),
+  `Outras atividades de serviços` = number(`Outras atividades de serviços`, decimal.mark = ",", accuracy = 0.01),
+  `Atividades imobiliárias` = number(`Atividades imobiliárias`, decimal.mark = ",", accuracy = 0.01),
+  `Administração, saúde e educação públicas e seguridade social` = number(`Administração, saúde e educação públicas e seguridade social`, decimal.mark = ",", accuracy = 0.01),
+  `Valor adicionado a preços básicos` = number(`Valor adicionado a preços básicos`, decimal.mark = ",", accuracy = 0.01),
+  `Impostos líquidos sobre produtos` = number(`Impostos líquidos sobre produtos`, decimal.mark = ",", accuracy = 0.01),
+  `PIB a preços de mercado` = number(`PIB a preços de mercado`, decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, `Agropecuária - total`, `Indústria - total`, `Indústrias extrativas`,
+             `Indústrias de transformação`, `Construção`,
+             `Eletricidade e gás, água, esgoto, atividades de gestão de resíduos`,
+             `Serviços - total`, `Comércio`, `Transporte, armazenagem e correio`,
+             `Informação e comunicação`, `Atividades financeiras, de seguros e serviços relacionados`,
+             `Outras atividades de serviços`, `Atividades imobiliárias`,
+             `Administração, saúde e educação públicas e seguridade social`, `Valor adicionado a preços básicos`,
+             `Impostos líquidos sobre produtos`, `PIB a preços de mercado`, data) %>% 
+  arrange(desc(data))
+
+# PIB (trimestre contra trimestre imediatamente anterior)
+pib_var_mg <- sidrar::get_sidra(
+  api = "/t/5932/n1/all/v/6564/p/all/c11255/90687,90691,90692,90693,90694,90695,90696,90697,90698,90699,90700,90701,90702,90703,90705,90706,90707/d/v6564%201"
+)
+
+pib_var_mg <- pib_var_mg %>% mutate(
+  data = lubridate::ym(`Trimestre (Código)`),
+  variavel = Variável,
+  setores = `Setores e subsetores`,
+  valor = Valor,
+  .keep = "none",
+  variavel = dplyr::recode(
+    .x = variavel,
+    "Taxa trimestre contra trimestre imediatamente anterior" = "Taxa trimestre contra trimestre imediatamente anterior (%)")
+) %>% pivot_wider(names_from = setores, values_from = valor) %>% select(-variavel) %>% mutate(
+  data_fmt = format(data, "%m/%Y"),
+  `Agropecuária - total` = number(`Agropecuária - total`, decimal.mark = ",", accuracy = 0.01),
+  `Indústria - total` = number(`Indústria - total`, decimal.mark = ",", accuracy = 0.01),
+  `Indústrias extrativas` = number(`Indústrias extrativas`, decimal.mark = ",", accuracy = 0.01),
+  `Indústrias de transformação` = number(`Indústrias de transformação`, decimal.mark = ",", accuracy = 0.01),
+  `Construção` = number(`Construção`, decimal.mark = ",", accuracy = 0.01),
+  `Eletricidade e gás, água, esgoto, atividades de gestão de resíduos` = number(`Eletricidade e gás, água, esgoto, atividades de gestão de resíduos`, decimal.mark = ",", accuracy = 0.01),
+  `Serviços - total` = number(`Serviços - total`, decimal.mark = ",", accuracy = 0.01),
+  `Comércio` = number(`Comércio`, decimal.mark = ",", accuracy = 0.01),
+  `Transporte, armazenagem e correio` = number(`Transporte, armazenagem e correio`, decimal.mark = ",", accuracy = 0.01),
+  `Informação e comunicação` = number(`Informação e comunicação`, decimal.mark = ",", accuracy = 0.01),
+  `Atividades financeiras, de seguros e serviços relacionados` = number(`Atividades financeiras, de seguros e serviços relacionados`, decimal.mark = ",", accuracy = 0.01),
+  `Outras atividades de serviços` = number(`Outras atividades de serviços`, decimal.mark = ",", accuracy = 0.01),
+  `Atividades imobiliárias` = number(`Atividades imobiliárias`, decimal.mark = ",", accuracy = 0.01),
+  `Administração, saúde e educação públicas e seguridade social` = number(`Administração, saúde e educação públicas e seguridade social`, decimal.mark = ",", accuracy = 0.01),
+  `Valor adicionado a preços básicos` = number(`Valor adicionado a preços básicos`, decimal.mark = ",", accuracy = 0.01),
+  `PIB a preços de mercado` = number(`PIB a preços de mercado`, decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, `PIB a preços de mercado`, `Agropecuária - total`, `Indústria - total`, `Indústrias extrativas`,
+             `Indústrias de transformação`, `Construção`,
+             `Eletricidade e gás, água, esgoto, atividades de gestão de resíduos`,
+             `Serviços - total`, `Comércio`, `Transporte, armazenagem e correio`,
+             `Informação e comunicação`, `Atividades financeiras, de seguros e serviços relacionados`,
+             `Outras atividades de serviços`, `Atividades imobiliárias`,
+             `Administração, saúde e educação públicas e seguridade social`, `Valor adicionado a preços básicos`, data) %>% 
+  arrange(desc(data))
+
+
 # API key FRED
 fredr_set_key("0087fc9b146c214d78104e3737039ea4")
 
@@ -6570,8 +6742,131 @@ reactable(
 # Índice Geral de Preços do Mercado (IGP-M) {data-navmenu="Inflação"}
 
 
-
 # PIB (ótica da oferta) {data-navmenu="Produção"}
+
+Column {.sidebar} {data-width=100}
+-----------------------------------------------------------------------
+O **Produto Interno Bruto (PIB)** é a medição mais comum usada para auferir a atividade econômica de um país. Ele representa o valor total dos bens e serviços finais produzidos dentro de um país durante um período específico de tempo.
+
+<br>
+
+Aqui são apresentadas as seguintes taxas percentuais: trimestre contra trimestre imediatamente anterior, trimestre contra mesmo trimestre do ano anterior, acumulada ao longo do ano em relação ao mesmo período do ano anterior e acumulada em quatro trimestres em relação ao mesmo período do ano anterior.
+
+<br>
+
+**Fonte:** Instituto Brasileiro de Geografia e Estatística (IBGE).
+
+Column {data-width=900} {.tabset}
+-----------------------------------------------------------------------
+
+### Taxa trimestre contra trimestre imediatamente anterior (%)
+
+```{r}
+reactable(
+  pib_var_mg[, -18],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `PIB a preços de mercado` = colDef(
+      name = "PIB (preços de mercado)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Agropecuária - total` = colDef(
+      name = "Agropec. (total)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Indústria - total` = colDef(
+      name = "Indústria (total)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Indústrias extrativas` = colDef(
+      name = "Ind. extrativas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Indústrias de transformação` = colDef(
+      name = "Ind. de transf.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Construção` = colDef(
+      name = "Construção",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Eletricidade e gás, água, esgoto, atividades de gestão de resíduos` = colDef(
+      name = "Eletricidade e gás, água, esgoto, atividades de gestão de resíduos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Serviços - total` = colDef(
+      name = "Serviços (total)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Comércio` = colDef(
+      name = "Comércio",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Transporte, armazenagem e correio` = colDef(
+      name = "Transporte, armazenagem e correio",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Informação e comunicação` = colDef(
+      name = "Informação e comunicação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Atividades financeiras, de seguros e serviços relacionados` = colDef(
+      name = "Atividades financeiras, de seguros e serviços relacionados",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Outras atividades de serviços` = colDef(
+      name = "Outras atividades de serviços",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Atividades imobiliárias` = colDef(
+      name = "Atividades imobiliárias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Administração, saúde e educação públicas e seguridade social` = colDef(
+      name = "Adm., saúde e educação públicas e seguridade social",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Valor adicionado a preços básicos` = colDef(
+      name = "Valor adicionado a preços básicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # PIB (ótica da demanda) {data-navmenu="Produção"}
 
