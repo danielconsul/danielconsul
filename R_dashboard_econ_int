@@ -3,7 +3,7 @@ title: "Estatísticas macroeconômicas brasileiras"
 output: 
   flexdashboard::flex_dashboard:
     theme: readable
-    favicon: icon.png
+    favicon: favicon.png
     orientation: columns
     vertical_layout: fill
 runtime: shiny
