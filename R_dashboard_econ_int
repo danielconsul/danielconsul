@@ -18,6 +18,7 @@ p {
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
+library(rsconnect)
 library(tidyverse)
 library(rbcb)
 library(reactable)
@@ -28,6 +29,7 @@ library(WDI)
 library(ipeadatar)
 library(fredr)
 library(zoo)
+library(devtools)
 ```
 
 ```{r, cache=TRUE}
