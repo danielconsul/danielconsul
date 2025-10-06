@@ -101,7 +101,73 @@ ipca_grupos_peso <- ipca_grupos %>% dplyr::filter(variavel == "IPCA - Peso mensa
          `4.Vestuário`, `5.Transportes`, `6.Saúde e cuidados pessoais`, `7.Despesas pessoais`,
          `8.Educação`, `9.Comunicação`, data)
 
-# PIB (taxa trimestre contra mesmo trimestre do ano anterior)
+# INPC:
+inpc <- sidrar::get_sidra(
+  api = "/t/1736/n1/all/v/44,68,2292/p/all/d/v44%202,v68%202,v2292%202"
+)
+
+inpc <- inpc %>% mutate(
+  data = lubridate::ym(`Mês (Código)`),
+  variavel = Variável,
+  valor = Valor,
+  .keep = "none",  
+) %>% pivot_wider(names_from = variavel, values_from = valor) %>% 
+  mutate(
+  data_fmt = format(data, "%m/%Y"),
+  `INPC - Variação mensal` = number(`INPC - Variação mensal`, decimal.mark = ",", accuracy = 0.01),
+  `INPC - Variação acumulada no ano` = number(`INPC - Variação acumulada no ano`, decimal.mark = ",", accuracy = 0.01),
+  `INPC - Variação acumulada em 12 meses` = number(`INPC - Variação acumulada em 12 meses`, decimal.mark = ",", accuracy = 0.01),
+  ) %>% dplyr::filter(data >= "1996-01-01") %>% 
+  arrange(desc(data))
+
+# INPC (grupos):
+inpc_grupos <- sidrar::get_sidra(
+  api = "/t/7063/n1/all/v/all/p/all/c315/7169,7170,7445,7486,7558,7625,7660,7712,7766,7786/d/v44%202,v45%204,v68%202,v2292%202"
+)
+
+inpc_grupos <- inpc_grupos %>% mutate(
+  data = lubridate::ym(`Mês (Código)`),
+  variavel = Variável,
+  grupos = `Geral, grupo, subgrupo, item e subitem`,
+  valor = Valor,
+  .keep = "none",  
+) %>% pivot_wider(names_from = grupos, values_from = valor) %>% 
+  mutate(
+  data_fmt = format(data, "%m/%Y"),
+  `Índice geral` = number(`Índice geral`, decimal.mark = ",", accuracy = 0.01),
+  `1.Alimentação e bebidas` = number(`1.Alimentação e bebidas`, decimal.mark = ",", accuracy = 0.01),
+  `2.Habitação` = number(`2.Habitação`, decimal.mark = ",", accuracy = 0.01),
+  `3.Artigos de residência` = number(`3.Artigos de residência`, decimal.mark = ",", accuracy = 0.01),
+  `4.Vestuário` = number(`4.Vestuário`, decimal.mark = ",", accuracy = 0.01),
+  `5.Transportes` = number(`5.Transportes`, decimal.mark = ",", accuracy = 0.01),
+  `6.Saúde e cuidados pessoais` = number(`6.Saúde e cuidados pessoais`, decimal.mark = ",", accuracy = 0.01),
+  `7.Despesas pessoais` = number(`7.Despesas pessoais`, decimal.mark = ",", accuracy = 0.01),
+  `8.Educação` = number(`8.Educação`, decimal.mark = ",", accuracy = 0.01),
+  `9.Comunicação` = number(`9.Comunicação`, decimal.mark = ",", accuracy = 0.01)
+  ) %>% dplyr::filter(data >= "1996-01-01") %>% 
+  arrange(desc(data))
+
+inpc_grupos_mg <- inpc_grupos %>% dplyr::filter(variavel == "INPC - Variação mensal") %>% 
+  select(data_fmt, `Índice geral`, `1.Alimentação e bebidas`, `2.Habitação`, `3.Artigos de residência`,
+         `4.Vestuário`, `5.Transportes`, `6.Saúde e cuidados pessoais`, `7.Despesas pessoais`,
+         `8.Educação`, `9.Comunicação`, data)
+
+inpc_grupos_acum_ano <- inpc_grupos %>% dplyr::filter(variavel == "INPC - Variação acumulada no ano") %>% 
+  select(data_fmt, `Índice geral`, `1.Alimentação e bebidas`, `2.Habitação`, `3.Artigos de residência`,
+         `4.Vestuário`, `5.Transportes`, `6.Saúde e cuidados pessoais`, `7.Despesas pessoais`,
+         `8.Educação`, `9.Comunicação`, data)
+
+inpc_grupos_acum_12m <- inpc_grupos %>% dplyr::filter(variavel == "INPC - Variação acumulada em 12 meses") %>% 
+  select(data_fmt, `Índice geral`, `1.Alimentação e bebidas`, `2.Habitação`, `3.Artigos de residência`,
+         `4.Vestuário`, `5.Transportes`, `6.Saúde e cuidados pessoais`, `7.Despesas pessoais`,
+         `8.Educação`, `9.Comunicação`, data)
+
+inpc_grupos_peso <- inpc_grupos %>% dplyr::filter(variavel == "INPC - Peso mensal") %>% 
+  select(data_fmt, `Índice geral`, `1.Alimentação e bebidas`, `2.Habitação`, `3.Artigos de residência`,
+         `4.Vestuário`, `5.Transportes`, `6.Saúde e cuidados pessoais`, `7.Despesas pessoais`,
+         `8.Educação`, `9.Comunicação`, data)
+
+# PIB (taxa trimestre contra mesmo trimestre do ano anterior) (Oferta)
 pib_var_ano <- sidrar::get_sidra(
   api = "/t/5932/n1/all/v/6561/p/all/c11255/90687,90691,90692,90693,90694,90695,90696,90697,90698,90699,90700,90701,90702,90703,90705,90706,90707/d/v6561%201"
 )
@@ -145,7 +211,7 @@ pib_var_ano <- pib_var_ano %>% mutate(
   arrange(desc(data))
 
 
-# PIB (taxa acumulada em quatro trimestres)
+# PIB (taxa acumulada em quatro trimestres) (Oferta)
 pib_var_acum4t <- sidrar::get_sidra(
   api = "/t/5932/n1/all/v/6562/p/all/c11255/90687,90691,90692,90693,90694,90695,90696,90697,90698,90699,90700,90701,90702,90703,90705,90706,90707/d/v6562%201"
 )
@@ -188,7 +254,7 @@ pib_var_acum4t <- pib_var_acum4t %>% mutate(
              `Impostos líquidos sobre produtos`, data) %>% 
   arrange(desc(data))
 
-# PIB (taxa acumulada ao longo do ano)
+# PIB (taxa acumulada ao longo do ano) (Oferta)
 pib_var_acum_ano <- sidrar::get_sidra(
   api = "/t/5932/n1/all/v/6563/p/all/c11255/90687,90691,90692,90693,90694,90695,90696,90697,90698,90699,90700,90701,90702,90703,90705,90706,90707/d/v6563%201"
 )
@@ -231,7 +297,7 @@ pib_var_acum_ano <- pib_var_acum_ano %>% mutate(
              `Impostos líquidos sobre produtos`, data) %>% 
   arrange(desc(data))
 
-# PIB (trimestre contra trimestre imediatamente anterior)
+# PIB (trimestre contra trimestre imediatamente anterior) (Oferta)
 pib_var_mg <- sidrar::get_sidra(
   api = "/t/5932/n1/all/v/6564/p/all/c11255/90687,90691,90692,90693,90694,90695,90696,90697,90698,90699,90700,90701,90702,90703,90705,90706,90707/d/v6564%201"
 )
@@ -272,6 +338,113 @@ pib_var_mg <- pib_var_mg %>% mutate(
              `Administração, saúde e educação públicas e seguridade social`, `Valor adicionado a preços básicos`, data) %>% 
   arrange(desc(data))
 
+# PIB (taxa trimestre contra mesmo trimestre do ano anterior) (Demanda)
+pib_var_ano_dem <- sidrar::get_sidra(
+  api = "/t/5932/n1/all/v/6561/p/all/c11255/90707,93404,93405,93406,93407,93408/d/v6561%201"
+)
+
+pib_var_ano_dem <- pib_var_ano_dem %>% mutate(
+  data = lubridate::ym(`Trimestre (Código)`),
+  variavel = Variável,
+  setores = `Setores e subsetores`,
+  valor = Valor,
+  .keep = "none",
+  variavel = dplyr::recode(
+    .x = variavel,
+    "Taxa trimestral (em relação ao mesmo período do ano anterior)" = "Variação em relação ao mesmo trimestre do ano anterior (%)")
+) %>% pivot_wider(names_from = setores, values_from = valor) %>% select(-variavel) %>% mutate(
+  data_fmt = format(data, "%m/%Y"),
+  `PIB a preços de mercado` = number(`PIB a preços de mercado`, decimal.mark = ",", accuracy = 0.01),
+  `Despesa de consumo das famílias` = number(`Despesa de consumo das famílias`, decimal.mark = ",", accuracy = 0.01),
+  `Despesa de consumo da administração pública` = number(`Despesa de consumo da administração pública`, decimal.mark = ",", accuracy = 0.01),
+  `Formação bruta de capital fixo` = number(`Formação bruta de capital fixo`, decimal.mark = ",", accuracy = 0.01),
+  `Exportação de bens e serviços` = number(`Exportação de bens e serviços`, decimal.mark = ",", accuracy = 0.01),
+  `Importação de bens e serviços (-)` = number(`Importação de bens e serviços (-)`, decimal.mark = ",", accuracy = 0.01),
+) %>% select(data_fmt,`PIB a preços de mercado`,`Despesa de consumo das famílias`,
+         `Despesa de consumo da administração pública`, `Formação bruta de capital fixo`,
+         `Exportação de bens e serviços`, `Importação de bens e serviços (-)`, data) %>% 
+  arrange(desc(data))
+
+# PIB (taxa acumulada em quatro trimestres) (Demanda)
+pib_var_acum4t_dem <- sidrar::get_sidra(
+  api = "/t/5932/n1/all/v/6562/p/all/c11255/90707,93404,93405,93406,93407,93408/d/v6562%201"
+)
+
+pib_var_acum4t_dem <- pib_var_acum4t_dem %>% mutate(
+  data = lubridate::ym(`Trimestre (Código)`),
+  variavel = Variável,
+  setores = `Setores e subsetores`,
+  valor = Valor,
+  .keep = "none",
+  variavel = dplyr::recode(
+    .x = variavel,
+    "Taxa acumulada em quatro trimestres (em relação ao mesmo período do ano anterior)" = "Taxa acumulada em quatro trimestres (em relação ao mesmo período do ano anterior) (%)"
+)) %>% pivot_wider(names_from = setores, values_from = valor) %>% select(-variavel) %>% mutate(
+  data_fmt = format(data, "%m/%Y"),
+  `PIB a preços de mercado` = number(`PIB a preços de mercado`, decimal.mark = ",", accuracy = 0.01),
+  `Despesa de consumo das famílias` = number(`Despesa de consumo das famílias`, decimal.mark = ",", accuracy = 0.01),
+  `Despesa de consumo da administração pública` = number(`Despesa de consumo da administração pública`, decimal.mark = ",", accuracy = 0.01),
+  `Formação bruta de capital fixo` = number(`Formação bruta de capital fixo`, decimal.mark = ",", accuracy = 0.01),
+  `Exportação de bens e serviços` = number(`Exportação de bens e serviços`, decimal.mark = ",", accuracy = 0.01),
+  `Importação de bens e serviços (-)` = number(`Importação de bens e serviços (-)`, decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt,`PIB a preços de mercado`,`Despesa de consumo das famílias`,
+         `Despesa de consumo da administração pública`, `Formação bruta de capital fixo`,
+         `Exportação de bens e serviços`, `Importação de bens e serviços (-)`, data) %>% 
+  arrange(desc(data))
+
+# PIB (taxa acumulada ao longo do ano) (Demanda)
+pib_var_acum_ano_dem <- sidrar::get_sidra(
+  api = "/t/5932/n1/all/v/6563/p/all/c11255/90707,93404,93405,93406,93407,93408/d/v6563%201"
+)
+
+pib_var_acum_ano_dem <- pib_var_acum_ano_dem %>% mutate(
+  data = lubridate::ym(`Trimestre (Código)`),
+  variavel = Variável,
+  setores = `Setores e subsetores`,
+  valor = Valor,
+  .keep = "none",
+  variavel = dplyr::recode(
+    .x = variavel,
+    "Taxa acumulada ao longo do ano (em relação ao mesmo período do ano anterior)" = "Taxa acumulada ao longo do ano (em relação ao mesmo período do ano anterior) (%)"
+)) %>% pivot_wider(names_from = setores, values_from = valor) %>% select(-variavel) %>% mutate(
+  data_fmt = format(data, "%m/%Y"),
+  `PIB a preços de mercado` = number(`PIB a preços de mercado`, decimal.mark = ",", accuracy = 0.01),
+  `Despesa de consumo das famílias` = number(`Despesa de consumo das famílias`, decimal.mark = ",", accuracy = 0.01),
+  `Despesa de consumo da administração pública` = number(`Despesa de consumo da administração pública`, decimal.mark = ",", accuracy = 0.01),
+  `Formação bruta de capital fixo` = number(`Formação bruta de capital fixo`, decimal.mark = ",", accuracy = 0.01),
+  `Exportação de bens e serviços` = number(`Exportação de bens e serviços`, decimal.mark = ",", accuracy = 0.01),
+  `Importação de bens e serviços (-)` = number(`Importação de bens e serviços (-)`, decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt,`PIB a preços de mercado`,`Despesa de consumo das famílias`,
+         `Despesa de consumo da administração pública`, `Formação bruta de capital fixo`,
+         `Exportação de bens e serviços`, `Importação de bens e serviços (-)`, data) %>% 
+  arrange(desc(data))
+
+# PIB (trimestre contra trimestre imediatamente anterior)
+pib_var_mg_dem <- sidrar::get_sidra(
+  api = "/t/5932/n1/all/v/6564/p/all/c11255/90707,93404,93405,93406,93407,93408/d/v6564%201"
+)
+
+pib_var_mg_dem <- pib_var_mg_dem %>% mutate(
+  data = lubridate::ym(`Trimestre (Código)`),
+  variavel = Variável,
+  setores = `Setores e subsetores`,
+  valor = Valor,
+  .keep = "none",
+  variavel = dplyr::recode(
+    .x = variavel,
+    "Taxa trimestre contra trimestre imediatamente anterior" = "Taxa trimestre contra trimestre imediatamente anterior (%)"
+)) %>% pivot_wider(names_from = setores, values_from = valor) %>% select(-variavel) %>% mutate(
+  data_fmt = format(data, "%m/%Y"),
+  `PIB a preços de mercado` = number(`PIB a preços de mercado`, decimal.mark = ",", accuracy = 0.01),
+  `Despesa de consumo das famílias` = number(`Despesa de consumo das famílias`, decimal.mark = ",", accuracy = 0.01),
+  `Despesa de consumo da administração pública` = number(`Despesa de consumo da administração pública`, decimal.mark = ",", accuracy = 0.01),
+  `Formação bruta de capital fixo` = number(`Formação bruta de capital fixo`, decimal.mark = ",", accuracy = 0.01),
+  `Exportação de bens e serviços` = number(`Exportação de bens e serviços`, decimal.mark = ",", accuracy = 0.01),
+  `Importação de bens e serviços (-)` = number(`Importação de bens e serviços (-)`, decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt,`PIB a preços de mercado`,`Despesa de consumo das famílias`,
+         `Despesa de consumo da administração pública`, `Formação bruta de capital fixo`,
+         `Exportação de bens e serviços`, `Importação de bens e serviços (-)`, data) %>% 
+  arrange(desc(data))
 
 # API key FRED
 fredr_set_key("0087fc9b146c214d78104e3737039ea4")
@@ -6805,7 +6978,7 @@ reactable(
 Column {.sidebar} {data-width=80}
 -----------------------------------------------------------------------
 
-O **Índice de Preços ao Consumidor Amplo (IPCA)** tem como unidade de coleta estabelecimentos comerciais e de prestação de serviços, concessionária de serviços públicos e intenet e sua coleta estende-se, em geral, do dia 01 a 30 do mês de referência. Atualmente, a população-objetivo do IPCA abrange as famílias com rendimentos de 1 a 40 salários mínimos, qualquer que seja a fonte, residentes nas áreas urbanas das regiões de abrangência do SNIPC, as quais são: regiões metropolitanas de Belém, Fortaleza, Recife, Salvador, Belo Horizonte, Vitória, Rio de Janeiro, São Paulo, Curitiba, Porto Alegre, além do Distrito Federal e dos municípios de Goiânia, Campo Grande, Rio Branco, São Luís e Aracaju.
+O **Índice de Preços ao Consumidor Amplo (IPCA)** tem como unidade de coleta estabelecimentos comerciais e de prestação de serviços, concessionária de serviços públicos e intenet e sua coleta estende-se, em geral, do dia 01 a 30 do mês de referência. Atualmente, a população-objetivo do IPCA abrange as **famílias com rendimentos de 1 a 40 salários mínimos**, qualquer que seja a fonte, residentes nas áreas urbanas das regiões de abrangência do Sistema Nacional de Índices de Preços ao Consumidor (SNIPC), as quais são: regiões metropolitanas de Belém, Fortaleza, Recife, Salvador, Belo Horizonte, Vitória, Rio de Janeiro, São Paulo, Curitiba, Porto Alegre, além do Distrito Federal e dos municípios de Goiânia, Campo Grande, Rio Branco, São Luís e Aracaju.
 
 <br>
 
@@ -6844,47 +7017,47 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `1.Alimentação e bebidas` = colDef(
-      name = "1.Alimentação e bebidas",
+      name = "1. Alimentação e bebidas",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `2.Habitação` = colDef(
-      name = "2.Habitação",
+      name = "2. Habitação",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `3.Artigos de residência` = colDef(
-      name = "3.Artigos de residência",
+      name = "3. Artigos de residência",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `4.Vestuário` = colDef(
-      name = "4.Vestuário",
+      name = "4. Vestuário",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `5.Transportes` = colDef(
-      name = "5.Transportes",
+      name = "5. Transportes",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `6.Saúde e cuidados pessoais` = colDef(
-      name = "6.Saúde e cuidados pessoais",
+      name = "6. Saúde e cuidados pessoais",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `7.Despesas pessoais` = colDef(
-      name = "7.Despesas pessoais",
+      name = "7. Despesas pessoais",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `8.Educação` = colDef(
-      name = "8.Educação",
+      name = "8. Educação",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `9.Comunicação` = colDef(
-      name = "9.Comunicação",
+      name = "9. Comunicação",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -6936,47 +7109,47 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `1.Alimentação e bebidas` = colDef(
-      name = "1.Alimentação e bebidas",
+      name = "1. Alimentação e bebidas",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `2.Habitação` = colDef(
-      name = "2.Habitação",
+      name = "2. Habitação",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `3.Artigos de residência` = colDef(
-      name = "3.Artigos de residência",
+      name = "3. Artigos de residência",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `4.Vestuário` = colDef(
-      name = "4.Vestuário",
+      name = "4. Vestuário",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `5.Transportes` = colDef(
-      name = "5.Transportes",
+      name = "5. Transportes",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `6.Saúde e cuidados pessoais` = colDef(
-      name = "6.Saúde e cuidados pessoais",
+      name = "6. Saúde e cuidados pessoais",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `7.Despesas pessoais` = colDef(
-      name = "7.Despesas pessoais",
+      name = "7. Despesas pessoais",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `8.Educação` = colDef(
-      name = "8.Educação",
+      name = "8. Educação",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `9.Comunicação` = colDef(
-      name = "9.Comunicação",
+      name = "9. Comunicação",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -7028,47 +7201,47 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `1.Alimentação e bebidas` = colDef(
-      name = "1.Alimentação e bebidas",
+      name = "1. Alimentação e bebidas",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `2.Habitação` = colDef(
-      name = "2.Habitação",
+      name = "2. Habitação",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `3.Artigos de residência` = colDef(
-      name = "3.Artigos de residência",
+      name = "3. Artigos de residência",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `4.Vestuário` = colDef(
-      name = "4.Vestuário",
+      name = "4. Vestuário",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `5.Transportes` = colDef(
-      name = "5.Transportes",
+      name = "5. Transportes",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `6.Saúde e cuidados pessoais` = colDef(
-      name = "6.Saúde e cuidados pessoais",
+      name = "6. Saúde e cuidados pessoais",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `7.Despesas pessoais` = colDef(
-      name = "7.Despesas pessoais",
+      name = "7. Despesas pessoais",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `8.Educação` = colDef(
-      name = "8.Educação",
+      name = "8. Educação",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `9.Comunicação` = colDef(
-      name = "9.Comunicação",
+      name = "9. Comunicação",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -7090,7 +7263,7 @@ reactable(
 )
 ```
 
-### Peso mensal (%)
+### Peso mensal (Grupos) (%)
 ```{r}
 reactable(
   ipca_grupos_peso[, -12],
@@ -7106,47 +7279,47 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `1.Alimentação e bebidas` = colDef(
-      name = "1.Alimentação e bebidas",
+      name = "1. Alimentação e bebidas",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `2.Habitação` = colDef(
-      name = "2.Habitação",
+      name = "2. Habitação",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `3.Artigos de residência` = colDef(
-      name = "3.Artigos de residência",
+      name = "3. Artigos de residência",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `4.Vestuário` = colDef(
-      name = "4.Vestuário",
+      name = "4. Vestuário",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `5.Transportes` = colDef(
-      name = "5.Transportes",
+      name = "5. Transportes",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `6.Saúde e cuidados pessoais` = colDef(
-      name = "6.Saúde e cuidados pessoais",
+      name = "6. Saúde e cuidados pessoais",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `7.Despesas pessoais` = colDef(
-      name = "7.Despesas pessoais",
+      name = "7. Despesas pessoais",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `8.Educação` = colDef(
-      name = "8.Educação",
+      name = "8. Educação",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `9.Comunicação` = colDef(
-      name = "9.Comunicação",
+      name = "9. Comunicação",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -7170,16 +7343,381 @@ reactable(
 
 # Índice Nacional de Preços ao Consumidor (INPC) {data-navmenu="Inflação"}
 
+Column {.sidebar} {data-width=80}
+-----------------------------------------------------------------------
+
+O **Índice Nacional de Preços ao Consumidor (INPC)** tem como unidade de coleta estabelecimentos comerciais e de prestação de serviços, concessionária de serviços públicos e internet e sua coleta estende-se, em geral, do dia 01 a 30 do mês de referência. Atualmente, a população-objetivo do INPC abrange as **famílias com rendimentos de 1 a 5 salários mínimos**, cuja pessoa de referência é assalariada, residentes nas áreas urbanas das regiões de abrangência do Sistema Nacional de Índices de Preços ao Consumidor (SNIPC), as quais são: regiões metropolitanas de Belém, Fortaleza, Recife, Salvador, Belo Horizonte, Vitória, Rio de Janeiro, São Paulo, Curitiba, Porto Alegre, além do Distrito Federal e dos municípios de Goiânia, Campo Grande, Rio Branco, São Luís e Aracaju. Para além de seu objetivo principal, medir a variação dos preços, o índice tem sido usualmente utilizado como base para correção monetária dos salários no Brasil. 
+
+<br>
+
+**Fonte:** Instituto Brasileiro de Geografia e Estatística (IBGE).
+
+Column {data-width=920}  {.tabset}
+-----------------------------------------------------------------------
+
+### Tx. M/M-1 (Gráfico)
+```{r}
+plot_ly(
+  data = inpc, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", `INPC - Variação mensal`)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Tx. M/M-1 (Grupos) (%)
+```{r}
+reactable(
+  inpc_grupos_mg[, -12],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Índice geral` = colDef(
+      name = "Índice geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1.Alimentação e bebidas` = colDef(
+      name = "1. Alimentação e bebidas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2.Habitação` = colDef(
+      name = "2. Habitação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.Artigos de residência` = colDef(
+      name = "3. Artigos de residência",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4.Vestuário` = colDef(
+      name = "4. Vestuário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5.Transportes` = colDef(
+      name = "5. Transportes",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6.Saúde e cuidados pessoais` = colDef(
+      name = "6. Saúde e cuidados pessoais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7.Despesas pessoais` = colDef(
+      name = "7. Despesas pessoais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8.Educação` = colDef(
+      name = "8. Educação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9.Comunicação` = colDef(
+      name = "9. Comunicação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Tx. acum. no ano (Gráfico)
+```{r}
+plot_ly(
+  data = inpc, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", `INPC - Variação acumulada no ano`)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Tx. acum. no ano (Grupos) (%)
+```{r}
+reactable(
+  inpc_grupos_acum_ano[, -12],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Índice geral` = colDef(
+      name = "Índice geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1.Alimentação e bebidas` = colDef(
+      name = "1. Alimentação e bebidas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2.Habitação` = colDef(
+      name = "2. Habitação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.Artigos de residência` = colDef(
+      name = "3. Artigos de residência",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4.Vestuário` = colDef(
+      name = "4. Vestuário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5.Transportes` = colDef(
+      name = "5. Transportes",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6.Saúde e cuidados pessoais` = colDef(
+      name = "6. Saúde e cuidados pessoais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7.Despesas pessoais` = colDef(
+      name = "7. Despesas pessoais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8.Educação` = colDef(
+      name = "8. Educação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9.Comunicação` = colDef(
+      name = "9. Comunicação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Tx. acum. em 12 meses (Gráfico)
+```{r}
+plot_ly(
+  data = inpc, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", `INPC - Variação acumulada em 12 meses`)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Tx. acum. em 12 meses (Grupos) (%)
+```{r}
+reactable(
+  inpc_grupos_acum_12m[, -12],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Índice geral` = colDef(
+      name = "Índice geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1.Alimentação e bebidas` = colDef(
+      name = "1. Alimentação e bebidas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2.Habitação` = colDef(
+      name = "2. Habitação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.Artigos de residência` = colDef(
+      name = "3. Artigos de residência",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4.Vestuário` = colDef(
+      name = "4. Vestuário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5.Transportes` = colDef(
+      name = "5. Transportes",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6.Saúde e cuidados pessoais` = colDef(
+      name = "6. Saúde e cuidados pessoais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7.Despesas pessoais` = colDef(
+      name = "7. Despesas pessoais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8.Educação` = colDef(
+      name = "8. Educação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9.Comunicação` = colDef(
+      name = "9. Comunicação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Peso mensal (Grupos) (%)
+```{r}
+reactable(
+  inpc_grupos_peso[, -12],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Índice geral` = colDef(
+      name = "Índice geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1.Alimentação e bebidas` = colDef(
+      name = "1. Alimentação e bebidas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2.Habitação` = colDef(
+      name = "2. Habitação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.Artigos de residência` = colDef(
+      name = "3. Artigos de residência",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4.Vestuário` = colDef(
+      name = "4. Vestuário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5.Transportes` = colDef(
+      name = "5. Transportes",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6.Saúde e cuidados pessoais` = colDef(
+      name = "6. Saúde e cuidados pessoais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7.Despesas pessoais` = colDef(
+      name = "7. Despesas pessoais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8.Educação` = colDef(
+      name = "8. Educação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9.Comunicação` = colDef(
+      name = "9. Comunicação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # Índice de Preços ao Produtor (IPP) {data-navmenu="Inflação"}
 
 # Índice Geral de Preços do Mercado (IGP-M) {data-navmenu="Inflação"}
-
 
 # PIB (ótica da oferta) {data-navmenu="Produção"}
 
 Column {.sidebar} {data-width=80}
 -----------------------------------------------------------------------
-O **Produto Interno Bruto (PIB)** é a medição mais comum usada para auferir a atividade econômica de um país. Ele representa o valor total dos bens e serviços finais produzidos dentro de um país durante um período específico de tempo. Pela **ótica da oferta**, o PIB representa os grande setores da economia: agropecuária, indústria, comércio e serviços.
+O **Produto Interno Bruto (PIB)** é a medição mais comum usada para auferir a atividade econômica de um país. Ele representa o valor total dos bens e serviços finais produzidos dentro de um país durante um período específico de tempo. Pela **ótica da oferta**, o PIB representa os grande setores da economia: agropecuária, indústria e comércio e serviços.
 
 <br>
 
@@ -7192,62 +7730,7 @@ Aqui são apresentadas as seguintes taxas percentuais: taxa trimestral contra tr
 Column {data-width=920} {.tabset}
 -----------------------------------------------------------------------
 
-### Tx. trim. contra trim. imediat. anterior (%) (Gráfico)
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = pib_var_mg,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `PIB a preços de mercado`)),
-    type = "scatter",
-    mode = "lines",
-    name = "PIB a preços de mercado"
-  ) %>%
-  add_trace(
-    data = pib_var_mg,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `Agropecuária - total`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Agropecuária (total)"
-  ) %>%
-  add_trace(
-    data = pib_var_mg,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `Indústria - total`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústria (total)"
-  ) %>%
-  add_trace(
-    data = pib_var_mg,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `Serviços - total`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Serviços (total)"
-  ) %>%
-  add_trace(
-    data = pib_var_mg,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `Comércio`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Comércio"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "%", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
-```
-
-### Tx. trim. contra trim. imediat. anterior (%) (Tabela)
+### Tx. trim. contra trim. imediat. anterior (%)
 ```{r}
 reactable(
   pib_var_mg[, -18],
@@ -7355,62 +7838,7 @@ reactable(
 )
 ```
 
-### Tx. acum. em quatro trimestres (%) (Gráfico)
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = pib_var_acum4t,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `PIB a preços de mercado`)),
-    type = "scatter",
-    mode = "lines",
-    name = "PIB a preços de mercado"
-  ) %>%
-  add_trace(
-    data = pib_var_acum4t,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `Agropecuária - total`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Agropecuária (total)"
-  ) %>%
-  add_trace(
-    data = pib_var_acum4t,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `Indústria - total`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústria (total)"
-  ) %>%
-  add_trace(
-    data = pib_var_acum4t,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `Serviços - total`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Serviços (total)"
-  ) %>%
-  add_trace(
-    data = pib_var_acum4t,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `Comércio`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Comércio"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "%", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
-```
-
-### Tx. acum. em quatro trimestres (%) (Tabela)
+### Tx. acum. em quatro trimestres (%)
 ```{r}
 reactable(
   pib_var_acum4t[, -19],
@@ -7523,7 +7951,7 @@ reactable(
 )
 ```
 
-### Tx. acum. ao longo do ano (%) (Tabela)
+### Tx. acum. ao longo do ano (%)
 ```{r}
 reactable(
   pib_var_acum_ano[, -19],
@@ -7636,7 +8064,7 @@ reactable(
 )
 ```
 
-### Tx. trim. em relação ao mesmo trim. do ano anterior (%) (Tabela)
+### Tx. trim. em relação ao mesmo trim. do ano anterior (%)
 ```{r}
 reactable(
   pib_var_ano[, -19],
@@ -7750,6 +8178,253 @@ reactable(
 ```
 
 # PIB (ótica da demanda) {data-navmenu="Produção"}
+
+Column {.sidebar} {data-width=80}
+-----------------------------------------------------------------------
+O **Produto Interno Bruto (PIB)** é a medição mais comum usada para auferir a atividade econômica de um país. Ele representa o valor total dos bens e serviços finais produzidos dentro de um país durante um período específico de tempo. Pela **ótica da demanda**, o PIB representa o consumo das famílias, o consumo da adminstração pública, a formação bruta de capital fixo (FBCF) e as exportações líquidas (exportações - importações).
+
+<br>
+
+Aqui são apresentadas as seguintes taxas percentuais: taxa trimestral contra trimestre imediatamente anterior, taxa acumulada em quatro trimestres, taxa acumulada ao longo do ano e taxa trimestral em relação ao mesmo trimestre do ano anterior.
+
+<br>
+
+**Fonte:** Instituto Brasileiro de Geografia e Estatística (IBGE).
+
+Column {data-width=920} {.tabset}
+-----------------------------------------------------------------------
+
+### Tx. trim. contra trim. imediat. anterior (%)
+```{r}
+reactable(
+  pib_var_mg_dem[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `PIB a preços de mercado` = colDef(
+      name = "PIB (preços de mercado)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Despesa de consumo das famílias` = colDef(
+      name = "Consumo das famílias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Despesa de consumo da administração pública` = colDef(
+      name = "Consumo da adm. pública",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Formação bruta de capital fixo` = colDef(
+      name = "FBCF",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Exportação de bens e serviços` = colDef(
+      name = "Exportações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Importação de bens e serviços (-)` = colDef(
+      name = "Importações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Tx. acum. em quatro trimestres (%)
+```{r}
+reactable(
+  pib_var_acum4t_dem[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `PIB a preços de mercado` = colDef(
+      name = "PIB (preços de mercado)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Despesa de consumo das famílias` = colDef(
+      name = "Consumo das famílias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Despesa de consumo da administração pública` = colDef(
+      name = "Consumo da adm. pública",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Formação bruta de capital fixo` = colDef(
+      name = "FBCF",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Exportação de bens e serviços` = colDef(
+      name = "Exportações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Importação de bens e serviços (-)` = colDef(
+      name = "Importações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Tx. acum. ao longo do ano (%)
+```{r}
+reactable(
+  pib_var_acum_ano_dem[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `PIB a preços de mercado` = colDef(
+      name = "PIB (preços de mercado)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Despesa de consumo das famílias` = colDef(
+      name = "Consumo das famílias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Despesa de consumo da administração pública` = colDef(
+      name = "Consumo da adm. pública",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Formação bruta de capital fixo` = colDef(
+      name = "FBCF",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Exportação de bens e serviços` = colDef(
+      name = "Exportações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Importação de bens e serviços (-)` = colDef(
+      name = "Importações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Tx. trim. em relação ao mesmo trim. do ano anterior (%)
+```{r}
+reactable(
+  pib_var_ano_dem[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `PIB a preços de mercado` = colDef(
+      name = "PIB (preços de mercado)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Despesa de consumo das famílias` = colDef(
+      name = "Consumo das famílias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Despesa de consumo da administração pública` = colDef(
+      name = "Consumo da adm. pública",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Formação bruta de capital fixo` = colDef(
+      name = "FBCF",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Exportação de bens e serviços` = colDef(
+      name = "Exportações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Importação de bens e serviços (-)` = colDef(
+      name = "Importações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # Pesquisa Industrial Mensal - Produção física (PIM-PF) {data-navmenu="Produção"}
 
