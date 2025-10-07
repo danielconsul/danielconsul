@@ -144,11 +144,24 @@ xreg_ig_projecao <- xreg_ig[nrow(xreg_ig), , drop = FALSE]
 
 forecast(arima_ig, xreg = xreg_ig_projecao, h = 1)
 #             Point Forecast  Lo 80    Hi 80    Lo 95    Hi 95
-# Aug 2025    -0.07877245 -1.378687 1.221142 -2.06682 1.909276
+# Aug 2025    -0.07869271 -1.378614 1.221228 -2.06675 1.909365
 
 # Projeção IPP indústria geral agosto/2025: -0.08
 
 ### SETEMBRO/2025 - INDÚSTRIA GERAL -----------------------------------------
+
+
+
+### OUTUBRO/2025 - INDÚSTRIA GERAL -----------------------------------------
+
+
+
+### NOVEMBRO/2025 - INDÚSTRIA GERAL -----------------------------------------
+
+
+
+### DEZEMBRO/2025 - INDÚSTRIA GERAL -----------------------------------------
+
 
 
 # MODELO DE PROJEÇÃO IPP INDÚSTRIA DE TRANSFORMAÇÃO ----------------------------------
@@ -171,12 +184,25 @@ summary(arima_it)
 xreg_it_projecao <- xreg_it[nrow(xreg_it), , drop = FALSE]
 
 forecast(arima_it, xreg = xreg_it_projecao, h = 1)
-#              Point Forecast Lo 80    Hi 80     Lo 95    Hi 95
-# Aug 2025     -0.0198247 -1.13139 1.091741 -1.719817 1.680168
+#              Point Forecast Lo 80    Hi 80    Lo 95    Hi 95
+# Aug 2025    -0.01966064 -1.131263 1.091942 -1.71971 1.680388
 
 # Projeção IPP indústria de transformação agosto/2025: -0.02
 
 ### SETEMBRO/2025 - INDÚSTRIA DE TRANSFORMAÇÃO -----------------------------------------
+
+
+
+### OUTUBRO/2025 - INDÚSTRIA DE TRANSFORMAÇÃO -------------------------------------------
+
+
+
+### NOVEMBRO/2025 - INDÚSTRIA DE TRANSFORMAÇÃO -------------------------------------------
+
+
+
+### DEZEMBRO/2025 - INDÚSTRIA DE TRANSFORMAÇÃO -------------------------------------------
+
 
 
 # MODELO DE PROJEÇÃO IPP INDÚSTRIA EXTRATIVA ----------------------------------
@@ -199,23 +225,23 @@ summary(arima_ie)
 xreg_ie_projecao <- xreg_ie[nrow(xreg_ie), , drop = FALSE]
 
 forecast(arima_ie, xreg = xreg_ie_projecao, h = 1)
-#             Point Forecast  Lo 80    Hi 80     Lo 95   Hi 95
-# Aug 2025      0.2838673 -9.268267 9.836001 -14.32486 14.8926
+#             Point ForecastLo 80    Hi 80     Lo 95    Hi 95
+# Aug 2025      0.2675478 -9.284045 9.819141 -14.34035 14.87545
 
-# Projeção IPP indústria extrativa agosto/2025: 0,23
+# Projeção IPP indústria extrativa agosto/2025: 0,27
 
 ### SETEMBRO/2025 - INDÚSTRIA EXTRATIVA -------------------------------------------
 
 
 
+### OUTUBRO/2025 - INDÚSTRIA EXTRATIVA -------------------------------------------
 
 
 
+### NOVEMBRO/2025 - INDÚSTRIA EXTRATIVA -------------------------------------------
 
 
 
-
-
-
+### DEZEMBRO/2025 - INDÚSTRIA EXTRATIVA -------------------------------------------
 
 
