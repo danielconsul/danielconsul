@@ -35,6 +35,82 @@ library(devtools)
 ```{r, cache=TRUE}
 # Coleta de dados:
 
+# IPP (indústria geral, seções e atividades):
+ipp <- sidrar::get_sidra(
+  api = "/t/6903/n1/all/v/all/p/all/c842/all/d/v1394%202,v1395%202,v1396%202,v10008%205"
+)
+
+ipp <- ipp %>% mutate(
+  data = lubridate::ym(`Mês (Código)`),
+  variavel = Variável,
+  grupos = `Indústria geral, indústrias extrativas e indústrias de transformação e atividades (CNAE 2.0)`,
+  valor = Valor,
+  .keep = "none",  
+) %>% pivot_wider(names_from = grupos, values_from = valor) %>% 
+  mutate(
+  data_fmt = format(data, "%m/%Y"),
+  `Indústria Geral` = number(`Indústria Geral`, decimal.mark = ",", accuracy = 0.01),
+  `B Indústrias Extrativas` = number(`B Indústrias Extrativas`, decimal.mark = ",", accuracy = 0.01),
+  `C Indústrias de Transformação` = number(`C Indústrias de Transformação`, decimal.mark = ",", accuracy = 0.01),
+  `10 FABRICAÇÃO DE PRODUTOS ALIMENTÍCIOS` = number(`10 FABRICAÇÃO DE PRODUTOS ALIMENTÍCIOS`, decimal.mark = ",", accuracy = 0.01),
+  `11 FABRICAÇÃO DE BEBIDAS` = number(`11 FABRICAÇÃO DE BEBIDAS`, decimal.mark = ",", accuracy = 0.01),
+  `12 FABRICAÇÃO DE PRODUTOS DO FUMO` = number(`12 FABRICAÇÃO DE PRODUTOS DO FUMO`, decimal.mark = ",", accuracy = 0.01),
+  `13 FABRICAÇÃO DE PRODUTOS TÊXTEIS` = number(`13 FABRICAÇÃO DE PRODUTOS TÊXTEIS`, decimal.mark = ",", accuracy = 0.01),
+  `14 CONFECÇÃO DE ARTIGOS DO VESTUÁRIO E ACESSÓRIOS` = number(`14 CONFECÇÃO DE ARTIGOS DO VESTUÁRIO E ACESSÓRIOS`, decimal.mark = ",", accuracy = 0.01),
+  `15 PREPARAÇÃO DE COUROS E FABRICAÇÃO DE ARTEFATOS DE COURO, ARTIGOS PARA VIAGEM E CALÇADOS` = number(`15 PREPARAÇÃO DE COUROS E FABRICAÇÃO DE ARTEFATOS DE COURO, ARTIGOS PARA VIAGEM E CALÇADOS`, decimal.mark = ",", accuracy = 0.01),
+  `16 FABRICAÇÃO DE PRODUTOS DE MADEIRA` = number(`16 FABRICAÇÃO DE PRODUTOS DE MADEIRA`, decimal.mark = ",", accuracy = 0.01),
+  `17 FABRICAÇÃO DE CELULOSE, PAPEL E PRODUTOS DE PAPEL` = number(`17 FABRICAÇÃO DE CELULOSE, PAPEL E PRODUTOS DE PAPEL`, decimal.mark = ",", accuracy = 0.01),
+  `18 IMPRESSÃO E REPRODUÇÃO DE GRAVAÇÕES` = number(`18 IMPRESSÃO E REPRODUÇÃO DE GRAVAÇÕES`, decimal.mark = ",", accuracy = 0.01),
+  `19 FABRICAÇÃO DE COQUE, DE PRODUTOS DERIVADOS DO PETRÓLEO E DE BIOCOMBUSTÍVEIS` = number(`19 FABRICAÇÃO DE COQUE, DE PRODUTOS DERIVADOS DO PETRÓLEO E DE BIOCOMBUSTÍVEIS`, decimal.mark = ",", accuracy = 0.01),
+  `20B FABRICAÇÃO DE SABÕES, DETERGENTES, PRODUTOS DE LIMPEZA, COSMÉTICOS, PRODUTOS DE PERFUMARIA E DE HIGIENE PESSOAL` = number(`20B FABRICAÇÃO DE SABÕES, DETERGENTES, PRODUTOS DE LIMPEZA, COSMÉTICOS, PRODUTOS DE PERFUMARIA E DE HIGIENE PESSOAL`, decimal.mark = ",", accuracy = 0.01),
+  `20C FABRICAÇÃO DE OUTROS PRODUTOS QUÍMICOS` = number(`20C FABRICAÇÃO DE OUTROS PRODUTOS QUÍMICOS`, decimal.mark = ",", accuracy = 0.01),
+  `21 FABRICAÇÃO DE PRODUTOS FARMOQUÍMICOS E FARMACÊUTICOS` = number(`21 FABRICAÇÃO DE PRODUTOS FARMOQUÍMICOS E FARMACÊUTICOS`, decimal.mark = ",", accuracy = 0.01),
+  `22 FABRICAÇÃO DE PRODUTOS DE BORRACHA E DE MATERIAL PLÁSTICO` = number(`22 FABRICAÇÃO DE PRODUTOS DE BORRACHA E DE MATERIAL PLÁSTICO`, decimal.mark = ",", accuracy = 0.01),
+  `23 FABRICAÇÃO DE PRODUTOS DE MINERAIS NÃO METÁLICOS` = number(`23 FABRICAÇÃO DE PRODUTOS DE MINERAIS NÃO METÁLICOS`, decimal.mark = ",", accuracy = 0.01),
+  `24 METALURGIA` = number(`24 METALURGIA`, decimal.mark = ",", accuracy = 0.01),
+  `25 FABRICAÇÃO DE PRODUTOS DE METAL, EXCETO MÁQUINAS E EQUIPAMENTOS` = number(`25 FABRICAÇÃO DE PRODUTOS DE METAL, EXCETO MÁQUINAS E EQUIPAMENTOS`, decimal.mark = ",", accuracy = 0.01),
+  `26 FABRICAÇÃO DE EQUIPAMENTOS DE INFORMÁTICA, PRODUTOS ELETRÔNICOS E ÓPTICOS` = number(`26 FABRICAÇÃO DE EQUIPAMENTOS DE INFORMÁTICA, PRODUTOS ELETRÔNICOS E ÓPTICOS`, decimal.mark = ",", accuracy = 0.01),
+  `27 FABRICAÇÃO DE MÁQUINAS, APARELHOS E MATERIAIS ELÉTRICOS` = number(`27 FABRICAÇÃO DE MÁQUINAS, APARELHOS E MATERIAIS ELÉTRICOS`, decimal.mark = ",", accuracy = 0.01),
+  `28 FABRICAÇÃO DE MÁQUINAS E EQUIPAMENTOS` = number(`28 FABRICAÇÃO DE MÁQUINAS E EQUIPAMENTOS`, decimal.mark = ",", accuracy = 0.01),
+  `29 FABRICAÇÃO DE VEÍCULOS AUTOMOTORES, REBOQUES E CARROCERIAS` = number(`29 FABRICAÇÃO DE VEÍCULOS AUTOMOTORES, REBOQUES E CARROCERIAS`, decimal.mark = ",", accuracy = 0.01),
+  `30 FABRICAÇÃO DE OUTROS EQUIPAMENTOS DE TRANSPORTE, EXCETO VEÍCULOS AUTOMOTORES` = number(`30 FABRICAÇÃO DE OUTROS EQUIPAMENTOS DE TRANSPORTE, EXCETO VEÍCULOS AUTOMOTORES`, decimal.mark = ",", accuracy = 0.01),
+  `31 FABRICAÇÃO DE MÓVEIS` = number(`31 FABRICAÇÃO DE MÓVEIS`, decimal.mark = ",", accuracy = 0.01)
+  ) %>% 
+  arrange(desc(data))
+
+ipp_mg <- ipp %>% dplyr::filter(variavel == "IPP - Variação mês/mês imediatamente anterior (M/M-1)") %>% 
+  select(data_fmt,`Indústria Geral`, `B Indústrias Extrativas`, `C Indústrias de Transformação`, `10 FABRICAÇÃO DE PRODUTOS ALIMENTÍCIOS`, `11 FABRICAÇÃO DE BEBIDAS`, `12 FABRICAÇÃO DE PRODUTOS DO FUMO`,
+`13 FABRICAÇÃO DE PRODUTOS TÊXTEIS`, `14 CONFECÇÃO DE ARTIGOS DO VESTUÁRIO E ACESSÓRIOS`, `15 PREPARAÇÃO DE COUROS E FABRICAÇÃO DE ARTEFATOS DE COURO, ARTIGOS PARA VIAGEM E CALÇADOS`,
+`16 FABRICAÇÃO DE PRODUTOS DE MADEIRA`, `17 FABRICAÇÃO DE CELULOSE, PAPEL E PRODUTOS DE PAPEL`, `18 IMPRESSÃO E REPRODUÇÃO DE GRAVAÇÕES`, `19 FABRICAÇÃO DE COQUE, DE PRODUTOS DERIVADOS DO PETRÓLEO E DE BIOCOMBUSTÍVEIS`,
+`20B FABRICAÇÃO DE SABÕES, DETERGENTES, PRODUTOS DE LIMPEZA, COSMÉTICOS, PRODUTOS DE PERFUMARIA E DE HIGIENE PESSOAL`, `20C FABRICAÇÃO DE OUTROS PRODUTOS QUÍMICOS`, `21 FABRICAÇÃO DE PRODUTOS FARMOQUÍMICOS E FARMACÊUTICOS`,
+`22 FABRICAÇÃO DE PRODUTOS DE BORRACHA E DE MATERIAL PLÁSTICO`, `23 FABRICAÇÃO DE PRODUTOS DE MINERAIS NÃO METÁLICOS`, `24 METALURGIA`, `25 FABRICAÇÃO DE PRODUTOS DE METAL, EXCETO MÁQUINAS E EQUIPAMENTOS`,
+`26 FABRICAÇÃO DE EQUIPAMENTOS DE INFORMÁTICA, PRODUTOS ELETRÔNICOS E ÓPTICOS`, `27 FABRICAÇÃO DE MÁQUINAS, APARELHOS E MATERIAIS ELÉTRICOS`, `28 FABRICAÇÃO DE MÁQUINAS E EQUIPAMENTOS`,
+`29 FABRICAÇÃO DE VEÍCULOS AUTOMOTORES, REBOQUES E CARROCERIAS`,  `30 FABRICAÇÃO DE OUTROS EQUIPAMENTOS DE TRANSPORTE, EXCETO VEÍCULOS AUTOMOTORES`,`31 FABRICAÇÃO DE MÓVEIS`, data)
+  
+ipp_acum_ano <- ipp %>% dplyr::filter(variavel == "IPP - Variação acumulada no ano (em relação a dezembro do ano anterior)") %>% select(data_fmt,`Indústria Geral`, `B Indústrias Extrativas`, `C Indústrias de Transformação`, `10 FABRICAÇÃO DE PRODUTOS ALIMENTÍCIOS`, `11 FABRICAÇÃO DE BEBIDAS`, `12 FABRICAÇÃO DE PRODUTOS DO FUMO`,
+`13 FABRICAÇÃO DE PRODUTOS TÊXTEIS`, `14 CONFECÇÃO DE ARTIGOS DO VESTUÁRIO E ACESSÓRIOS`, `15 PREPARAÇÃO DE COUROS E FABRICAÇÃO DE ARTEFATOS DE COURO, ARTIGOS PARA VIAGEM E CALÇADOS`,
+`16 FABRICAÇÃO DE PRODUTOS DE MADEIRA`, `17 FABRICAÇÃO DE CELULOSE, PAPEL E PRODUTOS DE PAPEL`, `18 IMPRESSÃO E REPRODUÇÃO DE GRAVAÇÕES`, `19 FABRICAÇÃO DE COQUE, DE PRODUTOS DERIVADOS DO PETRÓLEO E DE BIOCOMBUSTÍVEIS`,
+`20B FABRICAÇÃO DE SABÕES, DETERGENTES, PRODUTOS DE LIMPEZA, COSMÉTICOS, PRODUTOS DE PERFUMARIA E DE HIGIENE PESSOAL`, `20C FABRICAÇÃO DE OUTROS PRODUTOS QUÍMICOS`, `21 FABRICAÇÃO DE PRODUTOS FARMOQUÍMICOS E FARMACÊUTICOS`,
+`22 FABRICAÇÃO DE PRODUTOS DE BORRACHA E DE MATERIAL PLÁSTICO`, `23 FABRICAÇÃO DE PRODUTOS DE MINERAIS NÃO METÁLICOS`, `24 METALURGIA`, `25 FABRICAÇÃO DE PRODUTOS DE METAL, EXCETO MÁQUINAS E EQUIPAMENTOS`,
+`26 FABRICAÇÃO DE EQUIPAMENTOS DE INFORMÁTICA, PRODUTOS ELETRÔNICOS E ÓPTICOS`, `27 FABRICAÇÃO DE MÁQUINAS, APARELHOS E MATERIAIS ELÉTRICOS`, `28 FABRICAÇÃO DE MÁQUINAS E EQUIPAMENTOS`,
+`29 FABRICAÇÃO DE VEÍCULOS AUTOMOTORES, REBOQUES E CARROCERIAS`,  `30 FABRICAÇÃO DE OUTROS EQUIPAMENTOS DE TRANSPORTE, EXCETO VEÍCULOS AUTOMOTORES`,`31 FABRICAÇÃO DE MÓVEIS`, data)
+  
+ipp_12m <- ipp %>% dplyr::filter(variavel == "IPP - Variação mês/mesmo mês do ano anterior (M/M-12)") %>% select(data_fmt,`Indústria Geral`, `B Indústrias Extrativas`, `C Indústrias de Transformação`, `10 FABRICAÇÃO DE PRODUTOS ALIMENTÍCIOS`, `11 FABRICAÇÃO DE BEBIDAS`, `12 FABRICAÇÃO DE PRODUTOS DO FUMO`,
+`13 FABRICAÇÃO DE PRODUTOS TÊXTEIS`, `14 CONFECÇÃO DE ARTIGOS DO VESTUÁRIO E ACESSÓRIOS`, `15 PREPARAÇÃO DE COUROS E FABRICAÇÃO DE ARTEFATOS DE COURO, ARTIGOS PARA VIAGEM E CALÇADOS`,
+`16 FABRICAÇÃO DE PRODUTOS DE MADEIRA`, `17 FABRICAÇÃO DE CELULOSE, PAPEL E PRODUTOS DE PAPEL`, `18 IMPRESSÃO E REPRODUÇÃO DE GRAVAÇÕES`, `19 FABRICAÇÃO DE COQUE, DE PRODUTOS DERIVADOS DO PETRÓLEO E DE BIOCOMBUSTÍVEIS`,
+`20B FABRICAÇÃO DE SABÕES, DETERGENTES, PRODUTOS DE LIMPEZA, COSMÉTICOS, PRODUTOS DE PERFUMARIA E DE HIGIENE PESSOAL`, `20C FABRICAÇÃO DE OUTROS PRODUTOS QUÍMICOS`, `21 FABRICAÇÃO DE PRODUTOS FARMOQUÍMICOS E FARMACÊUTICOS`,
+`22 FABRICAÇÃO DE PRODUTOS DE BORRACHA E DE MATERIAL PLÁSTICO`, `23 FABRICAÇÃO DE PRODUTOS DE MINERAIS NÃO METÁLICOS`, `24 METALURGIA`, `25 FABRICAÇÃO DE PRODUTOS DE METAL, EXCETO MÁQUINAS E EQUIPAMENTOS`,
+`26 FABRICAÇÃO DE EQUIPAMENTOS DE INFORMÁTICA, PRODUTOS ELETRÔNICOS E ÓPTICOS`, `27 FABRICAÇÃO DE MÁQUINAS, APARELHOS E MATERIAIS ELÉTRICOS`, `28 FABRICAÇÃO DE MÁQUINAS E EQUIPAMENTOS`,
+`29 FABRICAÇÃO DE VEÍCULOS AUTOMOTORES, REBOQUES E CARROCERIAS`,  `30 FABRICAÇÃO DE OUTROS EQUIPAMENTOS DE TRANSPORTE, EXCETO VEÍCULOS AUTOMOTORES`,`31 FABRICAÇÃO DE MÓVEIS`, data)
+  
+ipp_num_ind <- ipp %>% dplyr::filter(variavel == "IPP - Número-índice (dezembro de 2018 = 100)") %>% select(data_fmt,`Indústria Geral`, `B Indústrias Extrativas`, `C Indústrias de Transformação`, `10 FABRICAÇÃO DE PRODUTOS ALIMENTÍCIOS`, `11 FABRICAÇÃO DE BEBIDAS`, `12 FABRICAÇÃO DE PRODUTOS DO FUMO`,
+`13 FABRICAÇÃO DE PRODUTOS TÊXTEIS`, `14 CONFECÇÃO DE ARTIGOS DO VESTUÁRIO E ACESSÓRIOS`, `15 PREPARAÇÃO DE COUROS E FABRICAÇÃO DE ARTEFATOS DE COURO, ARTIGOS PARA VIAGEM E CALÇADOS`,
+`16 FABRICAÇÃO DE PRODUTOS DE MADEIRA`, `17 FABRICAÇÃO DE CELULOSE, PAPEL E PRODUTOS DE PAPEL`, `18 IMPRESSÃO E REPRODUÇÃO DE GRAVAÇÕES`, `19 FABRICAÇÃO DE COQUE, DE PRODUTOS DERIVADOS DO PETRÓLEO E DE BIOCOMBUSTÍVEIS`,
+`20B FABRICAÇÃO DE SABÕES, DETERGENTES, PRODUTOS DE LIMPEZA, COSMÉTICOS, PRODUTOS DE PERFUMARIA E DE HIGIENE PESSOAL`, `20C FABRICAÇÃO DE OUTROS PRODUTOS QUÍMICOS`, `21 FABRICAÇÃO DE PRODUTOS FARMOQUÍMICOS E FARMACÊUTICOS`,
+`22 FABRICAÇÃO DE PRODUTOS DE BORRACHA E DE MATERIAL PLÁSTICO`, `23 FABRICAÇÃO DE PRODUTOS DE MINERAIS NÃO METÁLICOS`, `24 METALURGIA`, `25 FABRICAÇÃO DE PRODUTOS DE METAL, EXCETO MÁQUINAS E EQUIPAMENTOS`,
+`26 FABRICAÇÃO DE EQUIPAMENTOS DE INFORMÁTICA, PRODUTOS ELETRÔNICOS E ÓPTICOS`, `27 FABRICAÇÃO DE MÁQUINAS, APARELHOS E MATERIAIS ELÉTRICOS`, `28 FABRICAÇÃO DE MÁQUINAS E EQUIPAMENTOS`,
+`29 FABRICAÇÃO DE VEÍCULOS AUTOMOTORES, REBOQUES E CARROCERIAS`,  `30 FABRICAÇÃO DE OUTROS EQUIPAMENTOS DE TRANSPORTE, EXCETO VEÍCULOS AUTOMOTORES`,`31 FABRICAÇÃO DE MÓVEIS`, data)
+
 # IPCA:
 ipca <- sidrar::get_sidra(
   api = "/t/1737/n1/all/v/63,69,2265/p/all/d/v63%202,v69%202,v2265%202"
@@ -6759,7 +6835,7 @@ plot_ly(
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese soja em grãos
+### Síntese trigo
 ```{r}
 reactable(
   soja[, -5],
@@ -7710,6 +7786,809 @@ reactable(
 ```
 
 # Índice de Preços ao Produtor (IPP) {data-navmenu="Inflação"}
+
+Column {.sidebar} {data-width=80}
+-----------------------------------------------------------------------
+
+O **Índice de Preços ao Produtor (IPP)**, cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no país. Constitui, assim, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos ou privados.
+
+O IPP investiga, em pouco mais de 1.700 empresas, os preços recebidos pelo produtor, isentos de impostos, tarifas e fretes e definidos segundo as práticas comerciais mais usuais. Os produtos coletados são especificados em detalhes (aspectos físicos e de transação), garantindo, dessa forma, que sejam comparados produtos homogêneos ao longo do tempo. Com isso, coletam-se cerca de 5.000 preços mensalmente.
+
+<br>
+
+**Fonte:** Instituto Brasileiro de Geografia e Estatística (IBGE).
+
+Column {data-width=920}  {.tabset}
+-----------------------------------------------------------------------
+
+### Tx. M/M-1 (Gráfico)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = ipp_mg,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `Indústria Geral`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústria geral"
+  ) %>%
+  add_trace(
+    data = ipp_mg,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `B Indústrias Extrativas`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias extrativas"
+  ) %>%
+  add_trace(
+    data = ipp_mg,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `C Indústrias de Transformação`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias de transformação"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Tx. M/M-1 (Seções e atividades) (%)
+```{r}
+reactable(
+  ipp_mg[, -28],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Indústria Geral` = colDef(
+      name = "Índice geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `B Indústrias Extrativas` = colDef(
+      name = "Indústrias extrativas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `C Indústrias de Transformação` = colDef(
+      name = "Indústrias de transformação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `10 FABRICAÇÃO DE PRODUTOS ALIMENTÍCIOS` = colDef(
+      name = "Alimentos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `11 FABRICAÇÃO DE BEBIDAS` = colDef(
+      name = "Bebidas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `12 FABRICAÇÃO DE PRODUTOS DO FUMO` = colDef(
+      name = "Fumo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `13 FABRICAÇÃO DE PRODUTOS TÊXTEIS` = colDef(
+      name = "Têxtil",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `14 CONFECÇÃO DE ARTIGOS DO VESTUÁRIO E ACESSÓRIOS` = colDef(
+      name = "Vestuário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `15 PREPARAÇÃO DE COUROS E FABRICAÇÃO DE ARTEFATOS DE COURO, ARTIGOS PARA VIAGEM E CALÇADOS` = colDef(
+      name = "Calçados e produtos de couro",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `16 FABRICAÇÃO DE PRODUTOS DE MADEIRA` = colDef(
+      name = "Madeira",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `17 FABRICAÇÃO DE CELULOSE, PAPEL E PRODUTOS DE PAPEL` = colDef(
+      name = "Papel e celulose",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `18 IMPRESSÃO E REPRODUÇÃO DE GRAVAÇÕES` = colDef(
+      name = "Impressão e reprodução de gravações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `19 FABRICAÇÃO DE COQUE, DE PRODUTOS DERIVADOS DO PETRÓLEO E DE BIOCOMBUSTÍVEIS` = colDef(
+      name = "Refino de petróleo e biocombustíveis",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `20B FABRICAÇÃO DE SABÕES, DETERGENTES, PRODUTOS DE LIMPEZA, COSMÉTICOS, PRODUTOS DE PERFUMARIA E DE HIGIENE PESSOAL` = colDef(
+      name = "Perfumaria, sabões e produtos de limpeza",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `20C FABRICAÇÃO DE OUTROS PRODUTOS QUÍMICOS` = colDef(
+      name = "Outros produtos químicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `21 FABRICAÇÃO DE PRODUTOS FARMOQUÍMICOS E FARMACÊUTICOS` = colDef(
+      name = "Farmacêutica",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `22 FABRICAÇÃO DE PRODUTOS DE BORRACHA E DE MATERIAL PLÁSTICO` = colDef(
+      name = "Borracha e plástico",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `23 FABRICAÇÃO DE PRODUTOS DE MINERAIS NÃO METÁLICOS` = colDef(
+      name = "Minerais não metálicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `24 METALURGIA` = colDef(
+      name = "Metalurgia",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `25 FABRICAÇÃO DE PRODUTOS DE METAL, EXCETO MÁQUINAS E EQUIPAMENTOS` = colDef(
+      name = "Produtos de metal",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `26 FABRICAÇÃO DE EQUIPAMENTOS DE INFORMÁTICA, PRODUTOS ELETRÔNICOS E ÓPTICOS` = colDef(
+      name = "Equipamentos de informática, produtos eletrônicos e ópticos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `27 FABRICAÇÃO DE MÁQUINAS, APARELHOS E MATERIAIS ELÉTRICOS` = colDef(
+      name = "Máquinas, aparelhos e materiais elétricos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `28 FABRICAÇÃO DE MÁQUINAS E EQUIPAMENTOS` = colDef(
+      name = "Máquinas e equipamentos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `29 FABRICAÇÃO DE VEÍCULOS AUTOMOTORES, REBOQUES E CARROCERIAS` = colDef(
+      name = "Veículos automotores",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `30 FABRICAÇÃO DE OUTROS EQUIPAMENTOS DE TRANSPORTE, EXCETO VEÍCULOS AUTOMOTORES` = colDef(
+      name = "Outros equipamentos de transporte",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `31 FABRICAÇÃO DE MÓVEIS` = colDef(
+      name = "Móveis",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Tx. acum. no ano (Gráfico)
+```{r}
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = ipp_acum_ano,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `Indústria Geral`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústria geral"
+  ) %>%
+  add_trace(
+    data = ipp_acum_ano,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `B Indústrias Extrativas`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias extrativas"
+  ) %>%
+  add_trace(
+    data = ipp_acum_ano,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `C Indústrias de Transformação`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias de transformação"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Tx. acum. no ano (seções e atividades) (%)
+```{r}
+reactable(
+  ipp_acum_ano[, -28],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Indústria Geral` = colDef(
+      name = "Índice geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `B Indústrias Extrativas` = colDef(
+      name = "Indústrias extrativas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `C Indústrias de Transformação` = colDef(
+      name = "Indústrias de transformação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `10 FABRICAÇÃO DE PRODUTOS ALIMENTÍCIOS` = colDef(
+      name = "Alimentos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `11 FABRICAÇÃO DE BEBIDAS` = colDef(
+      name = "Bebidas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `12 FABRICAÇÃO DE PRODUTOS DO FUMO` = colDef(
+      name = "Fumo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `13 FABRICAÇÃO DE PRODUTOS TÊXTEIS` = colDef(
+      name = "Têxtil",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `14 CONFECÇÃO DE ARTIGOS DO VESTUÁRIO E ACESSÓRIOS` = colDef(
+      name = "Vestuário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `15 PREPARAÇÃO DE COUROS E FABRICAÇÃO DE ARTEFATOS DE COURO, ARTIGOS PARA VIAGEM E CALÇADOS` = colDef(
+      name = "Calçados e produtos de couro",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `16 FABRICAÇÃO DE PRODUTOS DE MADEIRA` = colDef(
+      name = "Madeira",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `17 FABRICAÇÃO DE CELULOSE, PAPEL E PRODUTOS DE PAPEL` = colDef(
+      name = "Papel e celulose",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `18 IMPRESSÃO E REPRODUÇÃO DE GRAVAÇÕES` = colDef(
+      name = "Impressão e reprodução de gravações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `19 FABRICAÇÃO DE COQUE, DE PRODUTOS DERIVADOS DO PETRÓLEO E DE BIOCOMBUSTÍVEIS` = colDef(
+      name = "Refino de petróleo e biocombustíveis",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `20B FABRICAÇÃO DE SABÕES, DETERGENTES, PRODUTOS DE LIMPEZA, COSMÉTICOS, PRODUTOS DE PERFUMARIA E DE HIGIENE PESSOAL` = colDef(
+      name = "Perfumaria, sabões e produtos de limpeza",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `20C FABRICAÇÃO DE OUTROS PRODUTOS QUÍMICOS` = colDef(
+      name = "Outros produtos químicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `21 FABRICAÇÃO DE PRODUTOS FARMOQUÍMICOS E FARMACÊUTICOS` = colDef(
+      name = "Farmacêutica",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `22 FABRICAÇÃO DE PRODUTOS DE BORRACHA E DE MATERIAL PLÁSTICO` = colDef(
+      name = "Borracha e plástico",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `23 FABRICAÇÃO DE PRODUTOS DE MINERAIS NÃO METÁLICOS` = colDef(
+      name = "Minerais não metálicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `24 METALURGIA` = colDef(
+      name = "Metalurgia",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `25 FABRICAÇÃO DE PRODUTOS DE METAL, EXCETO MÁQUINAS E EQUIPAMENTOS` = colDef(
+      name = "Produtos de metal",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `26 FABRICAÇÃO DE EQUIPAMENTOS DE INFORMÁTICA, PRODUTOS ELETRÔNICOS E ÓPTICOS` = colDef(
+      name = "Equipamentos de informática, produtos eletrônicos e ópticos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `27 FABRICAÇÃO DE MÁQUINAS, APARELHOS E MATERIAIS ELÉTRICOS` = colDef(
+      name = "Máquinas, aparelhos e materiais elétricos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `28 FABRICAÇÃO DE MÁQUINAS E EQUIPAMENTOS` = colDef(
+      name = "Máquinas e equipamentos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `29 FABRICAÇÃO DE VEÍCULOS AUTOMOTORES, REBOQUES E CARROCERIAS` = colDef(
+      name = "Veículos automotores",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `30 FABRICAÇÃO DE OUTROS EQUIPAMENTOS DE TRANSPORTE, EXCETO VEÍCULOS AUTOMOTORES` = colDef(
+      name = "Outros equipamentos de transporte",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `31 FABRICAÇÃO DE MÓVEIS` = colDef(
+      name = "Móveis",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Tx. acum. em 12 meses (Gráfico)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = ipp_12m,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `Indústria Geral`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústria geral"
+  ) %>%
+  add_trace(
+    data = ipp_12m,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `B Indústrias Extrativas`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias extrativas"
+  ) %>%
+  add_trace(
+    data = ipp_12m,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `C Indústrias de Transformação`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias de transformação"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Tx. acum. em 12 meses (Seções e atividades) (%)
+```{r}
+reactable(
+  ipp_12m[, -28],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Indústria Geral` = colDef(
+      name = "Índice geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `B Indústrias Extrativas` = colDef(
+      name = "Indústrias extrativas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `C Indústrias de Transformação` = colDef(
+      name = "Indústrias de transformação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `10 FABRICAÇÃO DE PRODUTOS ALIMENTÍCIOS` = colDef(
+      name = "Alimentos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `11 FABRICAÇÃO DE BEBIDAS` = colDef(
+      name = "Bebidas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `12 FABRICAÇÃO DE PRODUTOS DO FUMO` = colDef(
+      name = "Fumo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `13 FABRICAÇÃO DE PRODUTOS TÊXTEIS` = colDef(
+      name = "Têxtil",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `14 CONFECÇÃO DE ARTIGOS DO VESTUÁRIO E ACESSÓRIOS` = colDef(
+      name = "Vestuário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `15 PREPARAÇÃO DE COUROS E FABRICAÇÃO DE ARTEFATOS DE COURO, ARTIGOS PARA VIAGEM E CALÇADOS` = colDef(
+      name = "Calçados e produtos de couro",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `16 FABRICAÇÃO DE PRODUTOS DE MADEIRA` = colDef(
+      name = "Madeira",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `17 FABRICAÇÃO DE CELULOSE, PAPEL E PRODUTOS DE PAPEL` = colDef(
+      name = "Papel e celulose",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `18 IMPRESSÃO E REPRODUÇÃO DE GRAVAÇÕES` = colDef(
+      name = "Impressão e reprodução de gravações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `19 FABRICAÇÃO DE COQUE, DE PRODUTOS DERIVADOS DO PETRÓLEO E DE BIOCOMBUSTÍVEIS` = colDef(
+      name = "Refino de petróleo e biocombustíveis",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `20B FABRICAÇÃO DE SABÕES, DETERGENTES, PRODUTOS DE LIMPEZA, COSMÉTICOS, PRODUTOS DE PERFUMARIA E DE HIGIENE PESSOAL` = colDef(
+      name = "Perfumaria, sabões e produtos de limpeza",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `20C FABRICAÇÃO DE OUTROS PRODUTOS QUÍMICOS` = colDef(
+      name = "Outros produtos químicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `21 FABRICAÇÃO DE PRODUTOS FARMOQUÍMICOS E FARMACÊUTICOS` = colDef(
+      name = "Farmacêutica",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `22 FABRICAÇÃO DE PRODUTOS DE BORRACHA E DE MATERIAL PLÁSTICO` = colDef(
+      name = "Borracha e plástico",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `23 FABRICAÇÃO DE PRODUTOS DE MINERAIS NÃO METÁLICOS` = colDef(
+      name = "Minerais não metálicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `24 METALURGIA` = colDef(
+      name = "Metalurgia",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `25 FABRICAÇÃO DE PRODUTOS DE METAL, EXCETO MÁQUINAS E EQUIPAMENTOS` = colDef(
+      name = "Produtos de metal",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `26 FABRICAÇÃO DE EQUIPAMENTOS DE INFORMÁTICA, PRODUTOS ELETRÔNICOS E ÓPTICOS` = colDef(
+      name = "Equipamentos de informática, produtos eletrônicos e ópticos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `27 FABRICAÇÃO DE MÁQUINAS, APARELHOS E MATERIAIS ELÉTRICOS` = colDef(
+      name = "Máquinas, aparelhos e materiais elétricos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `28 FABRICAÇÃO DE MÁQUINAS E EQUIPAMENTOS` = colDef(
+      name = "Máquinas e equipamentos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `29 FABRICAÇÃO DE VEÍCULOS AUTOMOTORES, REBOQUES E CARROCERIAS` = colDef(
+      name = "Veículos automotores",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `30 FABRICAÇÃO DE OUTROS EQUIPAMENTOS DE TRANSPORTE, EXCETO VEÍCULOS AUTOMOTORES` = colDef(
+      name = "Outros equipamentos de transporte",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `31 FABRICAÇÃO DE MÓVEIS` = colDef(
+      name = "Móveis",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Número-índice (Gráfico)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = ipp_num_ind,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `Indústria Geral`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústria geral"
+  ) %>%
+  add_trace(
+    data = ipp_num_ind,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `B Indústrias Extrativas`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias extrativas"
+  ) %>%
+  add_trace(
+    data = ipp_num_ind,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `C Indústrias de Transformação`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias de transformação"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "Dez/2018 = 100", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Número-índice (Seções e atividades) (%)
+```{r}
+reactable(
+  ipp_num_ind[, -28],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Indústria Geral` = colDef(
+      name = "Índice geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `B Indústrias Extrativas` = colDef(
+      name = "Indústrias extrativas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `C Indústrias de Transformação` = colDef(
+      name = "Indústrias de transformação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `10 FABRICAÇÃO DE PRODUTOS ALIMENTÍCIOS` = colDef(
+      name = "Alimentos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `11 FABRICAÇÃO DE BEBIDAS` = colDef(
+      name = "Bebidas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `12 FABRICAÇÃO DE PRODUTOS DO FUMO` = colDef(
+      name = "Fumo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `13 FABRICAÇÃO DE PRODUTOS TÊXTEIS` = colDef(
+      name = "Têxtil",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `14 CONFECÇÃO DE ARTIGOS DO VESTUÁRIO E ACESSÓRIOS` = colDef(
+      name = "Vestuário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `15 PREPARAÇÃO DE COUROS E FABRICAÇÃO DE ARTEFATOS DE COURO, ARTIGOS PARA VIAGEM E CALÇADOS` = colDef(
+      name = "Calçados e produtos de couro",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `16 FABRICAÇÃO DE PRODUTOS DE MADEIRA` = colDef(
+      name = "Madeira",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `17 FABRICAÇÃO DE CELULOSE, PAPEL E PRODUTOS DE PAPEL` = colDef(
+      name = "Papel e celulose",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `18 IMPRESSÃO E REPRODUÇÃO DE GRAVAÇÕES` = colDef(
+      name = "Impressão e reprodução de gravações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `19 FABRICAÇÃO DE COQUE, DE PRODUTOS DERIVADOS DO PETRÓLEO E DE BIOCOMBUSTÍVEIS` = colDef(
+      name = "Refino de petróleo e biocombustíveis",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `20B FABRICAÇÃO DE SABÕES, DETERGENTES, PRODUTOS DE LIMPEZA, COSMÉTICOS, PRODUTOS DE PERFUMARIA E DE HIGIENE PESSOAL` = colDef(
+      name = "Perfumaria, sabões e produtos de limpeza",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `20C FABRICAÇÃO DE OUTROS PRODUTOS QUÍMICOS` = colDef(
+      name = "Outros produtos químicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `21 FABRICAÇÃO DE PRODUTOS FARMOQUÍMICOS E FARMACÊUTICOS` = colDef(
+      name = "Farmacêutica",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `22 FABRICAÇÃO DE PRODUTOS DE BORRACHA E DE MATERIAL PLÁSTICO` = colDef(
+      name = "Borracha e plástico",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `23 FABRICAÇÃO DE PRODUTOS DE MINERAIS NÃO METÁLICOS` = colDef(
+      name = "Minerais não metálicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `24 METALURGIA` = colDef(
+      name = "Metalurgia",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `25 FABRICAÇÃO DE PRODUTOS DE METAL, EXCETO MÁQUINAS E EQUIPAMENTOS` = colDef(
+      name = "Produtos de metal",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `26 FABRICAÇÃO DE EQUIPAMENTOS DE INFORMÁTICA, PRODUTOS ELETRÔNICOS E ÓPTICOS` = colDef(
+      name = "Equipamentos de informática, produtos eletrônicos e ópticos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `27 FABRICAÇÃO DE MÁQUINAS, APARELHOS E MATERIAIS ELÉTRICOS` = colDef(
+      name = "Máquinas, aparelhos e materiais elétricos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `28 FABRICAÇÃO DE MÁQUINAS E EQUIPAMENTOS` = colDef(
+      name = "Máquinas e equipamentos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `29 FABRICAÇÃO DE VEÍCULOS AUTOMOTORES, REBOQUES E CARROCERIAS` = colDef(
+      name = "Veículos automotores",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `30 FABRICAÇÃO DE OUTROS EQUIPAMENTOS DE TRANSPORTE, EXCETO VEÍCULOS AUTOMOTORES` = colDef(
+      name = "Outros equipamentos de transporte",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `31 FABRICAÇÃO DE MÓVEIS` = colDef(
+      name = "Móveis",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # Índice Geral de Preços do Mercado (IGP-M) {data-navmenu="Inflação"}
 
