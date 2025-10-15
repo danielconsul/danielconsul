@@ -138,8 +138,52 @@ ipp_gce_mg <- ipp_gce %>% dplyr::filter(variavel == "IPP - Variação mês/mês 
 ipp_gce_acum_ano <- ipp_gce %>% dplyr::filter(variavel == "IPP - Variação acumulada no ano (em relação a dezembro do ano anterior)") %>% select(data_fmt,`Indústria geral`, `Bens de capital (BK)`, `Bens intermediários (BI)`, `Bens de consumo (BC)`, `Bens de consumo duráveis (BCD)`, `Bens de consumo semiduráveis e não duráveis (BCND)`, data)
 
 ipp_gce_12m <- ipp_gce %>% dplyr::filter(variavel == "IPP - Variação mês/mesmo mês do ano anterior (M/M-12)") %>% select(data_fmt,`Indústria geral`, `Bens de capital (BK)`, `Bens intermediários (BI)`, `Bens de consumo (BC)`, `Bens de consumo duráveis (BCD)`, `Bens de consumo semiduráveis e não duráveis (BCND)`, data)
-         
 
+# IPP (GRUPOS INDUSTRIAIS SELECIONADOS):
+ipp_gis <- sidrar::get_sidra(
+  api = "/t/6723/n1/all/v/1394,1395,1396/p/all/c844/all/d/v1394%202,v1395%202,v1396%202"
+)
+         
+ipp_gis <- ipp_gis %>% mutate(
+  data = lubridate::ym(`Mês (Código)`),
+  variavel = Variável,
+  gis = `Grupos industriais selecionados`,
+  valor = Valor,
+  .keep = "none",  
+) %>% pivot_wider(names_from = gis, values_from = valor) %>% 
+  mutate(
+  data_fmt = format(data, "%m/%Y"),
+  `101 Abate e fabricação de produtos de carne` = number(`101 Abate e fabricação de produtos de carne`, decimal.mark = ",", accuracy = 0.01),
+  `104 Fabricação de óleos e gorduras vegetais e animais` = number(`104 Fabricação de óleos e gorduras vegetais e animais`, decimal.mark = ",", accuracy = 0.01),
+  `105 Laticínios` = number(`105 Laticínios`, decimal.mark = ",", accuracy = 0.01),
+  `106 Moagem, fabricação de produtos amiláceos e de alimentos para animais` = number(`106 Moagem, fabricação de produtos amiláceos e de alimentos para animais`, decimal.mark = ",", accuracy = 0.01),
+  `107 Fabricação e refino de açúcar` = number(`107 Fabricação e refino de açúcar`, decimal.mark = ",", accuracy = 0.01),
+  `108 Torrefação e moagem de café` = number(`108 Torrefação e moagem de café`, decimal.mark = ",", accuracy = 0.01),
+  `151 Curtimento e outras preparações de couro` = number(`151 Curtimento e outras preparações de couro`, decimal.mark = ",", accuracy = 0.01),
+  `153 Fabricação de calçados` = number(`153 Fabricação de calçados`, decimal.mark = ",", accuracy = 0.01),
+  `201 Fabricação de produtos químicos inorgânicos` = number(`201 Fabricação de produtos químicos inorgânicos`, decimal.mark = ",", accuracy = 0.01),
+  `203 Fabricação de resinas e elastômeros` = number(`203 Fabricação de resinas e elastômeros`, decimal.mark = ",", accuracy = 0.01),
+  `205 Fabricação de defensivos agrícolas e desinfestantes domissanitários` = number(`205 Fabricação de defensivos agrícolas e desinfestantes domissanitários`, decimal.mark = ",", accuracy = 0.01),
+  `221 Fabricação de produtos de borracha` = number(`221 Fabricação de produtos de borracha`, decimal.mark = ",", accuracy = 0.01),
+  `222 Fabricação de produtos de material plástico` = number(`222 Fabricação de produtos de material plástico`, decimal.mark = ",", accuracy = 0.01),
+  `233 Fabricação de artefatos de concreto, cimento, fibrocimento, gesso e materiais semelhantes` = number(`233 Fabricação de artefatos de concreto, cimento, fibrocimento, gesso e materiais semelhantes`, decimal.mark = ",", accuracy = 0.01),
+  `234 Fabricação de produtos cerâmicos` = number(`234 Fabricação de produtos cerâmicos`, decimal.mark = ",", accuracy = 0.01),
+  `242 Siderurgia` = number(`242 Siderurgia`, decimal.mark = ",", accuracy = 0.01),
+  `262 Fabricação de equipamentos de informática e periféricos` = number(`262 Fabricação de equipamentos de informática e periféricos`, decimal.mark = ",", accuracy = 0.01),
+  `264 Fabricação de aparelhos de recepção, reprodução, gravação e amplificação de áudio e vídeo` = number(`264 Fabricação de aparelhos de recepção, reprodução, gravação e amplificação de áudio e vídeo`, decimal.mark = ",", accuracy = 0.01),
+  `271 Fabricação de geradores, transformadores e motores elétricos` = number(`271 Fabricação de geradores, transformadores e motores elétricos`, decimal.mark = ",", accuracy = 0.01),
+  `275 Fabricação de eletrodomésticos` = number(`275 Fabricação de eletrodomésticos`, decimal.mark = ",", accuracy = 0.01),
+  `281 Fabricação de motores, bombas, compressores e equipamentos de transmissão` = number(`281 Fabricação de motores, bombas, compressores e equipamentos de transmissão`, decimal.mark = ",", accuracy = 0.01),
+  `283 Fabricação de tratores e de máquinas e equipamentos para a agricultura e pecuária` = number(`283 Fabricação de tratores e de máquinas e equipamentos para a agricultura e pecuária`, decimal.mark = ",", accuracy = 0.01),
+  `291 Fabricação de automóveis, camionetas e utilitários` = number(`291 Fabricação de automóveis, camionetas e utilitários`, decimal.mark = ",", accuracy = 0.01)
+  ) %>% 
+  arrange(desc(data))
+
+ipp_gis_mg <- ipp_gis %>% dplyr::filter(variavel == "IPP - Variação mês/mês imediatamente anterior (M/M-1)") %>% select(data_fmt, `101 Abate e fabricação de produtos de carne`, `104 Fabricação de óleos e gorduras vegetais e animais`, `105 Laticínios`, `106 Moagem, fabricação de produtos amiláceos e de alimentos para animais`, `107 Fabricação e refino de açúcar`, `108 Torrefação e moagem de café`, `151 Curtimento e outras preparações de couro`, `153 Fabricação de calçados`, `201 Fabricação de produtos químicos inorgânicos`, `203 Fabricação de resinas e elastômeros`, `205 Fabricação de defensivos agrícolas e desinfestantes domissanitários`, `221 Fabricação de produtos de borracha`, `222 Fabricação de produtos de material plástico`, `233 Fabricação de artefatos de concreto, cimento, fibrocimento, gesso e materiais semelhantes`, `234 Fabricação de produtos cerâmicos`, `242 Siderurgia`, `262 Fabricação de equipamentos de informática e periféricos`, `264 Fabricação de aparelhos de recepção, reprodução, gravação e amplificação de áudio e vídeo`, `271 Fabricação de geradores, transformadores e motores elétricos`, `275 Fabricação de eletrodomésticos`, `281 Fabricação de motores, bombas, compressores e equipamentos de transmissão`, `283 Fabricação de tratores e de máquinas e equipamentos para a agricultura e pecuária`, `291 Fabricação de automóveis, camionetas e utilitários`, data)
+
+ipp_gis_acum_ano <- ipp_gis %>% dplyr::filter(variavel == "IPP - Variação acumulada no ano (em relação a dezembro do ano anterior)") %>% select(data_fmt, `101 Abate e fabricação de produtos de carne`, `104 Fabricação de óleos e gorduras vegetais e animais`, `105 Laticínios`, `106 Moagem, fabricação de produtos amiláceos e de alimentos para animais`, `107 Fabricação e refino de açúcar`, `108 Torrefação e moagem de café`, `151 Curtimento e outras preparações de couro`, `153 Fabricação de calçados`, `201 Fabricação de produtos químicos inorgânicos`, `203 Fabricação de resinas e elastômeros`, `205 Fabricação de defensivos agrícolas e desinfestantes domissanitários`, `221 Fabricação de produtos de borracha`, `222 Fabricação de produtos de material plástico`, `233 Fabricação de artefatos de concreto, cimento, fibrocimento, gesso e materiais semelhantes`, `234 Fabricação de produtos cerâmicos`, `242 Siderurgia`, `262 Fabricação de equipamentos de informática e periféricos`, `264 Fabricação de aparelhos de recepção, reprodução, gravação e amplificação de áudio e vídeo`, `271 Fabricação de geradores, transformadores e motores elétricos`, `275 Fabricação de eletrodomésticos`, `281 Fabricação de motores, bombas, compressores e equipamentos de transmissão`, `283 Fabricação de tratores e de máquinas e equipamentos para a agricultura e pecuária`, `291 Fabricação de automóveis, camionetas e utilitários`, data)
+
+ipp_gis_12m <- ipp_gis %>% dplyr::filter(variavel == "IPP - Variação mês/mesmo mês do ano anterior (M/M-12)") %>% select(data_fmt, `101 Abate e fabricação de produtos de carne`, `104 Fabricação de óleos e gorduras vegetais e animais`, `105 Laticínios`, `106 Moagem, fabricação de produtos amiláceos e de alimentos para animais`, `107 Fabricação e refino de açúcar`, `108 Torrefação e moagem de café`, `151 Curtimento e outras preparações de couro`, `153 Fabricação de calçados`, `201 Fabricação de produtos químicos inorgânicos`, `203 Fabricação de resinas e elastômeros`, `205 Fabricação de defensivos agrícolas e desinfestantes domissanitários`, `221 Fabricação de produtos de borracha`, `222 Fabricação de produtos de material plástico`, `233 Fabricação de artefatos de concreto, cimento, fibrocimento, gesso e materiais semelhantes`, `234 Fabricação de produtos cerâmicos`, `242 Siderurgia`, `262 Fabricação de equipamentos de informática e periféricos`, `264 Fabricação de aparelhos de recepção, reprodução, gravação e amplificação de áudio e vídeo`, `271 Fabricação de geradores, transformadores e motores elétricos`, `275 Fabricação de eletrodomésticos`, `281 Fabricação de motores, bombas, compressores e equipamentos de transmissão`, `283 Fabricação de tratores e de máquinas e equipamentos para a agricultura e pecuária`, `291 Fabricação de automóveis, camionetas e utilitários`, data)
 
 
 
@@ -2267,11 +2311,11 @@ soja <- ipeadata(code = "IFS12_SOJAGP12") %>% mutate(
 Columns {.sidebar} {data-width=250}
 -----------------------------------------------------------------------
 
-<br><br><br><br><br><br><br><br><br>
+<br><br><br><br>
 
 <div style="font-size:18px">
 O presente _dashboard_ objetiva apresentar de forma centralizada uma série de dados macroeconômicos brasileiros nas últimas décadas.
-São apresentadas informações referentes ao balanço de pagamentos, preços e índices de commodities, dívida externa, inflação, produção, reservas internacionais, taxa de câmbio e termos de troca através de dados com frequências diárias, mensais, trimestrais e anuais.
+São apresentadas informações referentes ao balanço de pagamentos, termos de troca, preços e índices de commodities, estatísticas fiscais, inflação, política monetária, produção, reservas internacionais e taxa de câmbio através de dados com frequências diárias, mensais, trimestrais e anuais coletados junto a órgãos como Banco Central do Brasil (BCB), Instituto Brasileiro de Geografia e Estatística (IBGE) e Instituto de Pesquisa Econômica Aplicada (IPEA).
 
 <br>
 
@@ -2279,7 +2323,9 @@ O painel é automatizado e atualizado diariamente.
 
 <br><br>
 
-**Autor:** [Daniel Consul de Antoni](http://lattes.cnpq.br/3579437273217709)
+**Autor:** [Daniel Consul de Antoni](http://lattes.cnpq.br/3579437273217709).
+<br>
+Historiador (UFRGS), Mestre e Doutorando em Economia (UFF).
 
 **Contato:** daniel.consul@outlook.com
 
@@ -5505,6 +5551,112 @@ reactable(
 )
 ```
 
+# Termos de troca {data-navmenu="Balanço de pagamentos"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+Os **termos de troca** são definidos como a relação entre os preços das exportações do país (PX) e os das suas importações (PM).
+
+<br>
+
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX).
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Termos de troca
+```{r}
+plot_ly(
+  data = tt, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_tt)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Média 2018 = 100")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = tt, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg_tt)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = tt, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m_tt)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Síntese termos de troca
+
+```{r}
+reactable(
+  tt[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_tt = colDef(
+      name = "Termos de troca",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg_tt = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m_tt = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # Índice de commodities - Brasil {data-navmenu="Commodities"}
 
 Column {.sidebar} {data-width=200}
@@ -6920,7 +7072,7 @@ reactable(
 )
 ```
 
-# Dívida externa bruta {data-navmenu="Dívida externa"}
+# Dívida externa bruta {data-navmenu="Fiscal"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -7005,7 +7157,7 @@ reactable(
 )
 ```
 
-# Dívida externa líquida {data-navmenu="Dívida externa"}
+# Dívida externa líquida {data-navmenu="Fiscal"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -7089,6 +7241,117 @@ reactable(
   )
 )
 ```
+
+# Dívida líquida do setor público {data-navmenu="Fiscal"}
+
+# Resultado nominal {data-navmenu="Fiscal"}
+
+Column {.sidebar} {data-width=80}
+-----------------------------------------------------------------------
+
+Column {data-width=920}  {.tabset}
+-----------------------------------------------------------------------
+
+### Governo Central (GF + BC)
+
+### Governo Central (Gráfico)
+
+### Governo Federal (GF)
+
+### Banco Central (BC)
+
+### Governos estaduais e municipais
+
+### Governos estaduais
+
+### Governos municipais
+
+### Empresas Estatais
+
+### Empresas Estatais Federais
+
+### Empresas Estatais estaduais
+
+### Empresas Estatais municipais
+
+### Setor público consolidado
+
+### Setor público consolidado (Gráfico)
+
+
+# Juros nominais {data-navmenu="Fiscal"}
+
+Column {.sidebar} {data-width=80}
+-----------------------------------------------------------------------
+
+Column {data-width=920}  {.tabset}
+-----------------------------------------------------------------------
+
+### Governo Central (GF + BC)
+
+### Governo Central (Gráfico)
+
+### Governo Federal (GF)
+
+### Banco Central (BC)
+
+### Governos estaduais e municipais
+
+### Governos estaduais
+
+### Governos municipais
+
+### Empresas Estatais
+
+### Empresas Estatais Federais
+
+### Empresas Estatais estaduais
+
+### Empresas Estatais municipais
+
+### Setor público consolidado
+
+### Setor público consolidado (Gráfico)
+
+
+# Resultado primário {data-navmenu="Fiscal"}
+
+Column {.sidebar} {data-width=80}
+-----------------------------------------------------------------------
+
+Column {data-width=920}  {.tabset}
+-----------------------------------------------------------------------
+
+### Governo Central (GF + BC)
+
+### Governo Central (Gráfico)
+
+### Governo Federal (GF)
+
+### Banco Central (BC)
+
+### Governos estaduais e municipais
+
+### Governos estaduais
+
+### Governos municipais
+
+### Empresas Estatais
+
+### Empresas Estatais Federais
+
+### Empresas Estatais estaduais
+
+### Empresas Estatais municipais
+
+### Setor público consolidado
+
+### Setor público consolidado (Gráfico)
+
+### Governo Federal sem INSS
+
+### INSS
+
 
 # Índice de Preços ao Consumidor Amplo (IPCA) {data-navmenu="Inflação"}
 
@@ -8440,10 +8703,433 @@ reactable(
 ```
 
 ### Tx. M/M-1 (Grupos) (%)
+```{r}
+reactable(
+  ipp_gis_mg[, -25],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `101 Abate e fabricação de produtos de carne` = colDef(
+      name = "Abate e fabricação de produtos de carne",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `104 Fabricação de óleos e gorduras vegetais e animais` = colDef(
+      name = "Fabricação de óleos e gorduras vegetais e animais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `105 Laticínios` = colDef(
+      name = "Laticínios",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `106 Moagem, fabricação de produtos amiláceos e de alimentos para animais` = colDef(
+      name = "Moagem, fabricação de produtos amiláceos e de alimentos para animais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `107 Fabricação e refino de açúcar` = colDef(
+      name = "Fabricação e refino de açúcar",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `108 Torrefação e moagem de café` = colDef(
+      name = "Torrefação e moagem de café",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `151 Curtimento e outras preparações de couro` = colDef(
+      name = "Curtimento e outras preparações de couro",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `153 Fabricação de calçados` = colDef(
+      name = "153 Fabricação de calçados",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `201 Fabricação de produtos químicos inorgânicos` = colDef(
+      name = "Fabricação de produtos químicos inorgânicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `203 Fabricação de resinas e elastômeros` = colDef(
+      name = "Fabricação de resinas e elastômeros",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `205 Fabricação de defensivos agrícolas e desinfestantes domissanitários` = colDef(
+      name = "Fabricação de defensivos agrícolas e desinfestantes domissanitários",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `221 Fabricação de produtos de borracha` = colDef(
+      name = "Fabricação de produtos de borracha",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `222 Fabricação de produtos de material plástico` = colDef(
+      name = "Fabricação de produtos de material plástico",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `233 Fabricação de artefatos de concreto, cimento, fibrocimento, gesso e materiais semelhantes` = colDef(
+      name = "Fabricação de artefatos de concreto, cimento, fibrocimento, gesso e materiais semelhantes",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `234 Fabricação de produtos cerâmicos` = colDef(
+      name = "Fabricação de produtos cerâmicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `242 Siderurgia` = colDef(
+      name = "Siderurgia",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `262 Fabricação de equipamentos de informática e periféricos` = colDef(
+      name = "Fabricação de equipamentos de informática e periféricos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `264 Fabricação de aparelhos de recepção, reprodução, gravação e amplificação de áudio e vídeo` = colDef(
+      name = "Fabricação de aparelhos de recepção, reprodução, gravação e amplificação de áudio e vídeo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `271 Fabricação de geradores, transformadores e motores elétricos` = colDef(
+      name = "Fabricação de geradores, transformadores e motores elétricos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `275 Fabricação de eletrodomésticos` = colDef(
+      name = "Fabricação de eletrodomésticos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `281 Fabricação de motores, bombas, compressores e equipamentos de transmissão` = colDef(
+      name = "Fabricação de motores, bombas, compressores e equipamentos de transmissão",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `283 Fabricação de tratores e de máquinas e equipamentos para a agricultura e pecuária` = colDef(
+      name = "Fabricação de tratores e de máquinas e equipamentos para a agricultura e pecuária",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `291 Fabricação de automóveis, camionetas e utilitários` = colDef(
+      name = "291 Fabricação de automóveis, camionetas e utilitários",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 ### Tx. acum. no ano (Grupos) (%)
+```{r}
+reactable(
+  ipp_gis_acum_ano[, -25],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `101 Abate e fabricação de produtos de carne` = colDef(
+      name = "Abate e fabricação de produtos de carne",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `104 Fabricação de óleos e gorduras vegetais e animais` = colDef(
+      name = "Fabricação de óleos e gorduras vegetais e animais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `105 Laticínios` = colDef(
+      name = "Laticínios",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `106 Moagem, fabricação de produtos amiláceos e de alimentos para animais` = colDef(
+      name = "Moagem, fabricação de produtos amiláceos e de alimentos para animais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `107 Fabricação e refino de açúcar` = colDef(
+      name = "Fabricação e refino de açúcar",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `108 Torrefação e moagem de café` = colDef(
+      name = "Torrefação e moagem de café",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `151 Curtimento e outras preparações de couro` = colDef(
+      name = "Curtimento e outras preparações de couro",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `153 Fabricação de calçados` = colDef(
+      name = "153 Fabricação de calçados",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `201 Fabricação de produtos químicos inorgânicos` = colDef(
+      name = "Fabricação de produtos químicos inorgânicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `203 Fabricação de resinas e elastômeros` = colDef(
+      name = "Fabricação de resinas e elastômeros",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `205 Fabricação de defensivos agrícolas e desinfestantes domissanitários` = colDef(
+      name = "Fabricação de defensivos agrícolas e desinfestantes domissanitários",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `221 Fabricação de produtos de borracha` = colDef(
+      name = "Fabricação de produtos de borracha",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `222 Fabricação de produtos de material plástico` = colDef(
+      name = "Fabricação de produtos de material plástico",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `233 Fabricação de artefatos de concreto, cimento, fibrocimento, gesso e materiais semelhantes` = colDef(
+      name = "Fabricação de artefatos de concreto, cimento, fibrocimento, gesso e materiais semelhantes",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `234 Fabricação de produtos cerâmicos` = colDef(
+      name = "Fabricação de produtos cerâmicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `242 Siderurgia` = colDef(
+      name = "Siderurgia",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `262 Fabricação de equipamentos de informática e periféricos` = colDef(
+      name = "Fabricação de equipamentos de informática e periféricos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `264 Fabricação de aparelhos de recepção, reprodução, gravação e amplificação de áudio e vídeo` = colDef(
+      name = "Fabricação de aparelhos de recepção, reprodução, gravação e amplificação de áudio e vídeo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `271 Fabricação de geradores, transformadores e motores elétricos` = colDef(
+      name = "Fabricação de geradores, transformadores e motores elétricos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `275 Fabricação de eletrodomésticos` = colDef(
+      name = "Fabricação de eletrodomésticos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `281 Fabricação de motores, bombas, compressores e equipamentos de transmissão` = colDef(
+      name = "Fabricação de motores, bombas, compressores e equipamentos de transmissão",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `283 Fabricação de tratores e de máquinas e equipamentos para a agricultura e pecuária` = colDef(
+      name = "Fabricação de tratores e de máquinas e equipamentos para a agricultura e pecuária",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `291 Fabricação de automóveis, camionetas e utilitários` = colDef(
+      name = "291 Fabricação de automóveis, camionetas e utilitários",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 ### Tx. acum. em 12 meses (Grupos) (%)
+```{r}
+reactable(
+  ipp_gis_12m[, -25],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `101 Abate e fabricação de produtos de carne` = colDef(
+      name = "Abate e fabricação de produtos de carne",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `104 Fabricação de óleos e gorduras vegetais e animais` = colDef(
+      name = "Fabricação de óleos e gorduras vegetais e animais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `105 Laticínios` = colDef(
+      name = "Laticínios",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `106 Moagem, fabricação de produtos amiláceos e de alimentos para animais` = colDef(
+      name = "Moagem, fabricação de produtos amiláceos e de alimentos para animais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `107 Fabricação e refino de açúcar` = colDef(
+      name = "Fabricação e refino de açúcar",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `108 Torrefação e moagem de café` = colDef(
+      name = "Torrefação e moagem de café",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `151 Curtimento e outras preparações de couro` = colDef(
+      name = "Curtimento e outras preparações de couro",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `153 Fabricação de calçados` = colDef(
+      name = "153 Fabricação de calçados",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `201 Fabricação de produtos químicos inorgânicos` = colDef(
+      name = "Fabricação de produtos químicos inorgânicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `203 Fabricação de resinas e elastômeros` = colDef(
+      name = "Fabricação de resinas e elastômeros",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `205 Fabricação de defensivos agrícolas e desinfestantes domissanitários` = colDef(
+      name = "Fabricação de defensivos agrícolas e desinfestantes domissanitários",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `221 Fabricação de produtos de borracha` = colDef(
+      name = "Fabricação de produtos de borracha",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `222 Fabricação de produtos de material plástico` = colDef(
+      name = "Fabricação de produtos de material plástico",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `233 Fabricação de artefatos de concreto, cimento, fibrocimento, gesso e materiais semelhantes` = colDef(
+      name = "Fabricação de artefatos de concreto, cimento, fibrocimento, gesso e materiais semelhantes",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `234 Fabricação de produtos cerâmicos` = colDef(
+      name = "Fabricação de produtos cerâmicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `242 Siderurgia` = colDef(
+      name = "Siderurgia",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `262 Fabricação de equipamentos de informática e periféricos` = colDef(
+      name = "Fabricação de equipamentos de informática e periféricos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `264 Fabricação de aparelhos de recepção, reprodução, gravação e amplificação de áudio e vídeo` = colDef(
+      name = "Fabricação de aparelhos de recepção, reprodução, gravação e amplificação de áudio e vídeo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `271 Fabricação de geradores, transformadores e motores elétricos` = colDef(
+      name = "Fabricação de geradores, transformadores e motores elétricos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `275 Fabricação de eletrodomésticos` = colDef(
+      name = "Fabricação de eletrodomésticos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `281 Fabricação de motores, bombas, compressores e equipamentos de transmissão` = colDef(
+      name = "Fabricação de motores, bombas, compressores e equipamentos de transmissão",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `283 Fabricação de tratores e de máquinas e equipamentos para a agricultura e pecuária` = colDef(
+      name = "Fabricação de tratores e de máquinas e equipamentos para a agricultura e pecuária",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `291 Fabricação de automóveis, camionetas e utilitários` = colDef(
+      name = "Fabricação de automóveis, camionetas e utilitários",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # Índice de Preços ao Produtor Amplo - Disponibilidade Interna (IPA-DI) {data-navmenu="Inflação"}
 
@@ -8818,6 +9504,27 @@ reactable(
   )
 )
 ```
+
+# Base monetária {data-navmenu="Política monetária"}
+
+# Meios de pagamento {data-navmenu="Política monetária"}
+
+# Multiplicador monetário {data-navmenu="Política monetária"}
+
+# Taxa Selic {data-navmenu="Política monetária"}
+
+Column {.sidebar} {data-width=80}
+-----------------------------------------------------------------------
+
+
+Column {data-width=920} {.tabset}
+-----------------------------------------------------------------------
+
+### Selic Meta e Selic Over
+
+### Selic acumulada no mês (% a.a.)
+
+# IBC-Br {data-navmenu="Produção"}
 
 # Indicador IPEA de FBCF {data-navmenu="Produção"}
 
@@ -10201,108 +10908,3 @@ reactable(
 
 ### Síntese câmbio contratado - Anual (US$ milhões)
 
-# Termos de troca
-
-Column {.sidebar} {data-width=200}
------------------------------------------------------------------------
-
-Os **termos de troca** são definidos como a relação entre os preços das exportações do país (PX) e os das suas importações (PM).
-
-<br>
-
-**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX).
-
-Column {data-width=400} {.tabset}
------------------------------------------------------------------------
-
-### Termos de troca
-```{r}
-plot_ly(
-  data = tt, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", valor_tt)),
-  type = "scatter",
-  mode = "line"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "Média 2018 = 100")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-### Variação mensal (%)
-```{r}
-plot_ly(
-  data = tt, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", var_mg_tt)),
-  type = "scatter",
-  mode = "line"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "%")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-### Variação em 12 meses (%)
-```{r}
-plot_ly(
-  data = tt, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", var_12m_tt)),
-  type = "scatter",
-  mode = "line"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "%")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-Column {data-width=400}  {.tabset}
------------------------------------------------------------------------
-
-### Síntese termos de troca
-
-```{r}
-reactable(
-  tt[, -5],
-  columns = list(
-    data_fmt = colDef(
-      name = "Mês",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_tt = colDef(
-      name = "Termos de troca",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    var_mg_tt = colDef(
-      name = "Variação mensal (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    var_12m_tt = colDef(
-      name = "Variação em 12 meses (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
