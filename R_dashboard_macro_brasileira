@@ -33,6 +33,175 @@ library(zoo)
 ```{r, cache=TRUE}
 # Coleta de dados:
 
+# TAXA SELIC:
+
+selic_over <- get_series(
+  code = c(valor_selic_over = 4189)
+) %>% mutate(
+  data = date
+) %>% mutate(
+  date = format(date, "%Y-%m")
+) %>% select(data, valor_selic_over, date) %>% filter(data >= "1996-01-01")
+
+ipca_12m <- sidrar::get_sidra(
+  api = "/t/1737/n1/all/v/2265/p/all/d/v2265%202"
+)
+
+ipca_12m <- ipca_12m %>% mutate(
+  data = lubridate::ym(`Mês (Código)`),
+  valor_ipca12m = Valor,
+  .keep = "none",  
+) %>% mutate(
+  date = format(data, "%Y-%m")
+) %>% filter(data >= "1996-01-01")
+
+fed_rate <- fredr(
+  series_id = "DFF"
+) %>% mutate(
+  data = date,
+  valor_fed_rate = value
+) %>% select(date, valor_fed_rate)
+
+fed_rate <- fed_rate %>% mutate(
+  date = format(date, "%Y-%m")) 
+  
+fed_rate <- aggregate(
+  valor_fed_rate ~ date,
+  data = fed_rate,
+  FUN = "mean"
+) %>% filter(date >= "1996-01")
+
+
+selic <- left_join(selic_over, ipca_12m, by = "date")
+selic <- left_join(selic, fed_rate, by = "date") %>% select(data.x, valor_selic_over,
+                                                            valor_ipca12m, valor_fed_rate, date) %>% 
+  rename(data = data.x)
+
+selic <- selic %>% mutate(
+  selic_real = ((valor_selic_over/100 + 1)/(valor_ipca12m/100 + 1) - 1) * 100,
+  dif_juros = ((valor_selic_over/100 + 1)/(valor_fed_rate/100 + 1) - 1) * 100
+) %>% mutate(
+  data_fmt = format(data, "%m/%Y"),
+  `valor_selic_over` = number(`valor_selic_over`, decimal.mark = ",", accuracy = 0.01),
+  `valor_ipca12m` = number(`valor_ipca12m`, decimal.mark = ",", accuracy = 0.01),
+  `valor_fed_rate` = number(`valor_fed_rate`, decimal.mark = ",", accuracy = 0.01),
+  `selic_real` = number(`selic_real`, decimal.mark = ",", accuracy = 0.01),
+  `dif_juros` = number(`dif_juros`, decimal.mark = ",", accuracy = 0.01),
+) %>% select(data_fmt, valor_selic_over, valor_ipca12m, valor_fed_rate,
+             selic_real, dif_juros, data) %>% arrange(desc(data))
+
+# INDICADOR IPEA DE FBCF:
+
+ipea_fbcf <- ipeadata(code = "GAC12_INDFBCFDESSAZ12") %>% mutate(
+  valor_ipea_fbcf = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  valor_ipea_fbcf = number(valor_ipea_fbcf, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_ipea_fbcf, date)
+
+ipea_fbcf_cc <- ipeadata(code = "GAC12_INDFBCFCCDESSAZ12") %>% mutate(
+  valor_ipea_fbcf_cc = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  valor_ipea_fbcf_cc = number(valor_ipea_fbcf_cc, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_ipea_fbcf_cc, date)
+
+ind_fbcf <- left_join(ipea_fbcf, ipea_fbcf_cc) %>% arrange(desc(date)) %>% select(
+  data_fmt, valor_ipea_fbcf, valor_ipea_fbcf_cc, date
+)
+
+igpm <- ipeadata(code = "IGP12_IGPMG12") %>% mutate(
+  valor_igpm = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  fator_igpm = valor_igpm / 100 + 1
+) %>% mutate(
+  igpm_12m = rollapply(fator_igpm, width = 12, FUN = prod, align = "right", fill = NA)
+) %>% mutate(
+  igpm_12m = (igpm_12m - 1) * 100
+) %>% mutate(
+  valor_igpm = number(valor_igpm, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  igpm_12m = number(igpm_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_igpm, igpm_12m, date) %>% arrange(desc(date)) %>% filter(
+  date >= "1996-01-01"
+)
+
+# IBC-Br:
+ibc <- get_series(
+  code = c(valor_ibc = 24364)
+) %>% mutate(
+  var_ibc_mg = (valor_ibc / lag(valor_ibc) - 1) * 100
+) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_ibc = number(valor_ibc, decimal.mark = ",", accuracy = 0.01),
+  var_ibc_mg = number(var_ibc_mg, decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_ibc, var_ibc_mg, date)
+
+ibc_agro <- get_series(
+  code = c(valor_ibc_agro = 29602)
+) %>% mutate(
+  var_ibc_mg_agro = (valor_ibc_agro / lag(valor_ibc_agro) - 1) * 100
+) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_ibc_agro = number(valor_ibc_agro, decimal.mark = ",", accuracy = 0.01),
+  var_ibc_mg_agro = number(var_ibc_mg_agro, decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_ibc_agro, var_ibc_mg_agro, date)
+
+ibc_ind <- get_series(
+  code = c(valor_ibc_ind = 29604)
+) %>% mutate(
+  var_ibc_mg_ind = (valor_ibc_ind / lag(valor_ibc_ind) - 1) * 100
+) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_ibc_ind = number(valor_ibc_ind, decimal.mark = ",", accuracy = 0.01),
+  var_ibc_mg_ind = number(var_ibc_mg_ind, decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_ibc_ind, var_ibc_mg_ind, date)
+
+ibc_serv <- get_series(
+  code = c(valor_ibc_serv = 29606)
+) %>% mutate(
+  var_ibc_mg_serv = (valor_ibc_serv / lag(valor_ibc_serv) - 1) * 100
+) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_ibc_serv = number(valor_ibc_serv, decimal.mark = ",", accuracy = 0.01),
+  var_ibc_mg_serv = number(var_ibc_mg_serv, decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_ibc_serv, var_ibc_mg_serv, date)
+
+ibc_ex_agro <- get_series(
+  code = c(valor_ibc_ex_agro = 29608)
+) %>% mutate(
+  var_ibc_mg_ex_agro = (valor_ibc_ex_agro / lag(valor_ibc_ex_agro) - 1) * 100
+) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_ibc_ex_agro = number(valor_ibc_ex_agro, decimal.mark = ",", accuracy = 0.01),
+  var_ibc_mg_ex_agro = number(var_ibc_mg_ex_agro, decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_ibc_ex_agro, var_ibc_mg_ex_agro, date)
+
+ibc_impostos <- get_series(
+  code = c(valor_ibc_impostos = 29610)
+) %>% mutate(
+  var_ibc_mg_impostos = (valor_ibc_impostos / lag(valor_ibc_impostos) - 1) * 100
+) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_ibc_impostos = number(valor_ibc_impostos, decimal.mark = ",", accuracy = 0.01),
+  var_ibc_mg_impostos = number(var_ibc_mg_impostos, decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_ibc_impostos, var_ibc_mg_impostos, date)
+
+ibc <- ibc %>%
+  left_join(ibc_agro) %>%
+  left_join(ibc_ex_agro) %>%
+  left_join(ibc_impostos) %>%
+  left_join(ibc_ind) %>%
+  left_join(ibc_serv)
+
+ibc <- ibc %>% select(data_fmt, valor_ibc, var_ibc_mg,
+                      valor_ibc_agro, var_ibc_mg_agro,
+                      valor_ibc_ind, var_ibc_mg_ind,
+                      valor_ibc_serv, var_ibc_mg_serv,
+                      valor_ibc_ex_agro, var_ibc_mg_ex_agro,
+                      valor_ibc_impostos, var_ibc_mg_impostos, date) %>% 
+  arrange(desc(date))
+
 # IPP (indústria geral, seções e atividades):
 ipp <- sidrar::get_sidra(
   api = "/t/6903/n1/all/v/all/p/all/c842/all/d/v1394%202,v1395%202,v1396%202,v10008%205"
@@ -184,18 +353,6 @@ ipp_gis_mg <- ipp_gis %>% dplyr::filter(variavel == "IPP - Variação mês/mês 
 ipp_gis_acum_ano <- ipp_gis %>% dplyr::filter(variavel == "IPP - Variação acumulada no ano (em relação a dezembro do ano anterior)") %>% select(data_fmt, `101 Abate e fabricação de produtos de carne`, `104 Fabricação de óleos e gorduras vegetais e animais`, `105 Laticínios`, `106 Moagem, fabricação de produtos amiláceos e de alimentos para animais`, `107 Fabricação e refino de açúcar`, `108 Torrefação e moagem de café`, `151 Curtimento e outras preparações de couro`, `153 Fabricação de calçados`, `201 Fabricação de produtos químicos inorgânicos`, `203 Fabricação de resinas e elastômeros`, `205 Fabricação de defensivos agrícolas e desinfestantes domissanitários`, `221 Fabricação de produtos de borracha`, `222 Fabricação de produtos de material plástico`, `233 Fabricação de artefatos de concreto, cimento, fibrocimento, gesso e materiais semelhantes`, `234 Fabricação de produtos cerâmicos`, `242 Siderurgia`, `262 Fabricação de equipamentos de informática e periféricos`, `264 Fabricação de aparelhos de recepção, reprodução, gravação e amplificação de áudio e vídeo`, `271 Fabricação de geradores, transformadores e motores elétricos`, `275 Fabricação de eletrodomésticos`, `281 Fabricação de motores, bombas, compressores e equipamentos de transmissão`, `283 Fabricação de tratores e de máquinas e equipamentos para a agricultura e pecuária`, `291 Fabricação de automóveis, camionetas e utilitários`, data)
 
 ipp_gis_12m <- ipp_gis %>% dplyr::filter(variavel == "IPP - Variação mês/mesmo mês do ano anterior (M/M-12)") %>% select(data_fmt, `101 Abate e fabricação de produtos de carne`, `104 Fabricação de óleos e gorduras vegetais e animais`, `105 Laticínios`, `106 Moagem, fabricação de produtos amiláceos e de alimentos para animais`, `107 Fabricação e refino de açúcar`, `108 Torrefação e moagem de café`, `151 Curtimento e outras preparações de couro`, `153 Fabricação de calçados`, `201 Fabricação de produtos químicos inorgânicos`, `203 Fabricação de resinas e elastômeros`, `205 Fabricação de defensivos agrícolas e desinfestantes domissanitários`, `221 Fabricação de produtos de borracha`, `222 Fabricação de produtos de material plástico`, `233 Fabricação de artefatos de concreto, cimento, fibrocimento, gesso e materiais semelhantes`, `234 Fabricação de produtos cerâmicos`, `242 Siderurgia`, `262 Fabricação de equipamentos de informática e periféricos`, `264 Fabricação de aparelhos de recepção, reprodução, gravação e amplificação de áudio e vídeo`, `271 Fabricação de geradores, transformadores e motores elétricos`, `275 Fabricação de eletrodomésticos`, `281 Fabricação de motores, bombas, compressores e equipamentos de transmissão`, `283 Fabricação de tratores e de máquinas e equipamentos para a agricultura e pecuária`, `291 Fabricação de automóveis, camionetas e utilitários`, data)
-
-
-
-
-
-
-
-
-
-
-
-
 
 # IPCA:
 ipca <- sidrar::get_sidra(
@@ -2314,8 +2471,8 @@ Columns {.sidebar} {data-width=250}
 <br><br><br><br>
 
 <div style="font-size:18px">
-O presente _dashboard_ objetiva apresentar de forma centralizada uma série de dados macroeconômicos brasileiros nas últimas décadas.
-São apresentadas informações referentes ao balanço de pagamentos, termos de troca, preços e índices de commodities, estatísticas fiscais, inflação, política monetária, produção, reservas internacionais e taxa de câmbio através de dados com frequências diárias, mensais, trimestrais e anuais coletados junto a órgãos como Banco Central do Brasil (BCB), Instituto Brasileiro de Geografia e Estatística (IBGE) e Instituto de Pesquisa Econômica Aplicada (IPEA).
+Este _dashboard_ apresenta de forma centralizada uma série de dados macroeconômicos brasileiros nas últimas décadas.
+São apresentadas informações referentes ao balanço de pagamentos, termos de troca, preços e índices de commodities, estatísticas fiscais, inflação, estatísticas monetárias, produção, reservas internacionais e taxa de câmbio através de dados com frequências diárias, mensais, trimestrais e anuais coletados junto a órgãos como Banco Central do Brasil (BCB), Instituto Brasileiro de Geografia e Estatística (IBGE) e Instituto de Pesquisa Econômica Aplicada (IPEA).
 
 <br>
 
@@ -2425,7 +2582,7 @@ plot_ly(
 Column {data-width=300}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese TC
+### Quadro-síntese
 ```{r}
 reactable(
   trans_cor[, -6],
@@ -2553,7 +2710,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese BC
+### Quadro-síntese
 ```{r}
 reactable(
   bal_com[, -6],
@@ -2701,7 +2858,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese exportações totais
+### Quadro-síntese
 ```{r}
 reactable(
   export[, -6],
@@ -2808,7 +2965,7 @@ plot_ly(
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese exportações de bens de capital
+### Quadro-síntese
 ```{r}
 reactable(
   bk_exp[, -4],
@@ -2905,7 +3062,7 @@ plot_ly(
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese exportações de bens intermediários
+### Quadro-síntese
 ```{r}
 reactable(
   bi_exp[, -4],
@@ -2980,7 +3137,7 @@ plot_ly(
 Column {data-width=200} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese exportações de bens de consumo
+### Quadro-síntese
 ```{r}
 reactable(
   exp_bc[, -3],
@@ -3092,7 +3249,7 @@ plot_ly(
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese exportações de bens de consumo duráveis
+### Quadro-síntese
 ```{r}
 reactable(
   bcd_exp[, -5],
@@ -3194,7 +3351,7 @@ plot_ly(
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese exportações de bens de consumo não duráveis
+### Quadro-síntese
 ```{r}
 reactable(
   bcnd_exp[, -4],
@@ -3311,7 +3468,7 @@ plot_ly(
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese exportações de combustíveis
+### Quadro-síntese
 ```{r}
 reactable(
   comb_exp[, -5],
@@ -3454,7 +3611,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese importações totais
+### Quadro-síntese
 ```{r}
 reactable(
   import[, -6],
@@ -3581,7 +3738,7 @@ plot_ly(
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese importações de bens de capital
+### Quadro-síntese
 ```{r}
 reactable(
   bk[, -5],
@@ -3703,7 +3860,7 @@ plot_ly(
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese importações de bens intermediários
+### Quadro-síntese
 ```{r}
 reactable(
   bi[, -5],
@@ -3783,7 +3940,7 @@ plot_ly(
 Column {data-width=200} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese importações de bens de consumo
+### Quadro-síntese
 ```{r}
 reactable(
   bc[, -3],
@@ -3875,7 +4032,7 @@ plot_ly(
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese importações de bens de consumo duráveis
+### Quadro-síntese
 ```{r}
 reactable(
   bcd[, -4],
@@ -3972,7 +4129,7 @@ plot_ly(
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese importações de bens de consumo não duráveis
+### Quadro-síntese
 ```{r}
 reactable(
   bcnd[, -4],
@@ -4089,7 +4246,7 @@ plot_ly(
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese importações de combustíveis
+### Quadro-síntese
 ```{r}
 reactable(
   comb[, -5],
@@ -4131,7 +4288,6 @@ reactable(
   )
 )
 ```
-
 
 # 1.2) Balança de serviços {data-navmenu="Balanço de pagamentos"}
 
@@ -4218,7 +4374,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese BS (US$ bilhões)
+### Quadro-síntese
 ```{r}
 reactable(
   bs[, -6],
@@ -4366,7 +4522,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese RP (US$ bilhões)
+### Quadro-síntese
 ```{r}
 reactable(
   rp[, -6],
@@ -4513,7 +4669,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese RS (US$ bilhões)
+### Quadro-síntese
 ```{r}
 reactable(
   rs[, -6],
@@ -4661,7 +4817,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese CC (US$ bilhões)
+### Quadro-síntese
 ```{r}
 reactable(
   cc[, -6],
@@ -4786,7 +4942,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese CC (ativos não financeiros não produzidos) (US$ bilhões)
+### Quadro-síntese
 ```{r}
 reactable(
   cc_anfnp[, -5],
@@ -4904,7 +5060,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese CC (ativos não financeiros não produzidos - passes de atletas) (US$ milhões)
+### Quadro-síntese
 ```{r}
 reactable(
   cc_anfnp_ps[, -5],
@@ -5011,7 +5167,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese CF (US$ bilhões)
+### Quadro-síntese
 ```{r}
 reactable(
   cf[, -4],
@@ -5167,8 +5323,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Saldo ID (US$ bilhões)
-
+### Quadro-síntese
 ```{r}
 reactable(
   inv_dir[, -8],
@@ -5267,7 +5422,7 @@ plot_ly(
 Column {data-width=350}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese CF (investimento em carteira) (US$ bilhões)
+### Quadro-síntese
 ```{r}
 reactable(
   inv_cart[, -3],
@@ -5366,8 +5521,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### CF (outros investimentos) (US$ bilhões)
-
+### Quadro-síntese
 ```{r}
 reactable(
   outros_inv[, -5],
@@ -5447,7 +5601,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese ativos de reserva (US$ bilhões)
+### Quadro-síntese
 ```{r}
 reactable(
   ativ_res[, -3],
@@ -5480,7 +5634,6 @@ reactable(
 )
 ```
 
-
 # 4) Erros e omissões {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
@@ -5495,7 +5648,7 @@ As partidas a crédito e a débito lançadas no balanço de pagamentos provêm d
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Erros e omissões
+### Gráfico
 ```{r}
 plot_ly(
   data = eo, 
@@ -5518,7 +5671,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese erros e omissões (US$ bilhões)
+### Quadro-síntese
 ```{r}
 reactable(
   eo[, -3],
@@ -5580,7 +5733,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Variação mensal (%)
+### Var. mensal (%)
 ```{r}
 plot_ly(
   data = tt, 
@@ -5595,7 +5748,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Variação em 12 meses (%)
+### Var. em 12 meses (%)
 ```{r}
 plot_ly(
   data = tt, 
@@ -5613,8 +5766,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese termos de troca
-
+### Quadro-síntese
 ```{r}
 reactable(
   tt[, -5],
@@ -5708,7 +5860,7 @@ plot_ly() %>%
   )
 ```
 
-### Variação mensal (%)
+### Var. mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -5739,7 +5891,7 @@ plot_ly() %>%
   )
 ```
 
-### Variação em 12 meses (%)
+### Var. em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -5773,8 +5925,7 @@ plot_ly() %>%
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese IC-Br
-
+### Quadro-síntese
 ```{r}
 reactable(
   commod[, -8],
@@ -5875,7 +6026,7 @@ plot_ly() %>%
   )
 ```
 
-### Variação mensal (%)
+### Var. mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -5906,7 +6057,7 @@ plot_ly() %>%
   )
 ```
 
-### Variação em 12 meses (%)
+### Var. em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -5940,8 +6091,7 @@ plot_ly() %>%
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese IC-Br Agropecuária
-
+### Quadro-síntese
 ```{r}
 reactable(
   commod_agrop[, -8],
@@ -6042,7 +6192,7 @@ plot_ly() %>%
   )
 ```
 
-### Variação mensal (%)
+### Var. mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -6073,7 +6223,7 @@ plot_ly() %>%
   )
 ```
 
-### Variação em 12 meses (%)
+### Var. em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -6107,8 +6257,7 @@ plot_ly() %>%
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese IC-Br Energia
-
+### Quadro-síntese
 ```{r}
 reactable(
   commod_energia[, -8],
@@ -6209,7 +6358,7 @@ plot_ly() %>%
   )
 ```
 
-### Variação mensal (%)
+### Var. mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -6240,7 +6389,7 @@ plot_ly() %>%
   )
 ```
 
-### Variação em 12 meses (%)
+### Var. em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -6274,8 +6423,7 @@ plot_ly() %>%
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese IC-Br Metal
-
+### Quadro-síntese
 ```{r}
 reactable(
   commod_metal[, -8],
@@ -6378,7 +6526,7 @@ plot_ly() %>%
   )
 ```
 
-### Variação mensal (%)
+### Var. mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -6409,7 +6557,7 @@ plot_ly() %>%
   )
 ```
 
-### Variação em 12 meses (%)
+### Var. em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -6443,7 +6591,7 @@ plot_ly() %>%
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese cotação mensal
+### Quadro-síntese
 ```{r}
 reactable(
   cafe[, -8],
@@ -6530,7 +6678,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Variação mensal (%)
+### Var. mensal (%)
 ```{r}
 plot_ly(
   data = miner_ferro, 
@@ -6545,7 +6693,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Variação em 12 meses (%)
+### Var. em 12 meses (%)
 ```{r}
 plot_ly(
   data = miner_ferro, 
@@ -6563,7 +6711,7 @@ plot_ly(
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese cotação mensal
+### Quadro-síntese
 ```{r}
 reactable(
   miner_ferro[, -5],
@@ -6688,7 +6836,7 @@ plot_ly() %>%
   )
 ```
 
-### Variação Mensal (%)
+### Var. Mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -6719,7 +6867,7 @@ plot_ly() %>%
   )
 ```
 
-### Variação em 12 meses (%)
+### Var. em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -6754,7 +6902,7 @@ plot_ly() %>%
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese cotação diária
+### Quadro-síntese (cotação diária)
 ```{r}
 reactable(
   petroleo[, -6],
@@ -6802,7 +6950,7 @@ reactable(
 )
 ```
 
-### Síntese cotação mensal
+### Quadro-síntese (cotação mensal)
 ```{r}
 reactable(
   petroleo_mensal[, -8],
@@ -6874,7 +7022,7 @@ Preço dos contratos futuros da soja negociados na bolsa de Chicago (Chicago Boa
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Cotação mensal
+### Cotação
 ```{r}
 plot_ly(
   data = soja, 
@@ -6889,7 +7037,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Variação mensal (%)
+### Var. mensal (%)
 ```{r}
 plot_ly(
   data = soja, 
@@ -6904,7 +7052,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Variação em 12 meses (%)
+### Var. em 12 meses (%)
 ```{r}
 plot_ly(
   data = soja, 
@@ -6922,7 +7070,7 @@ plot_ly(
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese soja em grãos
+### Quadro-síntese
 ```{r}
 reactable(
   soja[, -5],
@@ -6980,7 +7128,7 @@ Column {.sidebar} {data-width=200}
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Cotação mensal
+### Cotação
 ```{r}
 plot_ly(
   data = trigo, 
@@ -6995,7 +7143,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Variação mensal (%)
+### Var. mensal (%)
 ```{r}
 plot_ly(
   data = trigo, 
@@ -7010,7 +7158,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Variação em 12 meses (%)
+### Var. em 12 meses (%)
 ```{r}
 plot_ly(
   data = trigo, 
@@ -7029,7 +7177,7 @@ plot_ly(
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese trigo
+### Quadro-síntese
 ```{r}
 reactable(
   soja[, -5],
@@ -7119,7 +7267,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese dívida externa bruta
+### Quadro-síntese
 ```{r}
 reactable(
   div_bruta[, -4],
@@ -7204,7 +7352,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese dívida externa líquida
+### Quadro-síntese
 ```{r}
 reactable(
   div_liq[, -4],
@@ -9137,9 +9285,92 @@ reactable(
 
 # Índice Geral de Preços do Mercado (IGP-M) {data-navmenu="Inflação"}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+O **Índice Geral de Preços do Mercado (IGP-M)** é um indicador do movimento de preços que cobre todo o processo produtivo, desde preços de matérias-primas agrícolas e industriais, passando pelos preços de produtos intermediários até os de bens e serviços finais. É composto pela média ponderada do Índice de Preços ao Produtor Amplo do Mercado (IPA-M) (60%), do Índice de Preços ao Consumidor do Mercado (IPC-M) (30%) e do Índice Nacional de Custo da Construção do Mercado (INCC-M) (10%). Para efeito de coleta de preços, o IGP-M mede a evolução de preços no período compreendido entre os dias 21 do mês anterior e o dia 20 do mês de referência.
+
+<br>
+
+**Fonte:** Fundação Getúlio Vargas (FGV) via Ipeadata.
+
+Column {data-width=500}  {.tabset}
+-----------------------------------------------------------------------
+
+### Var. mensal (%)
+```{r}
+plot_ly(
+  data = igpm, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_igpm)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Var. em 12 meses (%)
+```{r}
+plot_ly(
+  data = igpm, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", igpm_12m)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=300}  {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese (%)
+```{r}
+reactable(
+  igpm[, -4],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_igpm` = colDef(
+      name = "IGP-M mensal",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `igpm_12m` = colDef(
+      name = "IGP-M acum. em 12 meses",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # Índice Nacional de Preços ao Consumidor (INPC) {data-navmenu="Inflação"}
 
-Column {.sidebar} {data-width=80}
+Column {.sidebar} {data-width=150}
 -----------------------------------------------------------------------
 
 O **Índice Nacional de Preços ao Consumidor (INPC)** tem como unidade de coleta estabelecimentos comerciais e de prestação de serviços, concessionária de serviços públicos e internet e sua coleta estende-se, em geral, do dia 01 a 30 do mês de referência. Atualmente, a população-objetivo do INPC abrange as **famílias com rendimentos de 1 a 5 salários mínimos**, cuja pessoa de referência é assalariada, residentes nas áreas urbanas das regiões de abrangência do Sistema Nacional de Índices de Preços ao Consumidor (SNIPC), as quais são: regiões metropolitanas de Belém, Fortaleza, Recife, Salvador, Belo Horizonte, Vitória, Rio de Janeiro, São Paulo, Curitiba, Porto Alegre, além do Distrito Federal e dos municípios de Goiânia, Campo Grande, Rio Branco, São Luís e Aracaju. Para além de seu objetivo principal, medir a variação dos preços, o índice tem sido usualmente utilizado como base para correção monetária dos salários no Brasil. 
@@ -9148,7 +9379,7 @@ O **Índice Nacional de Preços ao Consumidor (INPC)** tem como unidade de colet
 
 **Fonte:** Instituto Brasileiro de Geografia e Estatística (IBGE).
 
-Column {data-width=920}  {.tabset}
+Column {data-width=850}  {.tabset}
 -----------------------------------------------------------------------
 
 ### Tx. M/M-1 (Gráfico)
@@ -9505,28 +9736,403 @@ reactable(
 )
 ```
 
-# Base monetária {data-navmenu="Política monetária"}
+# Base monetária {data-navmenu="Monetário"}
 
-# Meios de pagamento {data-navmenu="Política monetária"}
+# Meios de pagamento {data-navmenu="Monetário"}
 
-# Multiplicador monetário {data-navmenu="Política monetária"}
+# Multiplicador monetário {data-navmenu="Monetário"}
 
-# Taxa Selic {data-navmenu="Política monetária"}
+# Taxa Selic {data-navmenu="Monetário"}
 
-Column {.sidebar} {data-width=80}
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+A **Taxa Selic**, definida a cada 45 dias pelo Comitê de Política Monetária (Copom) do Banco Central do Brasil (BCB), é a taxa de juros básica da economia brasileira e serve de referência para outras taxas de juros do país. A taxa utilizada aqui é acumulada no mês e anualizada na base 252.
+
+<br>
+
+A taxa de juros real _ex-post_ é definida a partir do deflacionamento da taxa Selic pelo Índice de Preços ao Consumidor Amplo (IPCA) acumulado nos últimos 12 meses.
+
+<br>
+
+O diferencial de juros é definido a partir da divisão do fator da Taxa Selic pela _Federal Funds Effective Rate_ (FED rate), a taxa básica de juros definida pelo Federal Reserve dos Estados Unidos da América.
+
+<br>
+
+**Fonte**: Código 4189 do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB) para taxa Selic, Instituto Brasileiro de Geografia e Estatística (IBGE) para IPCA e Federal Reserve Economic Data (FRED) para FED rate.
+
+Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
+### Taxas Selic Over nominal e real
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = selic,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", valor_selic_over)),
+    type = "scatter",
+    mode = "lines",
+    name = "Selic Over nominal"
+  ) %>%
+  add_trace(
+    data = selic,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", selic_real)),
+    type = "scatter",
+    mode = "lines",
+    name = "Selic real ex-post (IPCA)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
 
-Column {data-width=920} {.tabset}
+### Diferencial de juros (Brasil/EUA)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = selic,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", valor_selic_over)),
+    type = "scatter",
+    mode = "lines",
+    name = "Selic Over"
+  ) %>%
+  add_trace(
+    data = selic,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", dif_juros)),
+    type = "scatter",
+    mode = "lines",
+    name = "Diferencial de juros (Selic/FED Rate)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### Selic Meta e Selic Over
-
-### Selic acumulada no mês (% a.a.)
+### Quadro-síntese (%)
+```{r}
+reactable(
+  selic[, -7],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_selic_over = colDef(
+      name = "Selic Over",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ipca12m = colDef(
+      name = "IPCA acum. em 12 meses",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_fed_rate = colDef(
+      name = "FED rate",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    selic_real = colDef(
+      name = "Selic real ex-post (IPCA)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    dif_juros = colDef(
+      name = "Diferencial de juros (Selic/FED rate)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # IBC-Br {data-navmenu="Produção"}
 
+Column {.sidebar} {data-width=150}
+-----------------------------------------------------------------------
+
+O **IBC-Br** é um indicador de atividade produzido pelo BC. Divulgado desde março de 2010, tem como objetivo mensurar a atividade econômica de forma tempestiva e em frequência mensal. A partir de abril de 2025, o BC passou a divulgar também os componentes do IBC-Br (IBC-Br Agropecuária, IBC-Br Indústria, IBC-Br serviços e IBC-Br Impostos), além do IBC-Br excluindo a agropecuária (IBC-Br ex-Agropecuária).
+O IBC-Br e seus componentes são construídos com base em proxies representativas da evolução em volume do valor adicionado bruto (VAB) da agropecuária, da indústria e do setor de serviços, e do volume de impostos. Essas proxies são agregadas com pesos derivados, em especial, das tabelas de recursos e usos do Sistema de Contas Nacionais (IBGE). Também são utilizadas outras informações de caráter estrutural, como as obtidas na Pesquisa Industrial Anual (PIA-IBGE), na Pesquisa Anual de Serviços (PAS-IBGE) e na Produção Agrícola Municipal (PAM-IBGE).
+
+<br>
+
+**Fonte:** Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+
+Column {data-width=850} {.tabset}
+-----------------------------------------------------------------------
+
+### Gráfico
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc`)),
+    type = "scatter",
+    mode = "lines",
+    name = "IBC-Br (Geral)"
+  ) %>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc_agro`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Agropecuária"
+  ) %>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc_ind`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústria"
+  )%>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc_serv`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Serviços"
+  ) %>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc_ex_agro`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Ex-agropecuária"
+  ) %>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc_impostos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Impostos"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "2002 = 100", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Quadro-síntese
+```{r}
+reactable(
+  ibc[, -14],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_ibc` = colDef(
+      name = "IBC-Br (Geral)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `var_ibc_mg` = colDef(
+      name = "Var. mensal (Geral) (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_ibc_agro` = colDef(
+      name = "Agropecuária",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `var_ibc_mg_agro` = colDef(
+      name = "Var. mensal (Agropecuária) (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_ibc_ind` = colDef(
+      name = "Indústria",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `var_ibc_mg_ind` = colDef(
+      name = "Var. mensal (Indústria) (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_ibc_serv` = colDef(
+      name = "Serviços",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `var_ibc_mg_serv` = colDef(
+      name = "Var. mensal (Serviços) (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_ibc_ex_agro` = colDef(
+      name = "Ex-agropecuária",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `var_ibc_mg_ex_agro` = colDef(
+      name = "Var. mensal (Ex-agropecuária) (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_ibc_impostos` = colDef(
+      name = "Impostos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `var_ibc_mg_impostos` = colDef(
+      name = "Var. mensal (Impostos) (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # Indicador IPEA de FBCF {data-navmenu="Produção"}
+
+Column {.sidebar} {data-width=100}
+-----------------------------------------------------------------------
+A **formação bruta de capital fixo (FBCF)** da economia é composta por investimentos em máquinas e equipamentos e em construção civil. Como os investimentos em máquinas e equipamentos equivalem ao Consumo Aparente (CA) de bens de capital, foi construído um indicador mensal da FBCF por meio da média ponderada deste indicador de CA com um indicador de construção civil.
+
+<br>
+
+**Fonte:** Instituto de Pesquisa Econômica Aplicada (IPEA).
+
+Column {data-width=500} {.tabset}
+-----------------------------------------------------------------------
+
+### Gráfico
+```{r}
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = ind_fbcf,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_ipea_fbcf)),
+    type = "scatter",
+    mode = "lines",
+    name = "Índice real"
+  ) %>%
+  add_trace(
+    data = ind_fbcf,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_ipea_fbcf_cc)),
+    type = "scatter",
+    mode = "lines",
+    name = "Índice real (construção civil)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "Média 1995 = 100", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese
+```{r}
+reactable(
+  ind_fbcf[, -4],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_ipea_fbcf` = colDef(
+      name = "Índice real",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_ipea_fbcf_cc` = colDef(
+      name = "Índice real (construção civil)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),  
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 
 # Pesquisa Industrial Mensal - Produção física (PIM-PF) {data-navmenu="Produção"}
 
@@ -10249,7 +10855,7 @@ reactable(
 )
 ```
 
-# Reservas internacionais
+# Res. internacionais
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
@@ -10291,7 +10897,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Variação mensal (%)
+### Var. mensal (%)
 ```{r}
 plot_ly(
   data = res_int, 
@@ -10306,7 +10912,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Variação 12 meses (%)
+### Var. em 12 meses (%)
 ```{r}
 plot_ly(
   data = res_int, 
@@ -10353,8 +10959,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese reservas internacionais
-
+### Quadro-síntese
 ```{r}
 reactable(
   res_int[, -5],
@@ -10398,7 +11003,6 @@ reactable(
 ```
 
 ### % dívida externa total
-
 ```{r}
 reactable(
   res_int_div_ext,
@@ -10432,7 +11036,6 @@ reactable(
 ```
 
 ### Meses de importações
-
 ```{r}
 reactable(
   res_int_imports,
@@ -10484,7 +11087,6 @@ Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
 ### Cotação diária
-
 ```{r}
 plot_ly(
   data = cambio_nom, 
@@ -10498,7 +11100,6 @@ plot_ly(
     yaxis = list(title = "R$")
   ) %>% rangeslider(thickness = 0.05)
 ```
-
 
 ### Cotação mensal
 ```{r}
@@ -10514,7 +11115,6 @@ plot_ly(
     yaxis = list(title = "R$")
   ) %>% rangeslider(thickness = 0.05)
 ```
-
 
 ### Variação mensal (%)
 ```{r}
@@ -10549,7 +11149,7 @@ plot_ly(
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese cotação diária
+### Quadro-síntese (cotação diária)
 ```{r, results='asis'}
 reactable(
   cambio_nom[, -6],
@@ -10597,7 +11197,7 @@ reactable(
 )
 ```
 
-### Síntese cotação mensal
+### Quadro-síntese (cotação mensal)
 ```{r, results='asis'}
 reactable(
   cambio_nom_mensal[, -7],
@@ -10695,7 +11295,7 @@ plot_ly() %>%
   )
 ```
 
-### Variação mensal (%)
+### Var. mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -10726,7 +11326,7 @@ plot_ly() %>%
   )
 ```
 
-### Variação em 12 meses (%)
+### Var. em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -10760,8 +11360,7 @@ plot_ly() %>%
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese taxa de câmbio real
-
+### Quadro-síntese
 ```{r}
 reactable(
   cambio_real[, -8],
@@ -10841,7 +11440,7 @@ Todos os valores estão em milhões de dólares.
 Column {data-width=750}  {.tabset}
 -----------------------------------------------------------------------
 
-### Síntese câmbio contratado - Diário (US$ milhões)
+### Quadro-síntese (diário)
 ```{r, results='asis'}
 reactable(
   cambio_contratado[, -9],
@@ -10904,7 +11503,18 @@ reactable(
 )
 ```
 
-### Síntese câmbio contratado - Mensal (US$ milhões)
+### Quadro-síntese (mensal)
 
-### Síntese câmbio contratado - Anual (US$ milhões)
+### Quadro-síntese (anual)
+
+
+# CAGED {data-navmenu="Trabalho"}
+
+# Massa de rendimento {data-navmenu="Trabalho"}
+
+# Ocupação e desocupação {data-navmenu="Trabalho"}
+
+# Rendimento médio {data-navmenu="Trabalho"}
+
+# Salário mínimo {data-navmenu="Trabalho"}
 
