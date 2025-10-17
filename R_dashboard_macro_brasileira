@@ -33,8 +33,30 @@ library(zoo)
 ```{r, cache=TRUE}
 # Coleta de dados:
 
-# PIM-PF:
+# API key FRED
+fredr_set_key("0087fc9b146c214d78104e3737039ea4")
 
+# CAGED:
+caged_adm <- ipeadata(code = "CAGED12_ADMISN12") %>% mutate(
+  adm = value
+) %>% select(date, adm)
+
+caged_dem <- ipeadata(code = "CAGED12_DESLIGN12") %>% mutate(
+  dem = value
+) %>% select(date, dem)
+
+caged_saldo <- ipeadata(code = "CAGED12_SALDON12") %>% mutate(
+  saldo = value
+) %>% select(date, saldo)
+
+caged <- caged_adm %>% left_join(caged_dem) %>% left_join(caged_saldo) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  adm = number(adm, big.mark = ".", decimal.mark = ","),
+  dem = number(dem, big.mark = ".", decimal.mark = ",", ),
+  saldo = number(saldo, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, adm, dem, saldo, date) %>% arrange(desc(date))
+
+# PIM-PF:
 pim_sec_ativ <- sidrar::get_sidra(
   api = "/t/8888/n1/all/v/11601,11602,11603/p/all/c544/all/d/v11601%201,v11602%201,v11603%201"
 )
@@ -814,9 +836,6 @@ pib_var_mg_dem <- pib_var_mg_dem %>% mutate(
          `Despesa de consumo da administração pública`, `Formação bruta de capital fixo`,
          `Exportação de bens e serviços`, `Importação de bens e serviços (-)`, data) %>% 
   arrange(desc(data))
-
-# API key FRED
-fredr_set_key("0087fc9b146c214d78104e3737039ea4")
 
 # Trigo
 trigo <- fredr(
@@ -2530,9 +2549,11 @@ O painel é automatizado e atualizado diariamente.
 
 <br><br>
 
-**Autor:** [Daniel Consul de Antoni](http://lattes.cnpq.br/3579437273217709).
+**Autor:** [Daniel Consul de Antoni](http://lattes.cnpq.br/3579437273217709)
 <br>
-Historiador (UFRGS), Mestre e Doutorando em Economia (UFF).
+Historiador (UFRGS)
+<br>
+Mestre e Doutorando em Economia (UFF)
 
 **Contato:** daniel.consul@outlook.com
 
@@ -12195,6 +12216,60 @@ reactable(
 
 
 # CAGED {data-navmenu="Trabalho"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Cadastro Geral de Empregados e Desempregados**. Para empregados consideram-se aqueles contratados por empregadores, pessoa física ou jurídica, sob o regime da CLT, por prazo indeterminado ou determinado, incluindo-se também os contratados a título de experiência ou para prestação de trabalho intermitente. Esta classificação abrange: empregados sob o regime CLT, trabalhadores temporários, trabalhadores avulsos, agentes públicos, trabalhadores cedidos e dirigentes sindicais. Os dados referem-se ao total de admissões e demissões de empregados.
+
+<br>
+
+**Fonte:** Ministério do Trabalho e Emprego via Ipeadata.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese
+```{r}
+reactable(
+  caged[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    adm = colDef(
+      name = "Admissões (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    dem = colDef(
+      name = "Demissões (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    saldo = colDef(
+      name = "Saldo (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # Massa de rendimento {data-navmenu="Trabalho"}
 
