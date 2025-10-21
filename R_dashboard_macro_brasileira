@@ -56,6 +56,10 @@ caged <- caged_adm %>% left_join(caged_dem) %>% left_join(caged_saldo) %>% mutat
   saldo = number(saldo, big.mark = ".", decimal.mark = ",")
 ) %>% select(data_fmt, adm, dem, saldo, date) %>% arrange(desc(date))
 
+caged_graph <- caged_adm %>% left_join(caged_dem) %>% left_join(caged_saldo) %>% mutate(
+  data_fmt = format(date, "%m/%Y")
+) %>% select(data_fmt, adm, dem, saldo, date) %>% arrange(desc(date))
+
 # PIM-PF:
 pim_sec_ativ <- sidrar::get_sidra(
   api = "/t/8888/n1/all/v/11601,11602,11603/p/all/c544/all/d/v11601%201,v11602%201,v11603%201"
@@ -12224,6 +12228,45 @@ Column {.sidebar} {data-width=200}
 <br>
 
 **Fonte:** Ministério do Trabalho e Emprego via Ipeadata.
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Gráfico
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = caged_graph,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", adm)),
+    type = "bar",
+    name = "Admissões"
+  ) %>%
+  add_trace(
+    data = caged_graph,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", dem)),
+    type = "bar",
+    name = "Demissões"
+  ) %>%
+  add_trace(
+    data = caged_graph,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", saldo)),
+    type = "bar",
+    name = "Saldo"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "Admissões, demissões e saldo", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
