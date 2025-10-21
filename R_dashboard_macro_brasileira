@@ -38,6 +38,49 @@ library(tsibble)
 # API key FRED
 fredr_set_key("0087fc9b146c214d78104e3737039ea4")
 
+# TAXA DE JUROS CDI:
+
+cdi_mensal <- get_series(
+  code = c(cdi_mensal = 4391)
+)
+
+cdi_anual <- get_series(
+  code = c(cdi_anual = 4392)
+)
+
+cdi <- left_join(cdi_mensal, cdi_anual)
+
+cdi <- cdi %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  cdi_mensal = number(cdi_mensal, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  cdi_anual = number(cdi_anual, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, cdi_mensal, cdi_anual, date) %>% filter(date >= "1996-01-01") %>% arrange(desc(date))
+
+# SALÁRIO MÍNIMO REAL, VIGENTE E PARIDADE DO PODER DE COMPRA:
+sal_min_real <- ipeadata(code = "GAC12_SALMINRE12") %>% mutate(
+  valor_sal_real = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% select(data_fmt, valor_sal_real, date)
+
+sal_min_vigente <- ipeadata(code = "MTE12_SALMIN12") %>% mutate(
+  valor_sal_vigente = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% select(data_fmt, valor_sal_vigente, date)
+
+sal_min_ppc <- ipeadata(code = "GAC12_SALMINDOL12") %>% mutate(
+  valor_sal_ppc = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% select(data_fmt, valor_sal_ppc, date)
+
+sal_min <- sal_min_real %>% left_join(sal_min_vigente) %>% left_join(sal_min_ppc) %>% mutate(
+  valor_sal_real = number(valor_sal_real, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  valor_sal_ppc = number(valor_sal_ppc, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  valor_sal_vigente = number(valor_sal_vigente, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_sal_vigente, valor_sal_real, valor_sal_ppc, date) %>% arrange(desc(date))
+
+sal_min_graph <- sal_min_real %>% left_join(sal_min_vigente) %>% left_join(sal_min_ppc) %>% select(data_fmt, valor_sal_vigente, valor_sal_real, valor_sal_ppc, date) %>% arrange(desc(date)) %>% 
+  filter(date >= "1994-07-01")
+
 # HIATO DO PRODUTO (IFI):
 hiato_ifi <- rio::import(
   file = paste0(
@@ -1174,6 +1217,8 @@ res_int_imports <- WDI(
   valor = number(valor, decimal.mark = ",", accuracy = 0.01)
 ) %>% select(ano, valor)
 
+# CÂMBIO CONTRATADO (DIÁRIO):
+
 # Câmbio contratado comercial exportação (código 13962):
 cambio_exp1 <- get_series(
   code = c(valor_exp = 13962),
@@ -1360,6 +1405,84 @@ cambio_saldo_total <- bind_rows(cambio_saldo_total1, cambio_saldo_total2) %>%
   arrange(desc(date))
 
 cambio_contratado <- full_join(cambio_contratado, cambio_saldo_total)
+
+# CÂMBIO CONTRATADO (MENSAL):
+
+cc_exp_mensal <- get_series(
+  code = c(valor_exp_mensal = 11045))
+
+cc_imp_mensal <- get_series(
+  code = c(valor_imp_mensal = 11046))
+
+cc_com_saldo_mensal <- get_series(
+  code = c(valor_com_saldo_mensal = 11047))
+
+cc_compra_mensal <- get_series(
+  code = c(valor_compra_mensal = 11048))
+
+cc_venda_mensal <- get_series(
+  code = c(valor_venda_mensal = 11049))
+
+cc_fin_saldo_mensal <- get_series(
+  code = c(valor_fin_saldo_mensal = 11050))
+
+cambio_contratado_mensal <- cc_exp_mensal %>% left_join(cc_imp_mensal) %>% 
+  left_join(cc_com_saldo_mensal) %>% left_join(cc_compra_mensal) %>% left_join(cc_venda_mensal) %>% 
+  left_join(cc_fin_saldo_mensal)
+
+cambio_contratado_mensal <- cambio_contratado_mensal %>% mutate(
+  cc_saldo = valor_com_saldo_mensal + valor_fin_saldo_mensal
+) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_exp_mensal = number(valor_exp_mensal, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  valor_imp_mensal = number(valor_imp_mensal, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  valor_com_saldo_mensal = number(valor_com_saldo_mensal, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  valor_compra_mensal = number(valor_compra_mensal, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  valor_venda_mensal = number(valor_venda_mensal, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  valor_fin_saldo_mensal = number(valor_fin_saldo_mensal, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  cc_saldo = number(cc_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+) %>% select(data_fmt, valor_exp_mensal, valor_imp_mensal, valor_com_saldo_mensal,
+             valor_compra_mensal, valor_venda_mensal, valor_fin_saldo_mensal,
+             cc_saldo, date) %>% arrange(desc(date))
+
+# CÂMBIO CONTRATADO (ANUAL):
+cc_exp_anual <- get_series(
+  code = c(valor_exp_anual = 11056))
+
+cc_imp_anual <- get_series(
+  code = c(valor_imp_anual = 11057))
+
+cc_com_saldo_anual <- get_series(
+  code = c(valor_com_saldo_anual = 11058))
+
+cc_compra_anual <- get_series(
+  code = c(valor_compra_anual = 11059))
+
+cc_venda_anual <- get_series(
+  code = c(valor_venda_anual = 11060))
+
+cc_fin_saldo_anual <- get_series(
+  code = c(valor_fin_saldo_anual = 11061))
+
+cambio_contratado_anual <- cc_exp_anual %>% left_join(cc_imp_anual) %>% 
+  left_join(cc_com_saldo_anual) %>% left_join(cc_compra_anual) %>% left_join(cc_venda_anual) %>% 
+  left_join(cc_fin_saldo_anual)
+
+cambio_contratado_anual <- cambio_contratado_anual %>% mutate(
+  cc_saldo = valor_com_saldo_anual + valor_fin_saldo_anual
+) %>% mutate(
+  data_fmt = format(date, "%Y"),
+  valor_exp_anual = number(valor_exp_anual, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  valor_imp_anual = number(valor_imp_anual, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  valor_com_saldo_anual = number(valor_com_saldo_anual, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  valor_compra_anual = number(valor_compra_anual, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  valor_venda_anual = number(valor_venda_anual, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  valor_fin_saldo_anual = number(valor_fin_saldo_anual, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  cc_saldo = number(cc_saldo, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+) %>% select(data_fmt, valor_exp_anual, valor_imp_anual, valor_com_saldo_anual,
+             valor_compra_anual, valor_venda_anual, valor_fin_saldo_anual,
+             cc_saldo, date) %>% arrange(desc(date))
+
 
 # Transações correntes (códigos 22701, 22702 e 22703):
 
@@ -9843,6 +9966,100 @@ reactable(
 
 # Multiplicador monetário {data-navmenu="Monetário"}
 
+# Taxa de juros CDI {data-navmenu="Monetário"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+O **Certificado de Depósito Interbancário (CDI)** é uma taxa de juros em que os bancos pagam entre si para empréstimos de curto prazo visando fechar o dia com o caixa equilibrado ou superavitário. A taxa CDI costuma acompanhar a taxa de juros básica da economia brasileira, a taxa Selic.
+
+<br>
+
+**Fonte:** Códigos 4391 (% acumulada no mês) e 4392 (% acumulada no mês anualizada base 252) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB).
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Gráfico (% a.m.)
+```{r}
+plot_ly(
+  data = cdi, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", cdi_mensal)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Gráfico (% a.a.)
+```{r}
+plot_ly(
+  data = cdi, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", cdi_anual)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 10
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese
+```{r}
+reactable(
+  cdi[, -4],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    cdi_mensal = colDef(
+      name = "% a.m.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    cdi_anual = colDef(
+      name = "% a.a.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # Taxa Selic {data-navmenu="Monetário"}
 
 Column {.sidebar} {data-width=200}
@@ -12259,17 +12476,21 @@ reactable(
 Column {.sidebar} {data-width=250}
 -----------------------------------------------------------------------
 
-**Câmbio contratado comercial (exportações):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportações de bens. Código 13962 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB).
+**Câmbio contratado comercial (exportações):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportações de bens. Códigos 13962 (diário), 11045 (mensal) e 11056 (anual) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB).
 
-**Câmbio contratado comercial (importações):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais ao mercado não financeiro relativas a importações de bens. Código 13966 no SGST/BCB.
+**Câmbio contratado comercial (importações):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais ao mercado não financeiro relativas a importações de bens. Códigos 13966 (diário), 11046 (mensal) e 11057 (anual) no SGST/BCB.
 
-**Câmbio contratado comercial (saldo):** Resultado líquido de contratações de câmbio comercial de exportação e de importação. Código 13967 no SGST/BCB.
+**Câmbio contratado comercial (saldo):** Resultado líquido de contratações de câmbio comercial de exportação e de importação. Códigos 13967 (diário), 11047 (mensal) e 11058 (anual) no SGST/BCB.
 
-**Câmbio contratado financeiro (compras):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportação de serviços e ingressos de capitais estrangeiros ou retorno de capitais brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Código 13968 no SGST/BCB.
+**Câmbio contratado financeiro (compras):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportação de serviços e ingressos de capitais estrangeiros ou retorno de capitais brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos 13968 (diário), 11048 (mensal) e 11059 (anual) no SGST/BCB.
 
-**Câmbio contratado financeiro (vendas):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a importação de serviços e saídas de capitais estrangeiros ou brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Código 13969 no SGST/BCB.
+**Câmbio contratado financeiro (vendas):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a importação de serviços e saídas de capitais estrangeiros ou brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos 13969 (diário), 11049 (mensal) e 11060 (anual) no SGST/BCB.
 
-**Câmbio contratado financeiro (saldo):** Resultado líquido de contratações de câmbio financeiro de compra e venda. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Código 13970 no SGST/BCB.
+**Câmbio contratado financeiro (saldo):** Resultado líquido de contratações de câmbio financeiro de compra e venda. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos 13970 (diário), 11050 (mensal) e 11061 (anual) no SGST/BCB.
+
+**Câmbio contratado (saldo):** Somatório do saldo do câmbio contratado comercial e do saldo do câmbio contratado financeiro.
+
+<br>
 
 Todos os valores estão em milhões de dólares.
 
@@ -12340,9 +12561,130 @@ reactable(
 ```
 
 ### Quadro-síntese (mensal)
+```{r, results='asis'}
+reactable(
+  cambio_contratado_mensal[, -9],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_exp_mensal = colDef(
+      name = "Comercial exportação (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_imp_mensal = colDef(
+      name = "Comercial importação (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_com_saldo_mensal = colDef(
+      name = "Saldo comercial (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_compra_mensal = colDef(
+      name = "Financeiro compra (4)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_venda_mensal = colDef(
+      name = "Financeiro venda (5)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_fin_saldo_mensal = colDef(
+      name = "Saldo financeiro (6) (4-5)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    cc_saldo = colDef(
+      name = "Saldo câmbio contratado (7) (3+6)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 ### Quadro-síntese (anual)
-
+```{r, results='asis'}
+reactable(
+  cambio_contratado_anual[, -9],
+  columns = list(
+    data_fmt = colDef(
+      name = "Ano",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_exp_anual = colDef(
+      name = "Comercial exportação (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_imp_anual = colDef(
+      name = "Comercial importação (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_com_saldo_anual = colDef(
+      name = "Saldo comercial (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_compra_anual = colDef(
+      name = "Financeiro compra (4)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_venda_anual = colDef(
+      name = "Financeiro venda (5)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_fin_saldo_anual = colDef(
+      name = "Saldo financeiro (6) (4-5)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    cc_saldo = colDef(
+      name = "Saldo câmbio contratado (7) (3+6)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # CAGED {data-navmenu="Trabalho"}
 
@@ -12446,4 +12788,108 @@ reactable(
 # Rendimento médio {data-navmenu="Trabalho"}
 
 # Salário mínimo {data-navmenu="Trabalho"}
+
+Column {.sidebar} {data-width=300}
+-----------------------------------------------------------------------
+O **salário mínimo nominal vigente** não considera abonos salariais ocorridos nos períodos. O salário mínimo urbano foi instituído no Brasil por decreto-lei do presidente Getúlio Vargas, durante a ditadura do Estado Novo, e começou a vigorar em julho de 1940, com valores diferenciados entre estados e sub-regiões. Em 1943, foi incorporado à Consolidação das Leis do Trabalho (CLT) e, em 1963, foi estendido ao campo por meio do Estatuto do Trabalhador Rural. Foi nacionalmente unificado em maio de 1984, mas, desde 2000, a Lei Complementar 103 permite que os estados fixem pisos estaduais superiores ao mínimo nacional. Nota: Os dados desta série para o período em que a legislação federal definia faixas diversificadas referem-se ao maior salário mínimo vigente no país.
+
+<br>
+
+**Salário mínimo real:** é o valor do salário mínimo nominal ajustado pelo índice de inflação (R$ do último mês) (jul/1940-jan/19944: IPC-SP/Fipe; jan/1994-jan/1948: IPC-RJ/FGV; jan/1948-mar/1979: IGPC-Mtb; abr/1979-atual: INPC).
+
+<br>
+
+O **salário mínimo paridade do poder de compra (PPC)** representa, em cada mês, qual era o preço nos Estados Unidos da mesma cesta de bens que se podia adquirir com um salário mínimo no Brasil. Nota: A conversão é feita pela taxa de paridade de poder de compra (PPC) observada pelo Banco Mundial em 2011, corrigida pela inflação ao consumidor nos Estados Unidos e no Brasil. Para a inflação americana, utiliza-se o IPC do Bureau of Labor Statistics (BLS). Para a inflação brasileira, INPC/IBGE (a partir de março de 1979), IGPC-Mtb (jan/1948-mar/1979), IPC-RJ/FGV (jan/1944-jan/1948) e IPC-SP/Fipe (jul/1940-jan/1944).
+
+<br>
+
+**Fonte:** Instituto de Pesquisa Econômica Aplicada (IPEA).
+
+Column {data-width=350}  {.tabset}
+-----------------------------------------------------------------------
+
+### Gráfico
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = sal_min_graph,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_sal_vigente)),
+    type = "scatter",
+    mode = "lines",
+    name = "Salário mínimo vigente (R$)"
+  ) %>%
+  add_trace(
+    data = sal_min_graph,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_sal_real)),
+    type = "scatter",
+    mode = "lines",
+    name = "Salário mínimo real (R$)"
+  ) %>%
+  add_trace(
+    data = sal_min_graph,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_sal_ppc)),
+    type = "scatter",
+    mode = "lines",
+    name = "Salário mínimo PPC (US$)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "Salário mínimo", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=350}  {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese
+```{r}
+reactable(
+  sal_min[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_sal_vigente = colDef(
+      name = "Salário mínimo vigente (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_sal_real = colDef(
+      name = "Salário mínimo real (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_sal_ppc = colDef(
+      name = "Salário mínimo PPC (US$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
