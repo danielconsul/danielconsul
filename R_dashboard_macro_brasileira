@@ -28,6 +28,8 @@ library(WDI)
 library(ipeadatar)
 library(fredr)
 library(zoo)
+library(rio)
+library(tsibble)
 ```
 
 ```{r, cache=TRUE}
@@ -35,6 +37,30 @@ library(zoo)
 
 # API key FRED
 fredr_set_key("0087fc9b146c214d78104e3737039ea4")
+
+# HIATO DO PRODUTO (IFI):
+hiato_ifi <- rio::import(
+  file = paste0(
+    "https://www12.senado.leg.br/ifi/dados/arquivos/",
+    "estimativas-do-hiato-do-produto-ifi.xlsx"
+    ),
+  format = "xlsx",
+  setclass = "tibble",
+  sheet = "Hiato do Produto",
+  skip = 1
+  ) |>
+  dplyr::mutate(
+    data = tsibble::yearquarter(`Trim-Ano`),
+    hiato = `Hiato` * 100,
+    lim_inf = `Limite inferior` * 100,
+    lim_sup = `Limite superior` * 100,
+    .keep = "none"
+  ) %>% mutate(
+    data_fmt = format(data, "%m/%Y"),
+    hiato = number(hiato, decimal.mark = ",", accuracy = 0.1),
+    lim_inf = number(lim_inf, decimal.mark = ",", accuracy = 0.1),
+    lim_sup = number(lim_sup, decimal.mark = ",", accuracy = 0.1)
+  ) %>% select(data_fmt, lim_inf, hiato, lim_sup, data) %>% arrange(desc(data)) 
 
 # CAGED:
 caged_adm <- ipeadata(code = "CAGED12_ADMISN12") %>% mutate(
@@ -10845,6 +10871,105 @@ reactable(
 
 
 
+# Hiato do produto {data-navmenu="Produção"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+O **hiato do produto** é a diferença entre o PIB efetivo e o PIB potencial. Por não ser observável, é estimado por métodos estatísticos e estruturais aplicados ao PIB, ao desemprego, ao NUCI e à produtividade. Empregam-se métodos univariados — os filtros de Hodrick–Prescott (HP), de Hamilton e o Band-Pass —, um método multivariado conforme Areosa (2008) e a abordagem de função de produção. A estimativa central corresponde à mediana do conjunto de medidas, apresentada ao redor de intervalo de plausibilidade, seguindo [Orair e Bacciotti (2018)](https://www2.senado.leg.br/bdsf/bitstream/handle/id/536764/EE_04_2018.pdf). As estimativas tendenciais são obtidas a partir de séries históricas ampliadas para minimizar o viés de final da amostra. Um hiato positivo indica que o produto efetivo está acima do produto potencial, isto é, a economia está operando acima do pleno emprego dos fatores de produção. Um hiato negativo indica que o produto efetivo está abaixo do produto potencial, isto é, há fatores de produção ociosos na economia.
+
+<br>
+
+**Fonte:** Instituição Fiscal Independente (IFI) do Senado Federal.
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Hiato do produto
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = hiato_ifi,
+    x = ~as.Date(data),
+    y = ~as.numeric(gsub(",", ".", hiato)),
+    type = "scatter",
+    mode = "lines",
+    name = "Hiato do produto"
+  ) %>%
+  add_trace(
+    data = hiato_ifi,
+    x = ~as.Date(data),
+    y = ~as.numeric(gsub(",", ".", lim_inf)),
+    type = "scatter",
+    mode = "lines",
+    line = list(color = "orange", dash = "dash"),
+    name = "Limite inferior"
+  ) %>%
+  add_trace(
+    data = hiato_ifi,
+    x = ~as.Date(data),
+    y = ~as.numeric(gsub(",", ".", lim_sup)),
+    type = "scatter",
+    mode = "lines",
+    line = list(color = "orange", dash = "dash"),
+    name = "Limite superior"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese (%)
+```{r}
+reactable(
+  hiato_ifi[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    lim_inf = colDef(
+      name = "Limite inferior",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    hiato = colDef(
+      name = "Hiato do produto",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    lim_sup = colDef(
+      name = "Limite superior",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 
 # Pesquisa Mensal de Serviços (PMS) {data-navmenu="Produção"}
