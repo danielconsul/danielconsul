@@ -38,8 +38,211 @@ library(tsibble)
 # API key FRED
 fredr_set_key("0087fc9b146c214d78104e3737039ea4")
 
-# TAXA DE JUROS CDI:
+# TAXA DE DESEMPREGO:
+desemp <- sidrar::get_sidra(
+  api = "/t/6381/n1/all/v/4099,8811,8816/p/all/d/v4099%201,v8811%201,v8816%201"
+)
 
+desemp <- desemp %>% mutate(
+  data = lubridate::ym(`Trimestre Móvel (Código)`),
+  variavel = Variável,
+  valor = Valor,
+  .keep = "none",  
+)
+
+desemp_tx_desoc <- desemp %>% dplyr::filter(variavel == "Taxa de desocupação, na semana de referência, das pessoas de 14 anos ou mais de idade") %>% mutate(
+  valor_tx_desoc = valor
+) %>% mutate(
+  data_fmt = format(data, "%m/%Y"),
+  valor_tx_desoc = number(valor_tx_desoc, decimal.mark = ",", accuracy = 0.1)
+) %>% select(data_fmt, valor_tx_desoc, data)
+
+desemp_mg <- desemp %>% dplyr::filter(variavel == "Variação em relação a três trimestres móveis anteriores - Taxa de desocupação, na semana de referência, das pessoas de 14 anos ou mais de idade") %>% mutate(
+  valor_mg = valor
+) %>% mutate(
+  data_fmt = format(data, "%m/%Y"),
+  valor_mg = number(valor_mg, decimal.mark = ",", accuracy = 0.1)
+) %>% select(data_fmt, valor_mg, data)
+
+desemp_ano_ant <- desemp %>% dplyr::filter(variavel == "Variação em relação ao mesmo trimestre móvel do ano anterior - Taxa de desocupação, na semana de referência, das pessoas de 14 anos ou mais de idade") %>% mutate(
+  valor_ano_ant = valor
+) %>% mutate(
+  data_fmt = format(data, "%m/%Y"),
+  valor_ano_ant = number(valor_ano_ant, decimal.mark = ",", accuracy = 0.1)
+) %>% select(data_fmt, valor_ano_ant, data)
+
+desocup <- desemp_tx_desoc %>% left_join(desemp_mg) %>% left_join(desemp_ano_ant) %>% 
+  select(data_fmt, valor_tx_desoc, valor_mg, valor_ano_ant, data) %>% arrange(desc(data))
+
+# OCUPAÇÃO:
+ocup <- sidrar::get_sidra(
+  api = "/t/6323/n1/all/v/4090,8431,8436/p/all/c888/all"
+)
+
+ocup <- ocup %>% mutate(
+  date = lubridate::ym(`Trimestre Móvel (Código)`),
+  variavel = Variável,
+  valor = Valor,
+  grupo = `Grupamento de atividade no trabalho principal`,
+  .keep = "none"
+)
+
+ocup_grupos <- ocup %>% dplyr::filter(variavel == "Pessoas de 14 anos ou mais de idade ocupadas na semana de referência") %>% pivot_wider(names_from = grupo, values_from = valor) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Total` = number(`Total`, big.mark = ".", decimal.mark = ","),
+  `Agricultura, pecuária, produção florestal, pesca e aquicultura` = number(`Agricultura, pecuária, produção florestal, pesca e aquicultura`, big.mark = ".", decimal.mark = ","),
+  `Indústria geral` = number(`Indústria geral`, big.mark = ".", decimal.mark = ","),
+  `Construção` = number(`Construção`, big.mark = ".", decimal.mark = ","),
+  `Comércio, reparação de veículos automotores e motocicletas` = number(`Comércio, reparação de veículos automotores e motocicletas`, big.mark = ".", decimal.mark = ","),
+  `Transporte, armazenagem e correio` = number(`Transporte, armazenagem e correio`, big.mark = ".", decimal.mark = ","),
+  `Alojamento e alimentação` = number(`Alojamento e alimentação`, big.mark = ".", decimal.mark = ","),
+  `Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas` = number(`Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas`, big.mark = ".", decimal.mark = ","),
+  `Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais` = number(`Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais`, big.mark = ".", decimal.mark = ","),
+  `Outros serviços` = number(`Outros serviços`, big.mark = ".", decimal.mark = ","),
+  `Serviços domésticos` = number(`Serviços domésticos`, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, `Total`, `Agricultura, pecuária, produção florestal, pesca e aquicultura`, `Indústria geral`, `Construção`, `Comércio, reparação de veículos automotores e motocicletas`, `Transporte, armazenagem e correio`, `Alojamento e alimentação`, `Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas`, `Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais`, `Outros serviços`, `Serviços domésticos`, date) %>% 
+  arrange(desc(date))
+
+ocup_3t <- ocup %>% dplyr::filter(variavel == "Variação absoluta em relação a três trimestres móveis anteriores - Pessoas de 14 anos ou mais de idade, ocupadas na semana de referência") %>% pivot_wider(names_from = grupo, values_from = valor) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Total` = number(`Total`, big.mark = ".", decimal.mark = ","),
+  `Agricultura, pecuária, produção florestal, pesca e aquicultura` = number(`Agricultura, pecuária, produção florestal, pesca e aquicultura`, big.mark = ".", decimal.mark = ","),
+  `Indústria geral` = number(`Indústria geral`, big.mark = ".", decimal.mark = ","),
+  `Construção` = number(`Construção`, big.mark = ".", decimal.mark = ","),
+  `Comércio, reparação de veículos automotores e motocicletas` = number(`Comércio, reparação de veículos automotores e motocicletas`, big.mark = ".", decimal.mark = ","),
+  `Transporte, armazenagem e correio` = number(`Transporte, armazenagem e correio`, big.mark = ".", decimal.mark = ","),
+  `Alojamento e alimentação` = number(`Alojamento e alimentação`, big.mark = ".", decimal.mark = ","),
+  `Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas` = number(`Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas`, big.mark = ".", decimal.mark = ","),
+  `Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais` = number(`Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais`, big.mark = ".", decimal.mark = ","),
+  `Outros serviços` = number(`Outros serviços`, big.mark = ".", decimal.mark = ","),
+  `Serviços domésticos` = number(`Serviços domésticos`, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, `Total`, `Agricultura, pecuária, produção florestal, pesca e aquicultura`, `Indústria geral`, `Construção`, `Comércio, reparação de veículos automotores e motocicletas`, `Transporte, armazenagem e correio`, `Alojamento e alimentação`, `Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas`, `Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais`, `Outros serviços`, `Serviços domésticos`, date) %>% 
+  arrange(desc(date))
+
+ocup_ano_ant <- ocup %>% dplyr::filter(variavel == "Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Pessoas de 14 anos ou mais de idade, ocupadas na semana de referência") %>% pivot_wider(names_from = grupo, values_from = valor) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Total` = number(`Total`, big.mark = ".", decimal.mark = ","),
+  `Agricultura, pecuária, produção florestal, pesca e aquicultura` = number(`Agricultura, pecuária, produção florestal, pesca e aquicultura`, big.mark = ".", decimal.mark = ","),
+  `Indústria geral` = number(`Indústria geral`, big.mark = ".", decimal.mark = ","),
+  `Construção` = number(`Construção`, big.mark = ".", decimal.mark = ","),
+  `Comércio, reparação de veículos automotores e motocicletas` = number(`Comércio, reparação de veículos automotores e motocicletas`, big.mark = ".", decimal.mark = ","),
+  `Transporte, armazenagem e correio` = number(`Transporte, armazenagem e correio`, big.mark = ".", decimal.mark = ","),
+  `Alojamento e alimentação` = number(`Alojamento e alimentação`, big.mark = ".", decimal.mark = ","),
+  `Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas` = number(`Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas`, big.mark = ".", decimal.mark = ","),
+  `Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais` = number(`Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais`, big.mark = ".", decimal.mark = ","),
+  `Outros serviços` = number(`Outros serviços`, big.mark = ".", decimal.mark = ","),
+  `Serviços domésticos` = number(`Serviços domésticos`, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, `Total`, `Agricultura, pecuária, produção florestal, pesca e aquicultura`, `Indústria geral`, `Construção`, `Comércio, reparação de veículos automotores e motocicletas`, `Transporte, armazenagem e correio`, `Alojamento e alimentação`, `Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas`, `Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais`, `Outros serviços`, `Serviços domésticos`, date) %>% 
+  arrange(desc(date))
+
+
+# REGRA DE TAYLOR:
+# Coleta e tratamento dos dados -------------------------------------------
+
+# Selic acumulada no mês anualizada base 252 - Freq. mensal - Unid. % a.a.
+selic_rt <- rbcb::get_series(code = c("selic" = 4189), start_date = "1999-01-01") |>
+  # Trimestralizar a série (média)
+  dplyr::group_by(data = tsibble::yearquarter(date)) |>
+  dplyr::summarise(selic = mean(selic))
+
+# Criar desvio entre inflação esperada e meta de inflação
+# Coleta expectativa acumulada em 12 meses do IPCA - FOCUS
+ipca_exp_12m_rt <- rbcb::get_twelve_months_inflation_expectations(
+  indic = "IPCA",
+  end_date = Sys.Date()
+) |>
+  # Trimestraliza expectativa (média)
+  dplyr::filter(base == 0, smoothed == "S") |>
+  dplyr::group_by(data = tsibble::yearquarter(date)) |>
+  dplyr::summarise(ipca_exp_12m = mean(median, na.rm = TRUE), .groups = "drop")
+
+# Meta para a inflação - CMN - Freq. anual - %
+meta_inflacao_rt <- rbcb::get_series(
+  code = c("meta" = 13521),
+  start_date = "1999-01-01",
+  end_date = Sys.Date() + 10*365
+) |>
+  # Repete cada linha 4 vezes
+  tidyr::uncount(4) |>
+  # Cria vetor de datas trimestrais
+  dplyr::mutate(
+    data = seq(
+      from = dplyr::first(date),
+      by = "quarter",
+      length.out = length(date)
+    ) |>
+      tsibble::yearquarter(),
+    meta = meta,
+    .keep = "none"
+  )
+
+# Importar o hiato do produto
+# Importa via IFI
+hiato_ifi_rt <- rio::import(
+  file = paste0(
+    "https://www12.senado.leg.br/ifi/dados/arquivos/estimativas-do-hiato-do-produto-ifi.xlsx"
+  ),
+  format = "xlsx",
+  setclass = "tibble",
+  sheet = "Hiato do Produto",
+  skip = 1
+) |>
+  dplyr::mutate(
+    data = tsibble::yearquarter(`Trim-Ano`),
+    hiato = `Hiato` * 100,
+    .keep = "none"
+  )
+
+# Reunir os dados ----
+dados_reg_rt <- purrr::reduce(
+  .x = list(selic_rt, ipca_exp_12m_rt, meta_inflacao_rt, hiato_ifi_rt),
+  .f = dplyr::full_join,
+  by = "data"
+) |>
+  dplyr::arrange(data) |>
+  dplyr::mutate(
+    selic_lag1 = dplyr::lag(selic, 1),
+    selic_lag2 = dplyr::lag(selic, 2),
+    meta_lead4 = dplyr::lead(meta, 4),
+    desvio = ipca_exp_12m - meta_lead4,
+    hiato_lag1 = dplyr::lag(hiato, 1)
+  ) |>
+  tidyr::drop_na() |>
+  as.data.frame()
+
+# Estimação
+eq_taylor_rt <- systemfit::systemfit(
+  formula = selic ~ selic_lag1 + selic_lag2 + desvio + hiato_lag1,
+  method = "OLS",
+  data = dados_reg_rt
+)
+
+# Selic estimada:
+selic_estimada_rt <- dados_reg_rt$selic - residuals(eq_taylor_rt)
+selic_estimada2_rt <- fitted(eq_taylor_rt)$eq1 %>% as.data.frame()
+
+# Gráfico dos resíduos
+residuos_rt <- dplyr::tibble(
+  data = dados_reg_rt$data,
+  residuos = residuals(eq_taylor_rt)$eq
+)
+
+# Gráfico dos valores estimados da taxa de juros pela Regra de Taylor
+ajuste_rt <- dplyr::tibble(
+  data = dados_reg_rt$data,
+  ajuste = fitted(eq_taylor_rt)$eq1
+)
+
+regra_taylor <- left_join(selic_rt, ajuste_rt) %>% mutate(
+  desvio = selic - ajuste
+) %>% mutate(
+  data_fmt = format(data, "%m/%Y"),
+  selic = number(selic, decimal.mark = ",", accuracy = 0.01),
+  ajuste = number(ajuste, decimal.mark = ",", accuracy = 0.01),
+  desvio = number(desvio, decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, selic, ajuste, desvio, data) %>% drop_na() %>% arrange(desc(data))
+
+# TAXA DE JUROS CDI:
 cdi_mensal <- get_series(
   code = c(cdi_mensal = 4391)
 )
@@ -9966,6 +10169,100 @@ reactable(
 
 # Multiplicador monetário {data-navmenu="Monetário"}
 
+# Regra de Taylor {data-navmenu="Monetário"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+A **Regra de Taylor** é uma determinação exógena da taxa de juros e foi desenvolvida pelo economista John B. Taylor nos anos 1990. Aqui, a taxa Selic é função de seu próprio passado (lags), do desvio da inflação à meta e do hiato do produto. Trata-se de exercício baseado em aula da [Análise Macro](https://analisemacro.com.br/).
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Gráfico
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = regra_taylor,
+    x = ~as.Date(data),
+    y = ~as.numeric(gsub(",", ".", selic)),
+    type = "scatter",
+    mode = "lines",
+    name = "Taxa Selic"
+  ) %>%
+  add_trace(
+    data = regra_taylor,
+    x = ~as.Date(data),
+    y = ~as.numeric(gsub(",", ".", ajuste)),
+    type = "scatter",
+    mode = "lines",
+    name = "Taxa Selic estimada (regra de Taylor)"
+  ) %>%
+  add_trace(
+    data = regra_taylor,
+    x = ~as.Date(data),
+    y = ~as.numeric(gsub(",", ".", desvio)),
+    type = "scatter",
+    mode = "lines",
+    name = "Desvio Taxa Selic - Taxa Selic estimada"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",  # horizontal
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese
+```{r}
+reactable(
+  regra_taylor[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    selic = colDef(
+      name = "Taxa Selic (%) (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    ajuste = colDef(
+      name = "Taxa Selic estimada (Regra de Taylor) (%) (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    desvio = colDef(
+      name = "Desvio Taxa Selic - Taxa Selic estimada (p.p.) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # Taxa de juros CDI {data-navmenu="Monetário"}
 
 Column {.sidebar} {data-width=200}
@@ -12783,7 +13080,269 @@ reactable(
 
 # Massa de rendimento {data-navmenu="Trabalho"}
 
-# Ocupação e desocupação {data-navmenu="Trabalho"}
+# Ocupação {data-navmenu="Trabalho"}
+
+Column {.sidebar} {data-width=150}
+-----------------------------------------------------------------------
+A **Pesquisa Nacional por Amostra de Domicílios Contínua (PNAD/C)** visa acompanhar as flutuações trimestrais e a evolução, no curto, médio e longo prazos, da força de trabalho, e outras informações necessárias para o estudo do desenvolvimento socioeconômico do País. Para atender a tais objetivos, a pesquisa foi planejada para produzir indicadores trimestrais sobre a força de trabalho e indicadores anuais sobre temas suplementares permanentes (como trabalho e outras formas de trabalho, cuidados de pessoas e afazeres domésticos, tecnologia da informação e da comunicação etc.), investigados em um trimestre específico ou aplicados em uma parte da amostra a cada trimestre e acumulados para gerar resultados anuais, sendo produzidos, também, com periodicidade variável, indicadores sobre outros temas suplementares. Tem como unidade de investigação o domicílio.
+
+O **nível de ocupação** refere-se ao número de pessoas ocupadas na semana de referência. As informações dos indicadores são divulgados a cada mês referentes ao último trimestre móvel.
+
+<br>
+
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
+
+Column {data-width=850}  {.tabset}
+-----------------------------------------------------------------------
+
+### Pessoas ocupadas (mil pessoas)
+```{r}
+reactable(
+  ocup_grupos[, -13],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre móvel",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Total` = colDef(
+      name = "Total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Agricultura, pecuária, produção florestal, pesca e aquicultura` = colDef(
+      name = "Agric., pecuária, prod. florestal, pesca e aquicultura",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Indústria geral` = colDef(
+      name = "Indústria geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Construção` = colDef(
+      name = "Construção",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Comércio, reparação de veículos automotores e motocicletas` = colDef(
+      name = "Comércio, reparação de veículos automotores e motocicletas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Transporte, armazenagem e correio` = colDef(
+      name = "Transporte, armazenagem e correio",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Alojamento e alimentação` = colDef(
+      name = "Alojamento e alimentação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas` = colDef(
+      name = "Informação, comunicação e ativ. financ., imobiliárias, profissionais e adm.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais` = colDef(
+      name = "Adm. pública, defesa, seg. social, educação, saúde humana e serv. sociais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Outros serviços` = colDef(
+      name = "Outros serviços",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Serviços domésticos` = colDef(
+      name = "Serviços domésticos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Var. abs. (três trimestres móveis anteriores) (mil pessoas)
+```{r}
+reactable(
+  ocup_3t[, -13],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre móvel",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Total` = colDef(
+      name = "Total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Agricultura, pecuária, produção florestal, pesca e aquicultura` = colDef(
+      name = "Agric., pecuária, prod. florestal, pesca e aquicultura",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Indústria geral` = colDef(
+      name = "Indústria geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Construção` = colDef(
+      name = "Construção",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Comércio, reparação de veículos automotores e motocicletas` = colDef(
+      name = "Comércio, reparação de veículos automotores e motocicletas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Transporte, armazenagem e correio` = colDef(
+      name = "Transporte, armazenagem e correio",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Alojamento e alimentação` = colDef(
+      name = "Alojamento e alimentação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas` = colDef(
+      name = "Informação, comunicação e ativ. financ., imobiliárias, profissionais e adm.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais` = colDef(
+      name = "Adm. pública, defesa, seg. social, educação, saúde humana e serv. sociais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Outros serviços` = colDef(
+      name = "Outros serviços",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Serviços domésticos` = colDef(
+      name = "Serviços domésticos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Var. abs. (mesmo trimestre móvel do ano anterior) (mil pessoas)
+```{r}
+reactable(
+  ocup_ano_ant[, -13],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre móvel",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Total` = colDef(
+      name = "Total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Agricultura, pecuária, produção florestal, pesca e aquicultura` = colDef(
+      name = "Agric., pecuária, prod. florestal, pesca e aquicultura",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Indústria geral` = colDef(
+      name = "Indústria geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Construção` = colDef(
+      name = "Construção",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Comércio, reparação de veículos automotores e motocicletas` = colDef(
+      name = "Comércio, reparação de veículos automotores e motocicletas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Transporte, armazenagem e correio` = colDef(
+      name = "Transporte, armazenagem e correio",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Alojamento e alimentação` = colDef(
+      name = "Alojamento e alimentação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas` = colDef(
+      name = "Informação, comunicação e ativ. financ., imobiliárias, profissionais e adm.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais` = colDef(
+      name = "Adm. pública, defesa, seg. social, educação, saúde humana e serv. sociais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Outros serviços` = colDef(
+      name = "Outros serviços",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Serviços domésticos` = colDef(
+      name = "Serviços domésticos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # Rendimento médio {data-navmenu="Trabalho"}
 
@@ -12893,3 +13452,121 @@ reactable(
 )
 ```
 
+# Taxa de desocupação {data-navmenu="Trabalho"}
+
+Column {.sidebar} {data-width=250}
+-----------------------------------------------------------------------
+A **Pesquisa Nacional por Amostra de Domicílios Contínua (PNAD/C)** visa acompanhar as flutuações trimestrais e a evolução, no curto, médio e longo prazos, da força de trabalho, e outras informações necessárias para o estudo do desenvolvimento socioeconômico do País. Para atender a tais objetivos, a pesquisa foi planejada para produzir indicadores trimestrais sobre a força de trabalho e indicadores anuais sobre temas suplementares permanentes (como trabalho e outras formas de trabalho, cuidados de pessoas e afazeres domésticos, tecnologia da informação e da comunicação etc.), investigados em um trimestre específico ou aplicados em uma parte da amostra a cada trimestre e acumulados para gerar resultados anuais, sendo produzidos, também, com periodicidade variável, indicadores sobre outros temas suplementares. Tem como unidade de investigação o domicílio.
+
+A **taxa de desocupação** é o percentual de pessoas desocupadas em relação às pessoas na força de trabalho na semana de referência. Percentual das pessoas economicamente ativas que estavam procurando trabalho. As informações dos indicadores são divulgados a cada mês referentes ao último trimestre móvel.
+
+<br>
+
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Taxa de desocupação (%)
+```{r}
+plot_ly(
+  data = desocup, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", valor_tx_desoc)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Var. trim. móvel anterior (p.p)
+```{r}
+plot_ly(
+  data = desocup, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", valor_mg)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "p.p.",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Var. mesmo trim. móvel ano anterior (p.p)
+```{r}
+plot_ly(
+  data = desocup, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", valor_ano_ant)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "p.p.",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=350}  {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese
+```{r}
+reactable(
+  desocup[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre móvel",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_tx_desoc = colDef(
+      name = "Taxa de desocupação (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_mg = colDef(
+      name = "Var. trim. móvel anterior (p.p.)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ano_ant = colDef(
+      name = "Var. mesmo trim. móvel ano anterior (p.p.)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
