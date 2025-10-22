@@ -419,7 +419,6 @@ fed_rate <- aggregate(
   FUN = "mean"
 ) %>% filter(date >= "1996-01")
 
-
 selic <- left_join(selic_over, ipca_12m, by = "date")
 selic <- left_join(selic, fed_rate, by = "date") %>% select(data.x, valor_selic_over,
                                                             valor_ipca12m, valor_fed_rate, date) %>% 
@@ -439,7 +438,6 @@ selic <- selic %>% mutate(
              selic_real, dif_juros, data) %>% arrange(desc(data))
 
 # INDICADOR IPEA DE FBCF:
-
 ipea_fbcf <- ipeadata(code = "GAC12_INDFBCFDESSAZ12") %>% mutate(
   valor_ipea_fbcf = value,
   data_fmt = format(date, "%m/%Y")
@@ -721,6 +719,24 @@ ipca <- ipca %>% mutate(
   ) %>% dplyr::filter(data >= "1996-01-01") %>% 
   arrange(desc(data))
 
+#IPCA-15:
+ipca_15 <- sidrar::get_sidra(
+  api = "/t/3065/n1/all/v/355,356,1120/p/all/d/v355%202,v356%202,v1120%202"
+)
+
+ipca_15 <- ipca_15 %>% mutate(
+  data = lubridate::ym(`Mês (Código)`),
+  variavel = Variável,
+  valor = Valor,
+  .keep = "none",  
+) %>% pivot_wider(names_from = variavel, values_from = valor) %>% 
+  mutate(
+  data_fmt = format(data, "%m/%Y"),
+  `IPCA15 - Variação mensal` = number(`IPCA15 - Variação mensal`, decimal.mark = ",", accuracy = 0.01),
+  `IPCA15 - Variação acumulada no ano` = number(`IPCA15 - Variação acumulada no ano`, decimal.mark = ",", accuracy = 0.01),
+  `IPCA15 - Variação acumulada em 12 meses` = number(`IPCA15 - Variação acumulada em 12 meses`, decimal.mark = ",", accuracy = 0.01),
+  ) %>% arrange(desc(data))
+
 # IPCA (grupos):
 ipca_grupos <- sidrar::get_sidra(
   api = "/t/7060/n1/all/v/all/p/all/c315/7169,7170,7445,7486,7558,7625,7660,7712,7766,7786/d/v63%202,v66%204,v69%202,v2265%202"
@@ -764,6 +780,59 @@ ipca_grupos_acum_12m <- ipca_grupos %>% dplyr::filter(variavel == "IPCA - Varia�
          `8.Educação`, `9.Comunicação`, data)
 
 ipca_grupos_peso <- ipca_grupos %>% dplyr::filter(variavel == "IPCA - Peso mensal") %>% 
+  select(data_fmt, `Índice geral`, `1.Alimentação e bebidas`, `2.Habitação`, `3.Artigos de residência`,
+         `4.Vestuário`, `5.Transportes`, `6.Saúde e cuidados pessoais`, `7.Despesas pessoais`,
+         `8.Educação`, `9.Comunicação`, data)
+
+
+
+
+
+
+
+
+
+# IPCA (grupos):
+ipca15_grupos <- sidrar::get_sidra(
+  api = "/t/7062/n1/all/v/all/p/all/c315/7169,7170,7445,7486,7558,7625,7660,7712,7766,7786/d/v355%202,v356%202,v357%204,v1120%202"
+)
+
+ipca15_grupos <- ipca15_grupos %>% mutate(
+  data = lubridate::ym(`Mês (Código)`),
+  variavel = Variável,
+  grupos = `Geral, grupo, subgrupo, item e subitem`,
+  valor = Valor,
+  .keep = "none",  
+) %>% pivot_wider(names_from = grupos, values_from = valor) %>% 
+  mutate(
+  data_fmt = format(data, "%m/%Y"),
+  `Índice geral` = number(`Índice geral`, decimal.mark = ",", accuracy = 0.01),
+  `1.Alimentação e bebidas` = number(`1.Alimentação e bebidas`, decimal.mark = ",", accuracy = 0.01),
+  `2.Habitação` = number(`2.Habitação`, decimal.mark = ",", accuracy = 0.01),
+  `3.Artigos de residência` = number(`3.Artigos de residência`, decimal.mark = ",", accuracy = 0.01),
+  `4.Vestuário` = number(`4.Vestuário`, decimal.mark = ",", accuracy = 0.01),
+  `5.Transportes` = number(`5.Transportes`, decimal.mark = ",", accuracy = 0.01),
+  `6.Saúde e cuidados pessoais` = number(`6.Saúde e cuidados pessoais`, decimal.mark = ",", accuracy = 0.01),
+  `7.Despesas pessoais` = number(`7.Despesas pessoais`, decimal.mark = ",", accuracy = 0.01),
+  `8.Educação` = number(`8.Educação`, decimal.mark = ",", accuracy = 0.01),
+  `9.Comunicação` = number(`9.Comunicação`, decimal.mark = ",", accuracy = 0.01)
+  ) %>% arrange(desc(data))
+
+ipca15_grupos_mg <- ipca15_grupos %>% dplyr::filter(variavel == "IPCA15 - Variação mensal") %>% 
+  select(data_fmt, `Índice geral`, `1.Alimentação e bebidas`, `2.Habitação`, `3.Artigos de residência`,
+         `4.Vestuário`, `5.Transportes`, `6.Saúde e cuidados pessoais`, `7.Despesas pessoais`,
+         `8.Educação`, `9.Comunicação`, data)
+
+ipca15_grupos_acum_ano <- ipca15_grupos %>% dplyr::filter(variavel == "IPCA15 - Variação acumulada no ano") %>% select(data_fmt, `Índice geral`, `1.Alimentação e bebidas`, `2.Habitação`, `3.Artigos de residência`,
+         `4.Vestuário`, `5.Transportes`, `6.Saúde e cuidados pessoais`, `7.Despesas pessoais`,
+         `8.Educação`, `9.Comunicação`, data)
+
+ipca15_grupos_acum_12m <- ipca15_grupos %>% dplyr::filter(variavel == "IPCA15 - Variação acumulada em 12 meses") %>% 
+  select(data_fmt, `Índice geral`, `1.Alimentação e bebidas`, `2.Habitação`, `3.Artigos de residência`,
+         `4.Vestuário`, `5.Transportes`, `6.Saúde e cuidados pessoais`, `7.Despesas pessoais`,
+         `8.Educação`, `9.Comunicação`, data)
+
+ipca15_grupos_peso <- ipca15_grupos %>% dplyr::filter(variavel == "IPCA15 - Peso mensal") %>% 
   select(data_fmt, `Índice geral`, `1.Alimentação e bebidas`, `2.Habitação`, `3.Artigos de residência`,
          `4.Vestuário`, `5.Transportes`, `6.Saúde e cuidados pessoais`, `7.Despesas pessoais`,
          `8.Educação`, `9.Comunicação`, data)
@@ -2942,7 +3011,7 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte:** Códigos 22702 (receita), 22703 (despesa), 22701 (saldo TC) e 4385 (PIB em dólares) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte:** Códigos 22702 (receita), 22703 (despesa), 22701 (saldo TC) e 4385 (PIB em dólares) no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=500}  {.tabset}
 -----------------------------------------------------------------------
@@ -3070,7 +3139,7 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte**: Códigos 22708 (exportações), 22709 (importações), 22707 (saldo BC) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22708 (exportações), 22709 (importações), 22707 (saldo BC) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -3198,7 +3267,7 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte:** Secretaria de Comércio Exterior (SECEX) do Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC), Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata e códigos 22711 (exportações) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB).
+**Fonte:** Secretaria de Comércio Exterior (SECEX) do Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC), Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx) e códigos 22711 (exportações) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -3344,7 +3413,7 @@ O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito
 
 <br>
 
-**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -3441,7 +3510,7 @@ O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito
 
 <br>
 
-**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -3536,7 +3605,7 @@ A exportação de **bens de consumo** refere-se a bens duráveis e não durávei
 
 <br>
 
-**Fonte:** Secretaria de Comércio Exterior (SECEX) do Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) via Ipeadata.
+**Fonte:** Secretaria de Comércio Exterior (SECEX) do Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=600} {.tabset}
 -----------------------------------------------------------------------
@@ -3608,7 +3677,7 @@ Os índices de preços e de quantum (médias 2018 = 100) captam o efeito das var
 
 <br>
 
-**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -3730,7 +3799,7 @@ O índice de quantum (média 2018 = 100) capta o efeito das variações das quan
 
 <br>
 
-**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -3827,7 +3896,7 @@ O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito
 
 <br>
 
-**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -3951,7 +4020,7 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte:** Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC), Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata e códigos 22712 (importações) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB).
+**Fonte:** Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC), Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx) e códigos 22712 (importações) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -4097,7 +4166,7 @@ O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito
 
 <br>
 
-**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -4219,7 +4288,7 @@ O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito
 
 <br>
 
-**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -4339,7 +4408,7 @@ A importação de **bens de consumo** refere-se a bens duráveis e não durávei
 
 <br>
 
-**Fonte:** Secretaria de Comércio Exterior (SECEX) do Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) via Ipeadata.
+**Fonte:** Secretaria de Comércio Exterior (SECEX) do Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=600} {.tabset}
 -----------------------------------------------------------------------
@@ -4411,7 +4480,7 @@ O índice de quantum (média 2018 = 100) capta o efeito das variações das quan
 
 <br>
 
-**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -4508,7 +4577,7 @@ O índice de quantum (média 2018 = 100) capta o efeito das variações das quan
 
 <br>
 
-**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -4605,7 +4674,7 @@ O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito
 
 <br>
 
-**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via Ipeadata.
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -4729,7 +4798,7 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte**: Códigos 22720 (receitas), 22721 (despesas), 22719 (saldo BS) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22720 (receitas), 22721 (despesas), 22719 (saldo BS) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -4862,7 +4931,7 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte**: Códigos 22801 (receitas), 22802 (despesas), 22800 (saldo RP) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22801 (receitas), 22802 (despesas), 22800 (saldo RP) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -5010,7 +5079,7 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte**: Códigos 22839 (receitas), 22840 (despesas), 22838 (saldo RS) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22839 (receitas), 22840 (despesas), 22838 (saldo RS) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -5157,7 +5226,7 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte**: Códigos 22852 (receitas), 22853 (despesas), 22851 (saldo CC) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22852 (receitas), 22853 (despesas), 22851 (saldo CC) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -5301,7 +5370,7 @@ A **conta capital (ativos não financeiros não produzidos)** inclui ativos inta
 
 <br>
 
-**Fonte**: Códigos 22855 (receitas), 22856 (despesas) e 22855 (saldo CC (ativos não financeiros não produzidos)) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22855 (receitas), 22856 (despesas) e 22855 (saldo CC (ativos não financeiros não produzidos)) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -5421,7 +5490,7 @@ A **conta capital (ativos não financeiros não produzidos - passes de atletas)*
 
 <br>
 
-**Fonte**: Códigos 22858 (receitas), 22859 (despesas) e 22857 (saldo CC (ativos não financeiros não produzidos - passes de atletas)) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22858 (receitas), 22859 (despesas) e 22857 (saldo CC (ativos não financeiros não produzidos - passes de atletas)) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -5547,7 +5616,7 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte**: Códigos 22863 (conta financeira) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22863 (conta financeira) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -5655,7 +5724,7 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte**: Códigos 22865 (IDE), 22885 (IDP), 22864 (saldo ID) e 4385 (PIB em dólares) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22865 (IDE), 22885 (IDP), 22864 (saldo ID) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -5821,7 +5890,7 @@ Obs.: Valores negativos indicam entrada líquida de recursos no país.
 
 <br>
 
-**Fonte**: Código 22905 do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Código 22905 do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=350}  {.tabset}
 -----------------------------------------------------------------------
@@ -5895,7 +5964,7 @@ Obs.: Valores negativos indicam entrada líquida de recursos no país.
 
 <br>
 
-**Fonte**: Códigos 22970 (ativos), 22971 (passivos) e 22969 (saldo outros investimentos) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Códigos 22970 (ativos), 22971 (passivos) e 22969 (saldo outros investimentos) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -6000,7 +6069,7 @@ Os **ativos de reserva** compreendem as operações com os ativos externos que e
 
 <br>
 
-**Fonte**: Código 23043 do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Código 23043 do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -6070,7 +6139,7 @@ As partidas a crédito e a débito lançadas no balanço de pagamentos provêm d
 
 <br>
 
-**Fonte**: Código 23060 do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte**: Código 23060 do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -6140,7 +6209,7 @@ Os **termos de troca** são definidos como a relação entre os preços das expo
 
 <br>
 
-**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX).
+**Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -6251,7 +6320,7 @@ Boi gordo: 21,54%, Brent: 12,35%, Açúcar: 7,37%, Milho: 6,27%, Óleo de soja: 
 
 <br>
 
-**Fonte:** Códigos 27574 (real) e 29042 (dólar) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte:** Códigos 27574 (real) e 29042 (dólar) no Sistema Gerenciador de [Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -6417,7 +6486,7 @@ Column {.sidebar} {data-width=200}
  	
 O **IC-Br Agropecuária** é um subíndice do IC-Br (série 27574). É uma média mensal ponderada dos preços em reais de boi gordo, algodão, óleo de soja, trigo, açúcar, milho, café, arroz, porco, suco de laranja e cacau. Dez/2005 = 100.
 
-**Fonte:** Códigos 27575 (real) e 29041 (dólar) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte:** Códigos 27575 (real) e 29041 (dólar) no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -6583,7 +6652,7 @@ Column {.sidebar} {data-width=200}
  	
 O **IC-Br Energia** é um subíndice do IC-Br (série 27574). É uma média mensal ponderada dos preços em reais de petróleo Brent, gás natural e carvão. Dez/2005 = 100.
 
-**Fonte:** Códigos 27577 (real) e 29039 (dólar) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte:** Códigos 27577 (real) e 29039 (dólar) no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -6749,7 +6818,7 @@ Column {.sidebar} {data-width=200}
  	
 O **IC-Br Metal** é um subíndice do IC-Br (série 27574). É uma média mensal ponderada dos preços em reais de alumínio, minério de ferro, cobre, estanho, zinco, chumbo, níquel, ouro e prata. Dez/2005 = 100.
 
-**Fonte:** Códigos 27576 (real) e 29040 (dólar) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte:** Códigos 27576 (real) e 29040 (dólar) no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -6916,7 +6985,7 @@ Column {.sidebar} {data-width=200}
 
 <br>
 
-**Fonte:** Federal Reserve Economic Data (FRED).
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/)
 
 
 Column {data-width=400} {.tabset}
@@ -7084,7 +7153,7 @@ Column {.sidebar} {data-width=200}
 
 <br>
 
-**Fonte:** Federal Reserve Economic Data (FRED).
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/)
 
 
 Column {data-width=400} {.tabset}
@@ -7195,7 +7264,7 @@ As cotações mensais são as médias das cotações diárias.
 
 <br>
 
-**Fonte:** Energy Information Administration (EIA) via Ipeadata.
+**Fonte:** Energy Information Administration (EIA) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 
 Column {data-width=400} {.tabset}
@@ -7443,7 +7512,7 @@ Preço dos contratos futuros da soja negociados na bolsa de Chicago (Chicago Boa
 
 <br>
 
-**Fonte:** International Financial Statistics (FMI/IFS) via Ipeadata.
+**Fonte:** International Financial Statistics (FMI/IFS) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 
 Column {data-width=400} {.tabset}
@@ -7549,7 +7618,7 @@ Column {.sidebar} {data-width=200}
 
 <br>
 
-**Fonte:** Federal Reserve Economic Data (FRED).
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/)
 
 
 Column {data-width=400} {.tabset}
@@ -7656,7 +7725,7 @@ A série trimestral **dívida externa bruta** compreende o total apurado em dete
 
 <br>
 
-**Fonte:** Código 3684 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte:** Código 3684 no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -7741,7 +7810,7 @@ A série trimestral **dívida externa líquida** refere-se à dívida externa br
 
 <br>
 
-**Fonte:** Código 3685 no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte:** Código 3685 no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -7937,7 +8006,7 @@ O **Índice de Preços ao Consumidor Amplo (IPCA)** tem como unidade de coleta e
 
 <br>
 
-**Fonte:** Instituto Brasileiro de Geografia e Estatística (IBGE).
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html?=&t=o-que-e)
 
 Column {data-width=920}  {.tabset}
 -----------------------------------------------------------------------
@@ -7948,7 +8017,8 @@ plot_ly(
   data = ipca, 
   x = ~data, 
   y = ~as.numeric(gsub(",", ".", `IPCA - Variação mensal`)),
-  type = "bar"
+  type = "scatter",
+  mode = "lines"
 ) %>%
   layout(
     xaxis = list(title = " "),
@@ -8040,7 +8110,8 @@ plot_ly(
   data = ipca, 
   x = ~data, 
   y = ~as.numeric(gsub(",", ".", `IPCA - Variação acumulada no ano`)),
-  type = "bar"
+  type = "scatter",
+  mode = "lines"
 ) %>%
   layout(
     xaxis = list(title = " "),
@@ -8132,7 +8203,8 @@ plot_ly(
   data = ipca, 
   x = ~data, 
   y = ~as.numeric(gsub(",", ".", `IPCA - Variação acumulada em 12 meses`)),
-  type = "bar"
+  type = "scatter",
+  mode = "lines"
 ) %>%
   layout(
     xaxis = list(title = " "),
@@ -8296,6 +8368,377 @@ reactable(
 )
 ```
 
+# Índice de Preços ao Consumidor Amplo 15 (IPCA-15) {data-navmenu="Inflação"}
+
+Column {.sidebar} {data-width=150}
+-----------------------------------------------------------------------
+
+Com divulgação na Internet iniciada em maio de 2000, o **Índice Nacional de Preços ao Consumidor Amplo 15 (IPCA-15)** difere do Índice Nacional de Preços ao Consumidor Amplo (IPCA), apenas no período de coleta que abrange, em geral, do dia 16 do mês anterior ao 15 do mês de referência e na abrangência geográfica. Atualmente, a população-objetivo do IPCA-15 abrange as famílias com rendimentos de 1 a 40 salários mínimos, qualquer que seja a fonte, residentes em 11 áreas urbanas das regiões de abrangência do SNIPC, as quais são: regiões metropolitanas de Belém, Fortaleza, Recife, Salvador, Belo Horizonte, Rio de Janeiro, São Paulo, Curitiba, Porto Alegre, além do Distrito Federal e do município de Goiânia.
+
+<br>
+
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9260-indice-nacional-de-precos-ao-consumidor-amplo-15.html?=&t=o-que-e)
+
+Column {data-width=850}  {.tabset}
+-----------------------------------------------------------------------
+
+### Tx. M/M-1 (Gráfico)
+```{r}
+plot_ly(
+  data = ipca_15, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", `IPCA15 - Variação mensal`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Tx. M/M-1 (Grupos) (%)
+```{r}
+reactable(
+  ipca15_grupos_mg[, -12],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Índice geral` = colDef(
+      name = "Índice geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1.Alimentação e bebidas` = colDef(
+      name = "1. Alimentação e bebidas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2.Habitação` = colDef(
+      name = "2. Habitação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.Artigos de residência` = colDef(
+      name = "3. Artigos de residência",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4.Vestuário` = colDef(
+      name = "4. Vestuário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5.Transportes` = colDef(
+      name = "5. Transportes",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6.Saúde e cuidados pessoais` = colDef(
+      name = "6. Saúde e cuidados pessoais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7.Despesas pessoais` = colDef(
+      name = "7. Despesas pessoais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8.Educação` = colDef(
+      name = "8. Educação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9.Comunicação` = colDef(
+      name = "9. Comunicação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Tx. acum. no ano (Gráfico)
+```{r}
+plot_ly(
+  data = ipca_15, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", `IPCA15 - Variação acumulada no ano`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Tx. acum. no ano (Grupos) (%)
+```{r}
+reactable(
+  ipca15_grupos_acum_ano[, -12],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Índice geral` = colDef(
+      name = "Índice geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1.Alimentação e bebidas` = colDef(
+      name = "1. Alimentação e bebidas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2.Habitação` = colDef(
+      name = "2. Habitação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.Artigos de residência` = colDef(
+      name = "3. Artigos de residência",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4.Vestuário` = colDef(
+      name = "4. Vestuário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5.Transportes` = colDef(
+      name = "5. Transportes",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6.Saúde e cuidados pessoais` = colDef(
+      name = "6. Saúde e cuidados pessoais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7.Despesas pessoais` = colDef(
+      name = "7. Despesas pessoais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8.Educação` = colDef(
+      name = "8. Educação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9.Comunicação` = colDef(
+      name = "9. Comunicação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Tx. acum. em 12 meses (Gráfico)
+```{r}
+plot_ly(
+  data = ipca_15, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", `IPCA15 - Variação acumulada em 12 meses`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Tx. acum. em 12 meses (Grupos) (%)
+```{r}
+reactable(
+  ipca15_grupos_acum_12m[, -12],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Índice geral` = colDef(
+      name = "Índice geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1.Alimentação e bebidas` = colDef(
+      name = "1. Alimentação e bebidas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2.Habitação` = colDef(
+      name = "2. Habitação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.Artigos de residência` = colDef(
+      name = "3. Artigos de residência",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4.Vestuário` = colDef(
+      name = "4. Vestuário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5.Transportes` = colDef(
+      name = "5. Transportes",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6.Saúde e cuidados pessoais` = colDef(
+      name = "6. Saúde e cuidados pessoais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7.Despesas pessoais` = colDef(
+      name = "7. Despesas pessoais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8.Educação` = colDef(
+      name = "8. Educação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9.Comunicação` = colDef(
+      name = "9. Comunicação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Peso mensal (Grupos) (%)
+```{r}
+reactable(
+  ipca15_grupos_peso[, -12],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Índice geral` = colDef(
+      name = "Índice geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1.Alimentação e bebidas` = colDef(
+      name = "1. Alimentação e bebidas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2.Habitação` = colDef(
+      name = "2. Habitação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.Artigos de residência` = colDef(
+      name = "3. Artigos de residência",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4.Vestuário` = colDef(
+      name = "4. Vestuário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5.Transportes` = colDef(
+      name = "5. Transportes",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6.Saúde e cuidados pessoais` = colDef(
+      name = "6. Saúde e cuidados pessoais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7.Despesas pessoais` = colDef(
+      name = "7. Despesas pessoais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8.Educação` = colDef(
+      name = "8. Educação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9.Comunicação` = colDef(
+      name = "9. Comunicação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # Índice de Preços ao Consumidor - Disponibilidade interna (IPC-DI) {data-navmenu="Inflação"}
 
 # Índice de Preços ao Produtor (IPP) {data-navmenu="Inflação"}
@@ -8309,7 +8752,7 @@ O IPP investiga, em pouco mais de 1.700 empresas, os preços recebidos pelo prod
 
 <br>
 
-**Fonte:** Instituto Brasileiro de Geografia e Estatística (IBGE).
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e)
 
 Column {data-width=880}  {.tabset}
 -----------------------------------------------------------------------
@@ -9719,7 +10162,7 @@ O **Índice Geral de Preços do Mercado (IGP-M)** é um indicador do movimento d
 
 <br>
 
-**Fonte:** Fundação Getúlio Vargas (FGV) via Ipeadata.
+**Fonte:** Fundação Getúlio Vargas (FGV) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=500}  {.tabset}
 -----------------------------------------------------------------------
@@ -9804,7 +10247,7 @@ O **Índice Nacional de Preços ao Consumidor (INPC)** tem como unidade de colet
 
 <br>
 
-**Fonte:** Instituto Brasileiro de Geografia e Estatística (IBGE).
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9258-indice-nacional-de-precos-ao-consumidor.html?=&t=o-que-e)
 
 Column {data-width=850}  {.tabset}
 -----------------------------------------------------------------------
@@ -10173,7 +10616,7 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-A **Regra de Taylor** é uma determinação exógena da taxa de juros e foi desenvolvida pelo economista John B. Taylor nos anos 1990. Aqui, a taxa Selic é função de seu próprio passado (lags), do desvio da inflação à meta e do hiato do produto. Trata-se de exercício baseado em aula da [Análise Macro](https://analisemacro.com.br/).
+A **Regra de Taylor** é uma determinação exógena da taxa de juros e foi desenvolvida pelo economista John B. Taylor nos anos 1990. Aqui, a taxa Selic é função de seu próprio passado (lags), do desvio da inflação à meta e do hiato do produto. Trata-se de exercício baseado em aula da [Análise Macro](https://analisemacro.com.br/)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -10271,7 +10714,7 @@ O **Certificado de Depósito Interbancário (CDI)** é uma taxa de juros em que 
 
 <br>
 
-**Fonte:** Códigos 4391 (% acumulada no mês) e 4392 (% acumulada no mês anualizada base 252) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB).
+**Fonte:** Códigos 4391 (% acumulada no mês) e 4392 (% acumulada no mês anualizada base 252) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -10357,6 +10800,22 @@ reactable(
 )
 ```
 
+# Taxa referencial DI x prefixada (swaps) {data-navmenu="Monetário"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Gráfico
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese
+
+
 # Taxa Selic {data-navmenu="Monetário"}
 
 Column {.sidebar} {data-width=200}
@@ -10373,7 +10832,7 @@ O diferencial de juros é definido a partir da divisão do fator da Taxa Selic p
 
 <br>
 
-**Fonte**: Código 4189 do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB) para taxa Selic, Instituto Brasileiro de Geografia e Estatística (IBGE) para IPCA e Federal Reserve Economic Data (FRED) para FED rate.
+**Fonte**: Código 4189 do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries) para taxa Selic, [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html) para IPCA e [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/) para FED rate
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -10506,7 +10965,7 @@ O IBC-Br e seus componentes são construídos com base em proxies representativa
 
 <br>
 
-**Fonte:** Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte:** Códigos 24364 (IBC-Br), 29602 (agropecuária), 29604 (indústria), 29606 (serviços), 29608 (ex-agropecuária) e 29610 (impostos) no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=850} {.tabset}
 -----------------------------------------------------------------------
@@ -10670,7 +11129,7 @@ A **formação bruta de capital fixo (FBCF)** da economia é composta por invest
 
 <br>
 
-**Fonte:** Instituto de Pesquisa Econômica Aplicada (IPEA).
+**Fonte:** Instituto de Pesquisa Econômica Aplicada (IPEA) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=500} {.tabset}
 -----------------------------------------------------------------------
@@ -10758,7 +11217,7 @@ A **Pesquisa Industrial Mensal - Produção física (PIM-PF)** produz indicadore
 
 <br>
 
-**Fonte:** Instituto Brasileiro de Geografia e Estatística (IBGE).
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/industria/9294-pesquisa-industrial-mensal-producao-fisica-brasil.html?=&t=o-que-e)
 
 Column {data-width=920} {.tabset}
 -----------------------------------------------------------------------
@@ -11393,7 +11852,7 @@ O **hiato do produto** é a diferença entre o PIB efetivo e o PIB potencial. Po
 
 <br>
 
-**Fonte:** Instituição Fiscal Independente (IFI) do Senado Federal.
+**Fonte:** [Instituição Fiscal Independente (IFI)](https://www12.senado.leg.br/ifi) do Senado Federal
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -11504,7 +11963,7 @@ Aqui são apresentadas as seguintes taxas percentuais: taxa trimestral contra tr
 
 <br>
 
-**Fonte:** Instituto Brasileiro de Geografia e Estatística (IBGE).
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/contas-nacionais/9300-contas-nacionais-trimestrais.html?=&t=o-que-e)
 
 Column {data-width=920} {.tabset}
 -----------------------------------------------------------------------
@@ -11968,7 +12427,7 @@ Aqui são apresentadas as seguintes taxas percentuais: taxa trimestral contra tr
 
 <br>
 
-**Fonte:** Instituto Brasileiro de Geografia e Estatística (IBGE).
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/contas-nacionais/9300-contas-nacionais-trimestrais.html?=&t=o-que-e)
 
 Column {data-width=920} {.tabset}
 -----------------------------------------------------------------------
@@ -12226,7 +12685,7 @@ O prazo médio de investimento em 2024 foi de 3,19 anos.
 
 <br>
 
-**Fontes:** Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (código 3546) e DataBank/World Bank.
+**Fontes:** Código 3546 no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries) e [DataBank (World Bank)](https://databank.worldbank.org/)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -12431,7 +12890,7 @@ As taxas mensais referem-se aos valores de fim de período.
 
 <br>
 
-**Fonte:** Códigos 10813 (compra diária), 1 (venda diária), 3695 (compra mensal) e 3696 (venda mensal) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte:** Códigos 10813 (compra diária), 1 (venda diária), 3695 (compra mensal) e 3696 (venda mensal) no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -12609,7 +13068,7 @@ A série mensal **taxa de câmbio real** reflete a variação da moeda nacional 
 
 <br>
 
-**Fonte:** Códigos 11752 (dólar americano) e 11753 (efetiva) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil.
+**Fonte:** Códigos 11752 (dólar americano) e 11753 (efetiva) no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -12773,17 +13232,17 @@ reactable(
 Column {.sidebar} {data-width=250}
 -----------------------------------------------------------------------
 
-**Câmbio contratado comercial (exportações):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportações de bens. Códigos 13962 (diário), 11045 (mensal) e 11056 (anual) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGST/BCB).
+**Câmbio contratado comercial (exportações):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportações de bens. Códigos 13962 (diário), 11045 (mensal) e 11056 (anual) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB).
 
-**Câmbio contratado comercial (importações):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais ao mercado não financeiro relativas a importações de bens. Códigos 13966 (diário), 11046 (mensal) e 11057 (anual) no SGST/BCB.
+**Câmbio contratado comercial (importações):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais ao mercado não financeiro relativas a importações de bens. Códigos 13966 (diário), 11046 (mensal) e 11057 (anual) no SGS/BCB.
 
-**Câmbio contratado comercial (saldo):** Resultado líquido de contratações de câmbio comercial de exportação e de importação. Códigos 13967 (diário), 11047 (mensal) e 11058 (anual) no SGST/BCB.
+**Câmbio contratado comercial (saldo):** Resultado líquido de contratações de câmbio comercial de exportação e de importação. Códigos 13967 (diário), 11047 (mensal) e 11058 (anual) no SGS/BCB.
 
-**Câmbio contratado financeiro (compras):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportação de serviços e ingressos de capitais estrangeiros ou retorno de capitais brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos 13968 (diário), 11048 (mensal) e 11059 (anual) no SGST/BCB.
+**Câmbio contratado financeiro (compras):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportação de serviços e ingressos de capitais estrangeiros ou retorno de capitais brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos 13968 (diário), 11048 (mensal) e 11059 (anual) no SGS/BCB.
 
-**Câmbio contratado financeiro (vendas):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a importação de serviços e saídas de capitais estrangeiros ou brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos 13969 (diário), 11049 (mensal) e 11060 (anual) no SGST/BCB.
+**Câmbio contratado financeiro (vendas):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a importação de serviços e saídas de capitais estrangeiros ou brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos 13969 (diário), 11049 (mensal) e 11060 (anual) no SGS/BCB.
 
-**Câmbio contratado financeiro (saldo):** Resultado líquido de contratações de câmbio financeiro de compra e venda. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos 13970 (diário), 11050 (mensal) e 11061 (anual) no SGST/BCB.
+**Câmbio contratado financeiro (saldo):** Resultado líquido de contratações de câmbio financeiro de compra e venda. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos 13970 (diário), 11050 (mensal) e 11061 (anual) no SGS/BCB.
 
 **Câmbio contratado (saldo):** Somatório do saldo do câmbio contratado comercial e do saldo do câmbio contratado financeiro.
 
@@ -12991,7 +13450,7 @@ Column {.sidebar} {data-width=200}
 
 <br>
 
-**Fonte:** Ministério do Trabalho e Emprego via Ipeadata.
+**Fonte:** Ministério do Trabalho e Emprego via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -13362,7 +13821,7 @@ O **salário mínimo paridade do poder de compra (PPC)** representa, em cada mê
 
 <br>
 
-**Fonte:** Instituto de Pesquisa Econômica Aplicada (IPEA).
+**Fonte:** Instituto de Pesquisa Econômica Aplicada (IPEA) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=350}  {.tabset}
 -----------------------------------------------------------------------
