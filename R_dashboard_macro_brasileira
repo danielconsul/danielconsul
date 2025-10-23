@@ -38,6 +38,68 @@ library(tsibble)
 # API key FRED
 fredr_set_key("0087fc9b146c214d78104e3737039ea4")
 
+# UTILIZAÇÃO DA CAPACIDADE INSTALADA (INDÚSTRIA DE TRANSFORMAÇÃO):
+uci <- get_series(
+  code = c(valor_uci = 24352)
+) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  var_mg = valor_uci - lag(valor_uci)
+) %>% mutate(
+  valor_uci = number(valor_uci, decimal.mark = ",", accuracy = 0.1),
+  var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.1),
+) %>% select(data_fmt, valor_uci, var_mg, date) %>% arrange(desc(date))
+
+# IPA-DI:
+ipc_di <- ipeadata(code = "IGP12_IPCG12") %>% mutate(
+  valor_ipc_di = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  fator_ipc_di = valor_ipc_di / 100 + 1
+) %>% mutate(
+  ipc_di_12m = rollapply(fator_ipc_di, width = 12, FUN = prod, align = "right", fill = NA)
+) %>% mutate(
+  ipc_di_12m = (ipc_di_12m - 1) * 100
+) %>% mutate(
+  valor_ipc_di = number(valor_ipc_di, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  ipc_di_12m = number(ipc_di_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_ipc_di, ipc_di_12m, date) %>% arrange(desc(date)) %>% filter(
+  date >= "1996-01-01"
+)
+
+# IPA-DI:
+ipa_di <- ipeadata(code = "IGP12_IPADIG12") %>% mutate(
+  valor_ipa_di = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  fator_ipa_di = valor_ipa_di / 100 + 1
+) %>% mutate(
+  ipa_di_12m = rollapply(fator_ipa_di, width = 12, FUN = prod, align = "right", fill = NA)
+) %>% mutate(
+  ipa_di_12m = (ipa_di_12m - 1) * 100
+) %>% mutate(
+  valor_ipa_di = number(valor_ipa_di, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  ipa_di_12m = number(ipa_di_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_ipa_di, ipa_di_12m, date) %>% arrange(desc(date)) %>% filter(
+  date >= "1996-01-01"
+)
+
+# IGP-DI:
+igp_di <- ipeadata(code = "IGP12_IGPDIG12") %>% mutate(
+  valor_igp_di = value,
+  data_fmt = format(date, "%m/%Y")
+) %>% mutate(
+  fator_igp_di = valor_igp_di / 100 + 1
+) %>% mutate(
+  igp_di_12m = rollapply(fator_igp_di, width = 12, FUN = prod, align = "right", fill = NA)
+) %>% mutate(
+  igp_di_12m = (igp_di_12m - 1) * 100
+) %>% mutate(
+  valor_igp_di = number(valor_igp_di, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+  igp_di_12m = number(igp_di_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_igp_di, igp_di_12m, date) %>% arrange(desc(date)) %>% filter(
+  date >= "1996-01-01"
+)
+
 # TAXA DE DESEMPREGO:
 desemp <- sidrar::get_sidra(
   api = "/t/6381/n1/all/v/4099,8811,8816/p/all/d/v4099%201,v8811%201,v8816%201"
@@ -456,6 +518,7 @@ ind_fbcf <- left_join(ipea_fbcf, ipea_fbcf_cc) %>% arrange(desc(date)) %>% selec
   data_fmt, valor_ipea_fbcf, valor_ipea_fbcf_cc, date
 )
 
+#IGP-M:
 igpm <- ipeadata(code = "IGP12_IGPMG12") %>% mutate(
   valor_igpm = value,
   data_fmt = format(date, "%m/%Y")
@@ -2700,7 +2763,7 @@ names(inv_dir)[names(inv_dir) == "valor_id.x"] <- "valor_id"
 inv_dir <- inv_dir %>% dplyr::select(data_fmt, valor_ide, valor_idp,
                          valor_id, ide_pib, idp_pib, id_pib, date)
 
-# Investimento em carteira (código 22905)
+# INVESTIMENTO EM CARTEIRA:
 inv_cart <- get_series(
   code = c(valor = 22905)
 )
@@ -2714,7 +2777,32 @@ inv_cart <- inv_cart %>% mutate(
   ) %>% select(data_fmt, valor, date) %>% 
   arrange(desc(date))
 
-# Conta financeira (outros investimentos) (códigos 22969, 22970 e 22971)
+# INVESTIMENTO EM CARTEIRA COMO % DO PIB:
+inv_cart_12m <- get_series(
+  code = c(valor_inv_cart_12m = 22905)
+)
+
+inv_cart_12m <- inv_cart_12m %>% mutate(
+  inv_cart_12m = rollsum(valor_inv_cart_12m, k = 12,  align = "right", na.pad = TRUE)
+)
+
+inv_cart_pib <- left_join(as_tibble(inv_cart_12m), as_tibble(pib_dol)) %>% drop_na() %>% select(
+  date, inv_cart_12m, pib_dol_12m
+) %>% mutate(
+  inv_cart_pib = (inv_cart_12m/pib_dol_12m) * 100
+)
+
+inv_cart_pib <- inv_cart_pib %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    inv_cart_pib = number(inv_cart_pib, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, inv_cart_pib, date)
+
+inv_cart <- left_join(inv_cart, inv_cart_pib) %>%
+  select(data_fmt, valor, inv_cart_pib, date) %>% drop_na()
+
+# CONTA FINANCEIRA (OUTROS INVESTIMENTOS):
 outros_inv_ativos <- get_series(
   code = c(valor_outros_inv_ativos = 22970)
 )
@@ -3011,7 +3099,7 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte:** Códigos 22702 (receita), 22703 (despesa), 22701 (saldo TC) e 4385 (PIB em dólares) no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Códigos 22702 (receita), 22703 (despesa), 22701 (saldo TC) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=500}  {.tabset}
 -----------------------------------------------------------------------
@@ -5714,7 +5802,7 @@ Column {.sidebar} {data-width=200}
 
 <br>
 
-Obs.: Valores negativos indicam entrada líquida de recursos no país.
+Valores negativos indicam entrada líquida de recursos no país.
 
 <br>
 
@@ -5886,7 +5974,11 @@ Column {.sidebar} {data-width=300}
 
 <br>
 
-Obs.: Valores negativos indicam entrada líquida de recursos no país.
+Valores negativos indicam entrada líquida de recursos no país.
+
+<br>
+
+Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
@@ -5895,7 +5987,7 @@ Obs.: Valores negativos indicam entrada líquida de recursos no país.
 Column {data-width=350}  {.tabset}
 -----------------------------------------------------------------------
 
-### CF (investimento em carteira)
+### US$ bilhões
 ```{r}
 plot_ly(
   data = inv_cart, 
@@ -5915,13 +6007,32 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
+### % do PIB
+```{r}
+plot_ly(
+  data = inv_cart, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", inv_cart_pib)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 0.5
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
 Column {data-width=350}  {.tabset}
 -----------------------------------------------------------------------
 
 ### Quadro-síntese
 ```{r}
 reactable(
-  inv_cart[, -3],
+  inv_cart[, -4],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -5929,7 +6040,12 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor = colDef(
-      name = "CF (investimento em carteira)",
+      name = "Saldo investimento em carteira",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    inv_cart_pib = colDef(
+      name = "% do PIB",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -6486,7 +6602,7 @@ Column {.sidebar} {data-width=200}
  	
 O **IC-Br Agropecuária** é um subíndice do IC-Br (série 27574). É uma média mensal ponderada dos preços em reais de boi gordo, algodão, óleo de soja, trigo, açúcar, milho, café, arroz, porco, suco de laranja e cacau. Dez/2005 = 100.
 
-**Fonte:** Códigos 27575 (real) e 29041 (dólar) no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Códigos 27575 (real) e 29041 (dólar) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -6652,7 +6768,7 @@ Column {.sidebar} {data-width=200}
  	
 O **IC-Br Energia** é um subíndice do IC-Br (série 27574). É uma média mensal ponderada dos preços em reais de petróleo Brent, gás natural e carvão. Dez/2005 = 100.
 
-**Fonte:** Códigos 27577 (real) e 29039 (dólar) no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Códigos 27577 (real) e 29039 (dólar) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -6818,7 +6934,7 @@ Column {.sidebar} {data-width=200}
  	
 O **IC-Br Metal** é um subíndice do IC-Br (série 27574). É uma média mensal ponderada dos preços em reais de alumínio, minério de ferro, cobre, estanho, zinco, chumbo, níquel, ouro e prata. Dez/2005 = 100.
 
-**Fonte:** Códigos 27576 (real) e 29040 (dólar) no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Códigos 27576 (real) e 29040 (dólar) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -7725,7 +7841,7 @@ A série trimestral **dívida externa bruta** compreende o total apurado em dete
 
 <br>
 
-**Fonte:** Código 3684 no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Código 3684 do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -7810,7 +7926,7 @@ A série trimestral **dívida externa líquida** refere-se à dívida externa br
 
 <br>
 
-**Fonte:** Código 3685 no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Código 3685 do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -8740,6 +8856,88 @@ reactable(
 ```
 
 # Índice de Preços ao Consumidor - Disponibilidade interna (IPC-DI) {data-navmenu="Inflação"}
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+O **Índice de Preços ao Consumidor - Disponibilidade Interna (IPC-DI)** da FGV é um indicador que mede as variações intertemporais de preços de um conjunto fixo de bens e serviços componentes de despesas habituais de famílias com nível de renda situado entre 1 e 33 salários mínimos mensais. Sua pesquisa de preços se desenvolve diariamente, cobrindo sete das principais capitais do país: São Paulo, Rio de Janeiro, Belo Horizonte, Salvador, Recife, Porto Alegre e Brasília. A coleta de preços é realizada diariamente para alimentar o sistema de apuração de sete versões do IPC: Índice de Preços ao Consumidor Diário (IPC Diário), Índice de Preços ao Consumidor Semanal (IPC-S), Índice de Preços ao Consumidor - 10 (IPC-10), Índice de Preços ao Consumidor do Mercado (IPC-M), Índice de Preços ao Consumidor - Disponibilidade Interna (IPC-DI), Índice de Preços ao Consumidor - 3º idade (IPC-3i) e Índice de Preços ao Consumidor - Classe 1 (IPC-C1). Para efeito de coleta de preços, o IPC-DI mede a evolução de preços no período compreendido entre o primeiro ao último dia do mês de referência.
+
+<br>
+
+**Fonte:** Fundação Getúlio Vargas (FGV) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
+
+Column {data-width=500}  {.tabset}
+-----------------------------------------------------------------------
+
+### Var. mensal (%)
+```{r}
+plot_ly(
+  data = ipc_di, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_ipc_di)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Var. em 12 meses (%)
+```{r}
+plot_ly(
+  data = ipc_di, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", ipc_di_12m)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=300}  {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese (%)
+```{r}
+reactable(
+  ipc_di[, -4],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_ipc_di` = colDef(
+      name = "IPC-DI mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `ipc_di_12m` = colDef(
+      name = "IPC-DI acum. em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # Índice de Preços ao Produtor (IPP) {data-navmenu="Inflação"}
 
@@ -10151,7 +10349,172 @@ reactable(
 
 # Índice de Preços ao Produtor Amplo - Disponibilidade Interna (IPA-DI) {data-navmenu="Inflação"}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+O **Índice de Preços ao Produtor Amplo - Disponibilidade Interna (IPA-DI)** é um indicador de abrangência nacional e está estruturado para medir as variações médias dos preços recebidos pelos produtores domésticos na venda de seus produtos. A sua composição tem por base as pesquisas estruturais relativas aos setores agropecuário e industrial, além das Contas Nacionais, divulgadas pelo IBGE. O IPA é apresentado em duas diferentes estruturas de classificação de seus itens componentes: Origem – Produtos Agropecuários e Industriais e Estágios de Processamento – Bens Finais, Bens Intermediários e Matérias Primas Brutas. Para efeito de coleta de preços, o IPA-DI mede a evolução de preços no período compreendido entre o primeiro ao último dia do mês de referência.
+<br>
+
+**Fonte:** Fundação Getúlio Vargas (FGV) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
+
+Column {data-width=500}  {.tabset}
+-----------------------------------------------------------------------
+
+### Var. mensal (%)
+```{r}
+plot_ly(
+  data = ipa_di, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_ipa_di)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Var. em 12 meses (%)
+```{r}
+plot_ly(
+  data = ipa_di, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", ipa_di_12m)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=300}  {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese (%)
+```{r}
+reactable(
+  ipa_di[, -4],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_ipa_di` = colDef(
+      name = "IPA-DI mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `ipa_di_12m` = colDef(
+      name = "IPA-DI acum. em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # Índice Geral de Preços - Disponibilidade Interna (IGP-DI) {data-navmenu="Inflação"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+O **Índice Geral de Preços - Disponibilidade Interna (IGP-DI)** é um indicador do movimento de preços que cobre todo o processo produtivo, desde preços de matérias-primas agrícolas e industriais, passando pelos preços de produtos intermediários até os de bens e serviços finais. É composto pela média aritmética ponderada do Índice de Preços ao Produtor Amplo (IPA) (60%), do Índice de Preços ao Consumidor (IPC) (30%) e do Índice Nacional de Custo da Construção (INCC) (10%). Para efeito de coleta de preços, o IGP-DI mede a evolução de preços no período compreendido entre o primeiro ao último dia do mês de referência. O conceito de Disponibilidade Interna (DI) refere-se à produção nacional e às importações, excluindo as exportações.
+
+<br>
+
+**Fonte:** Fundação Getúlio Vargas (FGV) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
+
+Column {data-width=500}  {.tabset}
+-----------------------------------------------------------------------
+
+### Var. mensal (%)
+```{r}
+plot_ly(
+  data = igp_di, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_igp_di)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Var. em 12 meses (%)
+```{r}
+plot_ly(
+  data = igp_di, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", igp_di_12m)),
+  type = "scatter",
+  mode = "line"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=300}  {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese (%)
+```{r}
+reactable(
+  igp_di[, -4],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_igp_di` = colDef(
+      name = "IGP-DI mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `igp_di_12m` = colDef(
+      name = "IGP-DI acum. em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # Índice Geral de Preços do Mercado (IGP-M) {data-navmenu="Inflação"}
 
@@ -10211,12 +10574,12 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `valor_igpm` = colDef(
-      name = "IGP-M mensal",
+      name = "IGP-M mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `igpm_12m` = colDef(
-      name = "IGP-M acum. em 12 meses",
+      name = "IGP-M acum. em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -10965,7 +11328,7 @@ O IBC-Br e seus componentes são construídos com base em proxies representativa
 
 <br>
 
-**Fonte:** Códigos 24364 (IBC-Br), 29602 (agropecuária), 29604 (indústria), 29606 (serviços), 29608 (ex-agropecuária) e 29610 (impostos) no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Códigos 24364 (IBC-Br), 29602 (agropecuária), 29604 (indústria), 29606 (serviços), 29608 (ex-agropecuária) e 29610 (impostos) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=850} {.tabset}
 -----------------------------------------------------------------------
@@ -11951,6 +12314,72 @@ reactable(
 
 # Utilização da capacidade instalada (Ind. de transformação) {data-navmenu="Produção"}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+A **utilização da capacidade instalada (UCI)** é compreendida majoritariamente pelas empresas industriais como o percentual de ocupação dos fatores capital e trabalho no mês de realização da pesquisa. O informante deve escolher uma entre as nove faixas apresentadas no questionário: 0% (empresa paralisada); de 0% a 19%; 20% a 39%; 40% a 59%; 60% a 69%; 70% a 79%; 80% a 89%; 90 a 99%; ou 100% (plena capacidade). Para efeito de cálculo da UCI média, a faixa escolhida pela empresa é substituída por um único número, representativo do ponto médio daquela faixa. O conjunto de informantes é composto por grandes, médias e pequenas empresas industriais, representativas do universo empresarial da indústria de transformação.
+
+<br>
+
+**Fonte:** Fundação Getúlio Vargas via código 24352 do [Sistema Gerenciador de Séries Temproais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=24352)
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Gráfico
+```{r}
+plot_ly(
+  data = uci, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_uci)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  uci[, -4],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_uci = colDef(
+      name = "Utilização da capacidade instalada (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (p.p.)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # PIB (ótica da oferta) {data-navmenu="Produção"}
 
 Column {.sidebar} {data-width=80}
@@ -12685,7 +13114,7 @@ O prazo médio de investimento em 2024 foi de 3,19 anos.
 
 <br>
 
-**Fontes:** Código 3546 no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries) e [DataBank (World Bank)](https://databank.worldbank.org/)
+**Fontes:** Código 3546 do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries) e [DataBank (World Bank)](https://databank.worldbank.org/)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -12890,7 +13319,7 @@ As taxas mensais referem-se aos valores de fim de período.
 
 <br>
 
-**Fonte:** Códigos 10813 (compra diária), 1 (venda diária), 3695 (compra mensal) e 3696 (venda mensal) no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Códigos 10813 (compra diária), 1 (venda diária), 3695 (compra mensal) e 3696 (venda mensal) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -13068,7 +13497,7 @@ A série mensal **taxa de câmbio real** reflete a variação da moeda nacional 
 
 <br>
 
-**Fonte:** Códigos 11752 (dólar americano) e 11753 (efetiva) no [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Códigos 11752 (dólar americano) e 11753 (efetiva) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
