@@ -32,11 +32,181 @@ library(rio)
 library(tsibble)
 ```
 
-```{r, cache=TRUE}
+```{r, cache=FALSE}
 # Coleta de dados:
 
 # API key FRED
 fredr_set_key("0087fc9b146c214d78104e3737039ea4")
+
+# PESQUISA MENSAL DE SERVIÇOS (PMS) - ÍNDICE NOMINAL DE SERVIÇOS:
+pms_rec <- sidrar::get_sidra(
+  api = "/t/8163/n1/all/v/11623,11624,11625/p/all/c11046/56725/c1274/all/d/v11623%201,v11624%201,v11625%201"
+)
+
+pms_rec <- pms_rec %>% mutate(
+  date = lubridate::ym(`Mês (Código)`),
+  variavel = Variável,
+  valor = Valor,
+  segmentos = `Segmentos de serviços`,
+  .keep = "none"
+)
+
+pms_seg_mg_rec <- pms_rec %>% dplyr::filter(variavel == "PMS - Variação mês/mês imediatamente anterior, com ajuste sazonal (M/M-1)") %>% pivot_wider(names_from = segmentos, values_from = valor) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Total` = number(`Total`, big.mark = ".", decimal.mark = ","),
+  `1. Alojamento` = number(`1. Alojamento`, big.mark = ".", decimal.mark = ","),
+  `2. Alimentação` = number(`2. Alimentação`, big.mark = ".", decimal.mark = ","),
+  `3. Outros serviços prestados às famílias` = number(`3. Outros serviços prestados às famílias`, big.mark = ".", decimal.mark = ","),
+  `4. Telecomunicações` = number(`4. Telecomunicações`, big.mark = ".", decimal.mark = ","),
+  `5. Serviços de Tecnologia da Informação` = number(`5. Serviços de Tecnologia da Informação`, big.mark = ".", decimal.mark = ","),
+  `6. Serviços audiovisuais, de edição e agências de notícias` = number(`6. Serviços audiovisuais, de edição e agências de notícias`, big.mark = ".", decimal.mark = ","),
+  `7. Serviços técnico-profissionais` = number(`7. Serviços técnico-profissionais`, big.mark = ".", decimal.mark = ","),
+  `8. Aluguéis não imobiliários` = number(`8. Aluguéis não imobiliários`, big.mark = ".", decimal.mark = ","),
+  `9. Serviços de apoio às atividades empresariais` = number(`9. Serviços de apoio às atividades empresariais`, big.mark = ".", decimal.mark = ","),
+  `10. Transporte rodoviário de cargas` = number(`10. Transporte rodoviário de cargas`, big.mark = ".", decimal.mark = ","),
+  `11. Transporte rodoviário de passageiros` = number(`11. Transporte rodoviário de passageiros`, big.mark = ".", decimal.mark = ","),
+  `12. Outros segmentos do transporte terrestre` = number(`12. Outros segmentos do transporte terrestre`, big.mark = ".", decimal.mark = ","),
+  `13. Transporte aquaviário` = number(`13. Transporte aquaviário`, big.mark = ".", decimal.mark = ","),
+  `14. Transporte aéreo` = number(`14. Transporte aéreo`, big.mark = ".", decimal.mark = ","),
+  `15. Armazenagem, serviços auxiliares aos transportes e correio` = number(`15. Armazenagem, serviços auxiliares aos transportes e correio`, big.mark = ".", decimal.mark = ","),
+  `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação` = number(`16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação`, big.mark = ".", decimal.mark = ","),
+  `17. Atividades auxiliares dos serviços financeiros` = number(`17. Atividades auxiliares dos serviços financeiros`, big.mark = ".", decimal.mark = ","),
+  `18. Atividades imobiliárias` = number(`18. Atividades imobiliárias`, big.mark = ".", decimal.mark = ","),
+  `19. Outros serviços não especificados anteriormente` = number(`19. Outros serviços não especificados anteriormente`, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, `Total`, `1. Alojamento`, `2. Alimentação`, `3. Outros serviços prestados às famílias`, `4. Telecomunicações`, `5. Serviços de Tecnologia da Informação`, `6. Serviços audiovisuais, de edição e agências de notícias`, `7. Serviços técnico-profissionais`, `8. Aluguéis não imobiliários`, `9. Serviços de apoio às atividades empresariais`, `10. Transporte rodoviário de cargas`, `11. Transporte rodoviário de passageiros`, `12. Outros segmentos do transporte terrestre`, `13. Transporte aquaviário`, `14. Transporte aéreo`, `15. Armazenagem, serviços auxiliares aos transportes e correio`, `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação`, `17. Atividades auxiliares dos serviços financeiros`, `18. Atividades imobiliárias`, `19. Outros serviços não especificados anteriormente`, date) %>% arrange(desc(date))
+
+pms_seg_acum_ano_rec <- pms_rec %>% dplyr::filter(variavel == "PMS - Variação acumulada no ano (em relação ao mesmo período do ano anterior)") %>% pivot_wider(names_from = segmentos, values_from = valor) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Total` = number(`Total`, big.mark = ".", decimal.mark = ","),
+  `1. Alojamento` = number(`1. Alojamento`, big.mark = ".", decimal.mark = ","),
+  `2. Alimentação` = number(`2. Alimentação`, big.mark = ".", decimal.mark = ","),
+  `3. Outros serviços prestados às famílias` = number(`3. Outros serviços prestados às famílias`, big.mark = ".", decimal.mark = ","),
+  `4. Telecomunicações` = number(`4. Telecomunicações`, big.mark = ".", decimal.mark = ","),
+  `5. Serviços de Tecnologia da Informação` = number(`5. Serviços de Tecnologia da Informação`, big.mark = ".", decimal.mark = ","),
+  `6. Serviços audiovisuais, de edição e agências de notícias` = number(`6. Serviços audiovisuais, de edição e agências de notícias`, big.mark = ".", decimal.mark = ","),
+  `7. Serviços técnico-profissionais` = number(`7. Serviços técnico-profissionais`, big.mark = ".", decimal.mark = ","),
+  `8. Aluguéis não imobiliários` = number(`8. Aluguéis não imobiliários`, big.mark = ".", decimal.mark = ","),
+  `9. Serviços de apoio às atividades empresariais` = number(`9. Serviços de apoio às atividades empresariais`, big.mark = ".", decimal.mark = ","),
+  `10. Transporte rodoviário de cargas` = number(`10. Transporte rodoviário de cargas`, big.mark = ".", decimal.mark = ","),
+  `11. Transporte rodoviário de passageiros` = number(`11. Transporte rodoviário de passageiros`, big.mark = ".", decimal.mark = ","),
+  `12. Outros segmentos do transporte terrestre` = number(`12. Outros segmentos do transporte terrestre`, big.mark = ".", decimal.mark = ","),
+  `13. Transporte aquaviário` = number(`13. Transporte aquaviário`, big.mark = ".", decimal.mark = ","),
+  `14. Transporte aéreo` = number(`14. Transporte aéreo`, big.mark = ".", decimal.mark = ","),
+  `15. Armazenagem, serviços auxiliares aos transportes e correio` = number(`15. Armazenagem, serviços auxiliares aos transportes e correio`, big.mark = ".", decimal.mark = ","),
+  `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação` = number(`16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação`, big.mark = ".", decimal.mark = ","),
+  `17. Atividades auxiliares dos serviços financeiros` = number(`17. Atividades auxiliares dos serviços financeiros`, big.mark = ".", decimal.mark = ","),
+  `18. Atividades imobiliárias` = number(`18. Atividades imobiliárias`, big.mark = ".", decimal.mark = ","),
+  `19. Outros serviços não especificados anteriormente` = number(`19. Outros serviços não especificados anteriormente`, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, `Total`, `1. Alojamento`, `2. Alimentação`, `3. Outros serviços prestados às famílias`, `4. Telecomunicações`, `5. Serviços de Tecnologia da Informação`, `6. Serviços audiovisuais, de edição e agências de notícias`, `7. Serviços técnico-profissionais`, `8. Aluguéis não imobiliários`, `9. Serviços de apoio às atividades empresariais`, `10. Transporte rodoviário de cargas`, `11. Transporte rodoviário de passageiros`, `12. Outros segmentos do transporte terrestre`, `13. Transporte aquaviário`, `14. Transporte aéreo`, `15. Armazenagem, serviços auxiliares aos transportes e correio`, `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação`, `17. Atividades auxiliares dos serviços financeiros`, `18. Atividades imobiliárias`, `19. Outros serviços não especificados anteriormente`, date) %>% arrange(desc(date))
+
+pms_seg_12m_rec <- pms_rec %>% dplyr::filter(variavel == "PMS - Variação mês/mesmo mês do ano anterior (M/M-12)") %>% pivot_wider(names_from = segmentos, values_from = valor) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Total` = number(`Total`, big.mark = ".", decimal.mark = ","),
+  `1. Alojamento` = number(`1. Alojamento`, big.mark = ".", decimal.mark = ","),
+  `2. Alimentação` = number(`2. Alimentação`, big.mark = ".", decimal.mark = ","),
+  `3. Outros serviços prestados às famílias` = number(`3. Outros serviços prestados às famílias`, big.mark = ".", decimal.mark = ","),
+  `4. Telecomunicações` = number(`4. Telecomunicações`, big.mark = ".", decimal.mark = ","),
+  `5. Serviços de Tecnologia da Informação` = number(`5. Serviços de Tecnologia da Informação`, big.mark = ".", decimal.mark = ","),
+  `6. Serviços audiovisuais, de edição e agências de notícias` = number(`6. Serviços audiovisuais, de edição e agências de notícias`, big.mark = ".", decimal.mark = ","),
+  `7. Serviços técnico-profissionais` = number(`7. Serviços técnico-profissionais`, big.mark = ".", decimal.mark = ","),
+  `8. Aluguéis não imobiliários` = number(`8. Aluguéis não imobiliários`, big.mark = ".", decimal.mark = ","),
+  `9. Serviços de apoio às atividades empresariais` = number(`9. Serviços de apoio às atividades empresariais`, big.mark = ".", decimal.mark = ","),
+  `10. Transporte rodoviário de cargas` = number(`10. Transporte rodoviário de cargas`, big.mark = ".", decimal.mark = ","),
+  `11. Transporte rodoviário de passageiros` = number(`11. Transporte rodoviário de passageiros`, big.mark = ".", decimal.mark = ","),
+  `12. Outros segmentos do transporte terrestre` = number(`12. Outros segmentos do transporte terrestre`, big.mark = ".", decimal.mark = ","),
+  `13. Transporte aquaviário` = number(`13. Transporte aquaviário`, big.mark = ".", decimal.mark = ","),
+  `14. Transporte aéreo` = number(`14. Transporte aéreo`, big.mark = ".", decimal.mark = ","),
+  `15. Armazenagem, serviços auxiliares aos transportes e correio` = number(`15. Armazenagem, serviços auxiliares aos transportes e correio`, big.mark = ".", decimal.mark = ","),
+  `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação` = number(`16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação`, big.mark = ".", decimal.mark = ","),
+  `17. Atividades auxiliares dos serviços financeiros` = number(`17. Atividades auxiliares dos serviços financeiros`, big.mark = ".", decimal.mark = ","),
+  `18. Atividades imobiliárias` = number(`18. Atividades imobiliárias`, big.mark = ".", decimal.mark = ","),
+  `19. Outros serviços não especificados anteriormente` = number(`19. Outros serviços não especificados anteriormente`, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, `Total`, `1. Alojamento`, `2. Alimentação`, `3. Outros serviços prestados às famílias`, `4. Telecomunicações`, `5. Serviços de Tecnologia da Informação`, `6. Serviços audiovisuais, de edição e agências de notícias`, `7. Serviços técnico-profissionais`, `8. Aluguéis não imobiliários`, `9. Serviços de apoio às atividades empresariais`, `10. Transporte rodoviário de cargas`, `11. Transporte rodoviário de passageiros`, `12. Outros segmentos do transporte terrestre`, `13. Transporte aquaviário`, `14. Transporte aéreo`, `15. Armazenagem, serviços auxiliares aos transportes e correio`, `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação`, `17. Atividades auxiliares dos serviços financeiros`, `18. Atividades imobiliárias`, `19. Outros serviços não especificados anteriormente`, date) %>% arrange(desc(date))
+
+# PESQUISA MENSAL DE SERVIÇOS (PMS) - ÍNDICE DE VOLUME DE SERVIÇOS:
+pms_vol <- sidrar::get_sidra(
+  api = "/t/8163/n1/all/v/11623,11624,11625/p/all/c11046/56726/c1274/all/d/v11623%201,v11624%201,v11625%201"
+)
+
+pms_vol <- pms_vol %>% mutate(
+  date = lubridate::ym(`Mês (Código)`),
+  variavel = Variável,
+  valor = Valor,
+  segmentos = `Segmentos de serviços`,
+  .keep = "none"
+)
+
+pms_seg_mg_vol <- pms_vol %>% dplyr::filter(variavel == "PMS - Variação mês/mês imediatamente anterior, com ajuste sazonal (M/M-1)") %>% pivot_wider(names_from = segmentos, values_from = valor) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Total` = number(`Total`, big.mark = ".", decimal.mark = ","),
+  `1. Alojamento` = number(`1. Alojamento`, big.mark = ".", decimal.mark = ","),
+  `2. Alimentação` = number(`2. Alimentação`, big.mark = ".", decimal.mark = ","),
+  `3. Outros serviços prestados às famílias` = number(`3. Outros serviços prestados às famílias`, big.mark = ".", decimal.mark = ","),
+  `4. Telecomunicações` = number(`4. Telecomunicações`, big.mark = ".", decimal.mark = ","),
+  `5. Serviços de Tecnologia da Informação` = number(`5. Serviços de Tecnologia da Informação`, big.mark = ".", decimal.mark = ","),
+  `6. Serviços audiovisuais, de edição e agências de notícias` = number(`6. Serviços audiovisuais, de edição e agências de notícias`, big.mark = ".", decimal.mark = ","),
+  `7. Serviços técnico-profissionais` = number(`7. Serviços técnico-profissionais`, big.mark = ".", decimal.mark = ","),
+  `8. Aluguéis não imobiliários` = number(`8. Aluguéis não imobiliários`, big.mark = ".", decimal.mark = ","),
+  `9. Serviços de apoio às atividades empresariais` = number(`9. Serviços de apoio às atividades empresariais`, big.mark = ".", decimal.mark = ","),
+  `10. Transporte rodoviário de cargas` = number(`10. Transporte rodoviário de cargas`, big.mark = ".", decimal.mark = ","),
+  `11. Transporte rodoviário de passageiros` = number(`11. Transporte rodoviário de passageiros`, big.mark = ".", decimal.mark = ","),
+  `12. Outros segmentos do transporte terrestre` = number(`12. Outros segmentos do transporte terrestre`, big.mark = ".", decimal.mark = ","),
+  `13. Transporte aquaviário` = number(`13. Transporte aquaviário`, big.mark = ".", decimal.mark = ","),
+  `14. Transporte aéreo` = number(`14. Transporte aéreo`, big.mark = ".", decimal.mark = ","),
+  `15. Armazenagem, serviços auxiliares aos transportes e correio` = number(`15. Armazenagem, serviços auxiliares aos transportes e correio`, big.mark = ".", decimal.mark = ","),
+  `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação` = number(`16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação`, big.mark = ".", decimal.mark = ","),
+  `17. Atividades auxiliares dos serviços financeiros` = number(`17. Atividades auxiliares dos serviços financeiros`, big.mark = ".", decimal.mark = ","),
+  `18. Atividades imobiliárias` = number(`18. Atividades imobiliárias`, big.mark = ".", decimal.mark = ","),
+  `19. Outros serviços não especificados anteriormente` = number(`19. Outros serviços não especificados anteriormente`, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, `Total`, `1. Alojamento`, `2. Alimentação`, `3. Outros serviços prestados às famílias`, `4. Telecomunicações`, `5. Serviços de Tecnologia da Informação`, `6. Serviços audiovisuais, de edição e agências de notícias`, `7. Serviços técnico-profissionais`, `8. Aluguéis não imobiliários`, `9. Serviços de apoio às atividades empresariais`, `10. Transporte rodoviário de cargas`, `11. Transporte rodoviário de passageiros`, `12. Outros segmentos do transporte terrestre`, `13. Transporte aquaviário`, `14. Transporte aéreo`, `15. Armazenagem, serviços auxiliares aos transportes e correio`, `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação`, `17. Atividades auxiliares dos serviços financeiros`, `18. Atividades imobiliárias`, `19. Outros serviços não especificados anteriormente`, date) %>% arrange(desc(date))
+
+pms_seg_acum_ano_vol <- pms_vol %>% dplyr::filter(variavel == "PMS - Variação acumulada no ano (em relação ao mesmo período do ano anterior)") %>% pivot_wider(names_from = segmentos, values_from = valor) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Total` = number(`Total`, big.mark = ".", decimal.mark = ","),
+  `1. Alojamento` = number(`1. Alojamento`, big.mark = ".", decimal.mark = ","),
+  `2. Alimentação` = number(`2. Alimentação`, big.mark = ".", decimal.mark = ","),
+  `3. Outros serviços prestados às famílias` = number(`3. Outros serviços prestados às famílias`, big.mark = ".", decimal.mark = ","),
+  `4. Telecomunicações` = number(`4. Telecomunicações`, big.mark = ".", decimal.mark = ","),
+  `5. Serviços de Tecnologia da Informação` = number(`5. Serviços de Tecnologia da Informação`, big.mark = ".", decimal.mark = ","),
+  `6. Serviços audiovisuais, de edição e agências de notícias` = number(`6. Serviços audiovisuais, de edição e agências de notícias`, big.mark = ".", decimal.mark = ","),
+  `7. Serviços técnico-profissionais` = number(`7. Serviços técnico-profissionais`, big.mark = ".", decimal.mark = ","),
+  `8. Aluguéis não imobiliários` = number(`8. Aluguéis não imobiliários`, big.mark = ".", decimal.mark = ","),
+  `9. Serviços de apoio às atividades empresariais` = number(`9. Serviços de apoio às atividades empresariais`, big.mark = ".", decimal.mark = ","),
+  `10. Transporte rodoviário de cargas` = number(`10. Transporte rodoviário de cargas`, big.mark = ".", decimal.mark = ","),
+  `11. Transporte rodoviário de passageiros` = number(`11. Transporte rodoviário de passageiros`, big.mark = ".", decimal.mark = ","),
+  `12. Outros segmentos do transporte terrestre` = number(`12. Outros segmentos do transporte terrestre`, big.mark = ".", decimal.mark = ","),
+  `13. Transporte aquaviário` = number(`13. Transporte aquaviário`, big.mark = ".", decimal.mark = ","),
+  `14. Transporte aéreo` = number(`14. Transporte aéreo`, big.mark = ".", decimal.mark = ","),
+  `15. Armazenagem, serviços auxiliares aos transportes e correio` = number(`15. Armazenagem, serviços auxiliares aos transportes e correio`, big.mark = ".", decimal.mark = ","),
+  `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação` = number(`16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação`, big.mark = ".", decimal.mark = ","),
+  `17. Atividades auxiliares dos serviços financeiros` = number(`17. Atividades auxiliares dos serviços financeiros`, big.mark = ".", decimal.mark = ","),
+  `18. Atividades imobiliárias` = number(`18. Atividades imobiliárias`, big.mark = ".", decimal.mark = ","),
+  `19. Outros serviços não especificados anteriormente` = number(`19. Outros serviços não especificados anteriormente`, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, `Total`, `1. Alojamento`, `2. Alimentação`, `3. Outros serviços prestados às famílias`, `4. Telecomunicações`, `5. Serviços de Tecnologia da Informação`, `6. Serviços audiovisuais, de edição e agências de notícias`, `7. Serviços técnico-profissionais`, `8. Aluguéis não imobiliários`, `9. Serviços de apoio às atividades empresariais`, `10. Transporte rodoviário de cargas`, `11. Transporte rodoviário de passageiros`, `12. Outros segmentos do transporte terrestre`, `13. Transporte aquaviário`, `14. Transporte aéreo`, `15. Armazenagem, serviços auxiliares aos transportes e correio`, `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação`, `17. Atividades auxiliares dos serviços financeiros`, `18. Atividades imobiliárias`, `19. Outros serviços não especificados anteriormente`, date) %>% arrange(desc(date))
+
+pms_seg_12m_vol <- pms_vol %>% dplyr::filter(variavel == "PMS - Variação mês/mesmo mês do ano anterior (M/M-12)") %>% pivot_wider(names_from = segmentos, values_from = valor) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Total` = number(`Total`, big.mark = ".", decimal.mark = ","),
+  `1. Alojamento` = number(`1. Alojamento`, big.mark = ".", decimal.mark = ","),
+  `2. Alimentação` = number(`2. Alimentação`, big.mark = ".", decimal.mark = ","),
+  `3. Outros serviços prestados às famílias` = number(`3. Outros serviços prestados às famílias`, big.mark = ".", decimal.mark = ","),
+  `4. Telecomunicações` = number(`4. Telecomunicações`, big.mark = ".", decimal.mark = ","),
+  `5. Serviços de Tecnologia da Informação` = number(`5. Serviços de Tecnologia da Informação`, big.mark = ".", decimal.mark = ","),
+  `6. Serviços audiovisuais, de edição e agências de notícias` = number(`6. Serviços audiovisuais, de edição e agências de notícias`, big.mark = ".", decimal.mark = ","),
+  `7. Serviços técnico-profissionais` = number(`7. Serviços técnico-profissionais`, big.mark = ".", decimal.mark = ","),
+  `8. Aluguéis não imobiliários` = number(`8. Aluguéis não imobiliários`, big.mark = ".", decimal.mark = ","),
+  `9. Serviços de apoio às atividades empresariais` = number(`9. Serviços de apoio às atividades empresariais`, big.mark = ".", decimal.mark = ","),
+  `10. Transporte rodoviário de cargas` = number(`10. Transporte rodoviário de cargas`, big.mark = ".", decimal.mark = ","),
+  `11. Transporte rodoviário de passageiros` = number(`11. Transporte rodoviário de passageiros`, big.mark = ".", decimal.mark = ","),
+  `12. Outros segmentos do transporte terrestre` = number(`12. Outros segmentos do transporte terrestre`, big.mark = ".", decimal.mark = ","),
+  `13. Transporte aquaviário` = number(`13. Transporte aquaviário`, big.mark = ".", decimal.mark = ","),
+  `14. Transporte aéreo` = number(`14. Transporte aéreo`, big.mark = ".", decimal.mark = ","),
+  `15. Armazenagem, serviços auxiliares aos transportes e correio` = number(`15. Armazenagem, serviços auxiliares aos transportes e correio`, big.mark = ".", decimal.mark = ","),
+  `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação` = number(`16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação`, big.mark = ".", decimal.mark = ","),
+  `17. Atividades auxiliares dos serviços financeiros` = number(`17. Atividades auxiliares dos serviços financeiros`, big.mark = ".", decimal.mark = ","),
+  `18. Atividades imobiliárias` = number(`18. Atividades imobiliárias`, big.mark = ".", decimal.mark = ","),
+  `19. Outros serviços não especificados anteriormente` = number(`19. Outros serviços não especificados anteriormente`, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, `Total`, `1. Alojamento`, `2. Alimentação`, `3. Outros serviços prestados às famílias`, `4. Telecomunicações`, `5. Serviços de Tecnologia da Informação`, `6. Serviços audiovisuais, de edição e agências de notícias`, `7. Serviços técnico-profissionais`, `8. Aluguéis não imobiliários`, `9. Serviços de apoio às atividades empresariais`, `10. Transporte rodoviário de cargas`, `11. Transporte rodoviário de passageiros`, `12. Outros segmentos do transporte terrestre`, `13. Transporte aquaviário`, `14. Transporte aéreo`, `15. Armazenagem, serviços auxiliares aos transportes e correio`, `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação`, `17. Atividades auxiliares dos serviços financeiros`, `18. Atividades imobiliárias`, `19. Outros serviços não especificados anteriormente`, date) %>% arrange(desc(date))
 
 # UTILIZAÇÃO DA CAPACIDADE INSTALADA (INDÚSTRIA DE TRANSFORMAÇÃO):
 uci <- get_series(
@@ -12309,6 +12479,905 @@ reactable(
 
 
 # Pesquisa Mensal de Serviços (PMS) {data-navmenu="Produção"}
+
+Column {.sidebar} {data-width=100}
+-----------------------------------------------------------------------
+A **Pesquisa Mensal de Serviços (PMS)** produz indicadores que permitem acompanhar o comportamento conjuntural do setor de serviços no Brasil, investigando a receita bruta de serviços nas empresas formalmente constituídas, com 20 ou mais pessoas ocupadas, que desempenham como principal atividade um serviço não financeiro, excluídas as áreas de saúde e educação.
+
+<br>
+
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/servicos/9229-pesquisa-mensal-de-servicos.html?=&t=o-que-e)
+
+Column {data-width=900} {.tabset}
+-----------------------------------------------------------------------
+
+### Receita nominal de serviços (Gráfico) (Tx. M/M-1) (%)
+```{r}
+plot_ly(
+  data = pms_seg_mg_rec, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Total`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Receita nominal de serviços (Atividades - Tx. M/M-1) (%)
+```{r}
+reactable(
+  pms_seg_mg_rec[, -22],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Total` = colDef(
+      name = "Total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1. Alojamento` = colDef(
+      name = "Alojamento",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2. Alimentação` = colDef(
+      name = "Alimentação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3. Outros serviços prestados às famílias` = colDef(
+      name = "Outros serv. prestados às famílias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4. Telecomunicações` = colDef(
+      name = "Telecomunicações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5. Serviços de Tecnologia da Informação` = colDef(
+      name = "Serv. de Tecnologia da Informação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6. Serviços audiovisuais, de edição e agências de notícias` = colDef(
+      name = "Serv. audiovisuais, de edição e agências de notícias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7. Serviços técnico-profissionais` = colDef(
+      name = "Serv. técnico-profissionais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8. Aluguéis não imobiliários` = colDef(
+      name = "Aluguéis não imob.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9. Serviços de apoio às atividades empresariais` = colDef(
+      name = "Serv. de apoio às ativ. empresariais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `10. Transporte rodoviário de cargas` = colDef(
+      name = "Transp. rodoviário de cargas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `11. Transporte rodoviário de passageiros` = colDef(
+      name = "Transp. rodoviário de passageiros",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `12. Outros segmentos do transporte terrestre` = colDef(
+      name = "Outros segmentos do transp. terrestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `13. Transporte aquaviário` = colDef(
+      name = "Transp. aquaviário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `14. Transporte aéreo` = colDef(
+      name = "Transp. aéreo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `15. Armazenagem, serviços auxiliares aos transportes e correio` = colDef(
+      name = "Armazenagem, serv. auxiliares aos transp. e correio",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação` = colDef(
+      name = "Esgoto, gestão de resíduos, recuperação de materiais e descontaminação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `17. Atividades auxiliares dos serviços financeiros` = colDef(
+      name = "Ativ. auxiliares dos serv. financeiros",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `18. Atividades imobiliárias` = colDef(
+      name = "Ativ. imob.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `19. Outros serviços não especificados anteriormente` = colDef(
+      name = "Outros serv. não especificados anteriormente",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Receita nominal de serviços (Gráfico) (Tx. acum. no ano) (%)
+```{r}
+plot_ly(
+  data = pms_seg_acum_ano_rec, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Total`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 3
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Receita nominal de serviços (Atividades - Tx. acum. no ano) (%)
+```{r}
+reactable(
+  pms_seg_acum_ano_rec[, -22],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Total` = colDef(
+      name = "Total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1. Alojamento` = colDef(
+      name = "Alojamento",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2. Alimentação` = colDef(
+      name = "Alimentação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3. Outros serviços prestados às famílias` = colDef(
+      name = "Outros serv. prestados às famílias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4. Telecomunicações` = colDef(
+      name = "Telecomunicações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5. Serviços de Tecnologia da Informação` = colDef(
+      name = "Serv. de Tecnologia da Informação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6. Serviços audiovisuais, de edição e agências de notícias` = colDef(
+      name = "Serv. audiovisuais, de edição e agências de notícias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7. Serviços técnico-profissionais` = colDef(
+      name = "Serv. técnico-profissionais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8. Aluguéis não imobiliários` = colDef(
+      name = "Aluguéis não imob.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9. Serviços de apoio às atividades empresariais` = colDef(
+      name = "Serv. de apoio às ativ. empresariais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `10. Transporte rodoviário de cargas` = colDef(
+      name = "Transp. rodoviário de cargas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `11. Transporte rodoviário de passageiros` = colDef(
+      name = "Transp. rodoviário de passageiros",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `12. Outros segmentos do transporte terrestre` = colDef(
+      name = "Outros segmentos do transp. terrestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `13. Transporte aquaviário` = colDef(
+      name = "Transp. aquaviário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `14. Transporte aéreo` = colDef(
+      name = "Transp. aéreo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `15. Armazenagem, serviços auxiliares aos transportes e correio` = colDef(
+      name = "Armazenagem, serv. auxiliares aos transp. e correio",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação` = colDef(
+      name = "Esgoto, gestão de resíduos, recuperação de materiais e descontaminação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `17. Atividades auxiliares dos serviços financeiros` = colDef(
+      name = "Ativ. auxiliares dos serv. financeiros",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `18. Atividades imobiliárias` = colDef(
+      name = "Ativ. imob.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `19. Outros serviços não especificados anteriormente` = colDef(
+      name = "Outros serv. não especificados anteriormente",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Receita nominal de serviços (Gráfico) (Tx. M/M-12) (%)
+```{r}
+plot_ly(
+  data = pms_seg_12m_rec, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Total`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 3
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Receita nominal de serviços (Atividades - Tx. M/M-12) (%)
+```{r}
+reactable(
+  pms_seg_12m_rec[, -22],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Total` = colDef(
+      name = "Total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1. Alojamento` = colDef(
+      name = "Alojamento",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2. Alimentação` = colDef(
+      name = "Alimentação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3. Outros serviços prestados às famílias` = colDef(
+      name = "Outros serv. prestados às famílias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4. Telecomunicações` = colDef(
+      name = "Telecomunicações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5. Serviços de Tecnologia da Informação` = colDef(
+      name = "Serv. de Tecnologia da Informação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6. Serviços audiovisuais, de edição e agências de notícias` = colDef(
+      name = "Serv. audiovisuais, de edição e agências de notícias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7. Serviços técnico-profissionais` = colDef(
+      name = "Serv. técnico-profissionais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8. Aluguéis não imobiliários` = colDef(
+      name = "Aluguéis não imob.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9. Serviços de apoio às atividades empresariais` = colDef(
+      name = "Serv. de apoio às ativ. empresariais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `10. Transporte rodoviário de cargas` = colDef(
+      name = "Transp. rodoviário de cargas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `11. Transporte rodoviário de passageiros` = colDef(
+      name = "Transp. rodoviário de passageiros",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `12. Outros segmentos do transporte terrestre` = colDef(
+      name = "Outros segmentos do transp. terrestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `13. Transporte aquaviário` = colDef(
+      name = "Transp. aquaviário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `14. Transporte aéreo` = colDef(
+      name = "Transp. aéreo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `15. Armazenagem, serviços auxiliares aos transportes e correio` = colDef(
+      name = "Armazenagem, serv. auxiliares aos transp. e correio",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação` = colDef(
+      name = "Esgoto, gestão de resíduos, recuperação de materiais e descontaminação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `17. Atividades auxiliares dos serviços financeiros` = colDef(
+      name = "Ativ. auxiliares dos serv. financeiros",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `18. Atividades imobiliárias` = colDef(
+      name = "Ativ. imob.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `19. Outros serviços não especificados anteriormente` = colDef(
+      name = "Outros serv. não especificados anteriormente",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Volume de serviços (Gráfico)  (Tx. M/M-1) (%)
+```{r}
+plot_ly(
+  data = pms_seg_mg_vol, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Total`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Volume de serviços (Atividades - Tx. M/M-1) (%)
+```{r}
+reactable(
+  pms_seg_mg_vol[, -22],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Total` = colDef(
+      name = "Total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1. Alojamento` = colDef(
+      name = "Alojamento",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2. Alimentação` = colDef(
+      name = "Alimentação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3. Outros serviços prestados às famílias` = colDef(
+      name = "Outros serv. prestados às famílias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4. Telecomunicações` = colDef(
+      name = "Telecomunicações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5. Serviços de Tecnologia da Informação` = colDef(
+      name = "Serv. de Tecnologia da Informação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6. Serviços audiovisuais, de edição e agências de notícias` = colDef(
+      name = "Serv. audiovisuais, de edição e agências de notícias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7. Serviços técnico-profissionais` = colDef(
+      name = "Serv. técnico-profissionais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8. Aluguéis não imobiliários` = colDef(
+      name = "Aluguéis não imob.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9. Serviços de apoio às atividades empresariais` = colDef(
+      name = "Serv. de apoio às ativ. empresariais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `10. Transporte rodoviário de cargas` = colDef(
+      name = "Transp. rodoviário de cargas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `11. Transporte rodoviário de passageiros` = colDef(
+      name = "Transp. rodoviário de passageiros",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `12. Outros segmentos do transporte terrestre` = colDef(
+      name = "Outros segmentos do transp. terrestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `13. Transporte aquaviário` = colDef(
+      name = "Transp. aquaviário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `14. Transporte aéreo` = colDef(
+      name = "Transp. aéreo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `15. Armazenagem, serviços auxiliares aos transportes e correio` = colDef(
+      name = "Armazenagem, serv. auxiliares aos transp. e correio",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação` = colDef(
+      name = "Esgoto, gestão de resíduos, recuperação de materiais e descontaminação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `17. Atividades auxiliares dos serviços financeiros` = colDef(
+      name = "Ativ. auxiliares dos serv. financeiros",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `18. Atividades imobiliárias` = colDef(
+      name = "Ativ. imob.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `19. Outros serviços não especificados anteriormente` = colDef(
+      name = "Outros serv. não especificados anteriormente",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Volume de serviços (Gráfico)  (Tx. acum. no ano) (%)
+```{r}
+plot_ly(
+  data = pms_seg_acum_ano_vol, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Total`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 2
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Volume de serviços (Atividades - Tx. acum. no ano) (%)
+```{r}
+reactable(
+  pms_seg_acum_ano_vol[, -22],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Total` = colDef(
+      name = "Total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1. Alojamento` = colDef(
+      name = "Alojamento",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2. Alimentação` = colDef(
+      name = "Alimentação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3. Outros serviços prestados às famílias` = colDef(
+      name = "Outros serv. prestados às famílias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4. Telecomunicações` = colDef(
+      name = "Telecomunicações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5. Serviços de Tecnologia da Informação` = colDef(
+      name = "Serv. de Tecnologia da Informação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6. Serviços audiovisuais, de edição e agências de notícias` = colDef(
+      name = "Serv. audiovisuais, de edição e agências de notícias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7. Serviços técnico-profissionais` = colDef(
+      name = "Serv. técnico-profissionais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8. Aluguéis não imobiliários` = colDef(
+      name = "Aluguéis não imob.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9. Serviços de apoio às atividades empresariais` = colDef(
+      name = "Serv. de apoio às ativ. empresariais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `10. Transporte rodoviário de cargas` = colDef(
+      name = "Transp. rodoviário de cargas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `11. Transporte rodoviário de passageiros` = colDef(
+      name = "Transp. rodoviário de passageiros",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `12. Outros segmentos do transporte terrestre` = colDef(
+      name = "Outros segmentos do transp. terrestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `13. Transporte aquaviário` = colDef(
+      name = "Transp. aquaviário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `14. Transporte aéreo` = colDef(
+      name = "Transp. aéreo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `15. Armazenagem, serviços auxiliares aos transportes e correio` = colDef(
+      name = "Armazenagem, serv. auxiliares aos transp. e correio",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação` = colDef(
+      name = "Esgoto, gestão de resíduos, recuperação de materiais e descontaminação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `17. Atividades auxiliares dos serviços financeiros` = colDef(
+      name = "Ativ. auxiliares dos serv. financeiros",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `18. Atividades imobiliárias` = colDef(
+      name = "Ativ. imob.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `19. Outros serviços não especificados anteriormente` = colDef(
+      name = "Outros serv. não especificados anteriormente",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Volume de serviços (Gráfico)  (Tx. M/M-12) (%)
+```{r}
+plot_ly(
+  data = pms_seg_12m_vol, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Total`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 2
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Volume de serviços (Atividades - Tx. M/M-12) (%)
+```{r}
+reactable(
+  pms_seg_12m_vol[, -22],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Total` = colDef(
+      name = "Total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1. Alojamento` = colDef(
+      name = "Alojamento",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2. Alimentação` = colDef(
+      name = "Alimentação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3. Outros serviços prestados às famílias` = colDef(
+      name = "Outros serv. prestados às famílias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4. Telecomunicações` = colDef(
+      name = "Telecomunicações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5. Serviços de Tecnologia da Informação` = colDef(
+      name = "Serv. de Tecnologia da Informação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6. Serviços audiovisuais, de edição e agências de notícias` = colDef(
+      name = "Serv. audiovisuais, de edição e agências de notícias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7. Serviços técnico-profissionais` = colDef(
+      name = "Serv. técnico-profissionais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8. Aluguéis não imobiliários` = colDef(
+      name = "Aluguéis não imob.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9. Serviços de apoio às atividades empresariais` = colDef(
+      name = "Serv. de apoio às ativ. empresariais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `10. Transporte rodoviário de cargas` = colDef(
+      name = "Transp. rodoviário de cargas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `11. Transporte rodoviário de passageiros` = colDef(
+      name = "Transp. rodoviário de passageiros",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `12. Outros segmentos do transporte terrestre` = colDef(
+      name = "Outros segmentos do transp. terrestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `13. Transporte aquaviário` = colDef(
+      name = "Transp. aquaviário",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `14. Transporte aéreo` = colDef(
+      name = "Transp. aéreo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `15. Armazenagem, serviços auxiliares aos transportes e correio` = colDef(
+      name = "Armazenagem, serv. auxiliares aos transp. e correio",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `16. Esgoto, gestão de resíduos, recuperação de materiais e descontaminação` = colDef(
+      name = "Esgoto, gestão de resíduos, recuperação de materiais e descontaminação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `17. Atividades auxiliares dos serviços financeiros` = colDef(
+      name = "Ativ. auxiliares dos serv. financeiros",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `18. Atividades imobiliárias` = colDef(
+      name = "Ativ. imob.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `19. Outros serviços não especificados anteriormente` = colDef(
+      name = "Outros serv. não especificados anteriormente",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # Pesquisa Mensal do Comércio (PMC) {data-navmenu="Produção"}
 
