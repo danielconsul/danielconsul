@@ -32,11 +32,64 @@ library(rio)
 library(tsibble)
 ```
 
-```{r, cache=FALSE}
+```{r, cache=TRUE}
 # Coleta de dados:
 
 # API key FRED
 fredr_set_key("0087fc9b146c214d78104e3737039ea4")
+
+# MASSA DE RENDIMENTO EFETIVO:
+massa_rend_efet <- sidrar::get_sidra(
+  api = "/t/6393/n1/all/v/6291,6295,8931,8932,8936,8937,8942,8943,8947,8948/p/all/d/v8931%201,v8936%201,v8942%201,v8947%201"
+)
+
+massa_rend_efet <- massa_rend_efet %>% mutate(
+  date = lubridate::ym(`Trimestre Móvel (Código)`),
+  variavel = Variável,
+  valor = Valor,
+  .keep = "none"
+)
+
+massa_rend_efet <- massa_rend_efet %>% pivot_wider(names_from = variavel, values_from = valor) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, `Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, date) %>% arrange(desc(date))
+
+# MASSA DE RENDIMENTO HABITUAL:
+massa_rend_hab <- sidrar::get_sidra(
+  api = "/t/6392/n1/all/v/6288,6293,8909,8910,8914,8915,8920,8921,8925,8926/p/all/d/v8909%201,v8914%201,v8920%201,v8925%201"
+)
+
+massa_rend_hab <- massa_rend_hab %>% mutate(
+  date = lubridate::ym(`Trimestre Móvel (Código)`),
+  variavel = Variável,
+  valor = Valor,
+  .keep = "none"
+)
+
+massa_rend_hab <- massa_rend_hab %>% pivot_wider(names_from = variavel, values_from = valor) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, `Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, date) %>% arrange(desc(date))
+
 
 # PESQUISA MENSAL DE SERVIÇOS (PMS) - ÍNDICE NOMINAL DE SERVIÇOS:
 pms_rec <- sidrar::get_sidra(
@@ -15035,7 +15088,254 @@ reactable(
 )
 ```
 
-# Massa de rendimento {data-navmenu="Trabalho"}
+# Massa de rendimento efetivo {data-navmenu="Trabalho"}
+
+Column {.sidebar} {data-width=100}
+-----------------------------------------------------------------------
+A **massa de rendimento efetivo** é a soma dos rendimentos brutos nominais efetivamente recebidos no mês de referência por todas as pessoas ocupadas em todos os trabalhos que tinham na semana de referência. As informações dos indicadores são divulgados a cada mês referentes ao último trimestre móvel.
+
+O **rendimento efetivo** consiste no rendimento de fato recebido em qualquer posição na ocupação, no mês de referência, incluindo todos os pagamentos que não tenham caráter contínuo e considerando os descontos por ausências no trabalho
+
+<br>
+
+**Fonte:** [Instituto Brasilero de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
+
+Column {data-width=900}  {.tabset}
+-----------------------------------------------------------------------
+
+### Massa de rendimento mensal efetivo nominal e real
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = massa_rend_efet,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Massa de rendimento mensal nominal efetivo"
+  ) %>%
+  add_trace(
+    data = massa_rend_efet,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Massa de rendimento mensal real efetivo"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "Milhões de R$", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Quadro-síntese
+```{r}
+reactable(
+  massa_rend_efet[, -12],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Massa rend. mensal nominal (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Massa rend. mensal real (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. % três trim. móveis ant. (rend. real)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. três trim. móveis ant. (rend. real) (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. % mesmo trim. móvel ano ant. (rend. real)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. mesmo trim. móvel ano ant. (rend. real) (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. % três trim. móveis ant. (rend. nominal)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. três trim. móveis ant. (rend. nominal) (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. % mesmo trim. móvel ano ant. (rend. nominal)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. mesmo trim. móvel ano ant. (rend. nominal) (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+
+# Massa de rendimento habitual {data-navmenu="Trabalho"}
+
+Column {.sidebar} {data-width=150}
+-----------------------------------------------------------------------
+A **massa de rendimento habitual** é a soma dos rendimentos brutos nominais habitualmente recebidos de todas as pessoas ocupadas em todos os trabalhos que tinham na semana de referência. As informações dos indicadores são divulgados a cada mês referentes ao último trimestre móvel.
+
+O **rendimento habitual** consiste no rendimento recebido por empregados, empregadores e trabalhadores por conta própria, mensalmente, sem acréscimos extraordinários ou descontos esporádicos. Para o empregado, o rendimento mensal habitualmente recebido exclui todas as parcelas que não tenham caráter contínuo (bonificação anual, salário atrasado, horas extras, participação anual nos lucros, 13o salário, 14o salário, adiantamento de salário, etc.) e não considera os descontos ocasionais (faltas, parte do 13o salário antecipado, prejuízo eventual causado ao empreendimento etc.). Caso o rendimento recebido de empregado, de trabalhador por conta própria e de empregador seja variável, considera-se o rendimento habitual aquele em média recebido pela pessoa no período em que realizava o trabalho declarado na semana de referência. Quando a remuneração varia em função do período ou estação do ano, considera-se o rendimento mensal que a pessoa ganha habitualmente nesse período sazonal.
+
+<br>
+
+**Fonte:** [Instituto Brasilero de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
+
+Column {data-width=850}  {.tabset}
+-----------------------------------------------------------------------
+
+### Massa de rendimento mensal habitual nominal e real
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = massa_rend_hab,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Massa de rendimento mensal nominal habitual"
+  ) %>%
+  add_trace(
+    data = massa_rend_hab,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Massa de rendimento mensal real habitual"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "Milhões de R$", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Quadro-síntese
+```{r}
+reactable(
+  massa_rend_hab[, -12],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Massa rend. mensal nominal (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Massa rend. mensal real (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. % três trim. móveis ant. (rend. real)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. três trim. móveis ant. (rend. real) (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. % mesmo trim. móvel ano ant. (rend. real)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. mesmo trim. móvel ano ant. (rend. real) (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. % três trim. móveis ant. (rend. nominal)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. três trim. móveis ant. (rend. nominal) (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. % mesmo trim. móvel ano ant. (rend. nominal)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. mesmo trim. móvel ano ant. (rend. nominal) (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # Ocupação {data-navmenu="Trabalho"}
 
