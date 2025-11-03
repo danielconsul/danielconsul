@@ -32,7 +32,7 @@ library(rio)
 library(tsibble)
 ```
 
-```{r, cache=TRUE}
+```{r, cache=FALSE}
 # Coleta de dados:
 
 # API key FRED
@@ -272,7 +272,7 @@ uci <- get_series(
   var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.1),
 ) %>% select(data_fmt, valor_uci, var_mg, date) %>% arrange(desc(date))
 
-# IPA-DI:
+# IPC-DI:
 ipc_di <- ipeadata(code = "IGP12_IPCG12") %>% mutate(
   valor_ipc_di = value,
   data_fmt = format(date, "%m/%Y")
@@ -422,6 +422,7 @@ ocup_ano_ant <- ocup %>% dplyr::filter(variavel == "Variação absoluta em rela�
 
 
 # REGRA DE TAYLOR:
+
 # Coleta e tratamento dos dados -------------------------------------------
 
 # Selic acumulada no mês anualizada base 252 - Freq. mensal - Unid. % a.a.
@@ -667,7 +668,6 @@ pim_sec_ativ_12m <- pim_sec_ativ %>% dplyr::filter(variavel == "PIMPF - Variaç�
 pim_sec_ativ_acum_ano <- pim_sec_ativ %>% dplyr::filter(variavel == "PIMPF - Variação acumulada no ano (em relação ao mesmo período do ano anterior)") %>% select(data_fmt, `1 Indústria geral`, `2 Indústrias extrativas`, `3 Indústrias de transformação`, `3.10 Fabricação de produtos alimentícios`, `3.11 Fabricação de bebidas`, `3.12 Fabricação de produtos do fumo`, `3.13 Fabricação de produtos têxteis`, `3.14 Confecção de artigos do vestuário e acessórios`, `3.15 Preparação de couros e fabricação de artefatos de couro, artigos para viagem e calçados`, `3.16 Fabricação de produtos de madeira`, `3.17 Fabricação de celulose, papel e produtos de papel`, `3.18 Impressão e reprodução de gravações`, `3.19 Fabricação de coque, de produtos derivados do petróleo e de biocombustíveis`, `3.20 Fabricação de produtos químicos`, `3.21 Fabricação de produtos farmoquímicos e farmacêuticos`, `3.22 Fabricação de produtos de borracha e de material plástico`, `3.23 Fabricação de produtos de minerais não metálicos`, `3.24 Metalurgia`, `3.25 Fabricação de produtos de metal, exceto máquinas e equipamentos`, `3.26 Fabricação de equipamentos de informática, produtos eletrônicos e ópticos`, `3.27 Fabricação de máquinas, aparelhos e materiais elétricos`, `3.28 Fabricação de máquinas e equipamentos`,  `3.29 Fabricação de veículos automotores, reboques e carrocerias`, `3.30 Fabricação de outros equipamentos de transporte, exceto veículos automotores`, `3.31 Fabricação de móveis`, `3.32 Fabricação de produtos diversos`, `3.33 Manutenção, reparação e instalação de máquinas e equipamentos`, data)
 
 # TAXA SELIC:
-
 selic_over <- get_series(
   code = c(valor_selic_over = 4189)
 ) %>% mutate(
@@ -834,7 +834,7 @@ ibc <- ibc %>% select(data_fmt, valor_ibc, var_ibc_mg,
                       valor_ibc_impostos, var_ibc_mg_impostos, date) %>% 
   arrange(desc(date))
 
-# IPP (indústria geral, seções e atividades):
+# IPP (INDÚSTRIA GERAL, SEÇÕES E ATIVIDADES):
 ipp <- sidrar::get_sidra(
   api = "/t/6903/n1/all/v/all/p/all/c842/all/d/v1394%202,v1395%202,v1396%202,v10008%205"
 )
@@ -933,7 +933,6 @@ ipp_gce <- ipp_gce %>% mutate(
   ) %>% 
   arrange(desc(data))
 
-
 ipp_gce_mg <- ipp_gce %>% dplyr::filter(variavel == "IPP - Variação mês/mês imediatamente anterior (M/M-1)") %>% select(data_fmt,`Indústria geral`, `Bens de capital (BK)`, `Bens intermediários (BI)`, `Bens de consumo (BC)`, `Bens de consumo duráveis (BCD)`, `Bens de consumo semiduráveis e não duráveis (BCND)`, data)
 
 ipp_gce_acum_ano <- ipp_gce %>% dplyr::filter(variavel == "IPP - Variação acumulada no ano (em relação a dezembro do ano anterior)") %>% select(data_fmt,`Indústria geral`, `Bens de capital (BK)`, `Bens intermediários (BI)`, `Bens de consumo (BC)`, `Bens de consumo duráveis (BCD)`, `Bens de consumo semiduráveis e não duráveis (BCND)`, data)
@@ -1023,7 +1022,7 @@ ipca_15 <- ipca_15 %>% mutate(
   `IPCA15 - Variação acumulada em 12 meses` = number(`IPCA15 - Variação acumulada em 12 meses`, decimal.mark = ",", accuracy = 0.01),
   ) %>% arrange(desc(data))
 
-# IPCA (grupos):
+# IPCA (GRUPOS):
 ipca_grupos <- sidrar::get_sidra(
   api = "/t/7060/n1/all/v/all/p/all/c315/7169,7170,7445,7486,7558,7625,7660,7712,7766,7786/d/v63%202,v66%204,v69%202,v2265%202"
 )
@@ -1070,15 +1069,7 @@ ipca_grupos_peso <- ipca_grupos %>% dplyr::filter(variavel == "IPCA - Peso mensa
          `4.Vestuário`, `5.Transportes`, `6.Saúde e cuidados pessoais`, `7.Despesas pessoais`,
          `8.Educação`, `9.Comunicação`, data)
 
-
-
-
-
-
-
-
-
-# IPCA (grupos):
+# IPCA-15 (GRUPOS):
 ipca15_grupos <- sidrar::get_sidra(
   api = "/t/7062/n1/all/v/all/p/all/c315/7169,7170,7445,7486,7558,7625,7660,7712,7766,7786/d/v355%202,v356%202,v357%204,v1120%202"
 )
@@ -1142,7 +1133,7 @@ inpc <- inpc %>% mutate(
   ) %>% dplyr::filter(data >= "1996-01-01") %>% 
   arrange(desc(data))
 
-# INPC (grupos):
+# INPC (GRUPOS):
 inpc_grupos <- sidrar::get_sidra(
   api = "/t/7063/n1/all/v/all/p/all/c315/7169,7170,7445,7486,7558,7625,7660,7712,7766,7786/d/v44%202,v45%204,v68%202,v2292%202"
 )
@@ -1189,7 +1180,7 @@ inpc_grupos_peso <- inpc_grupos %>% dplyr::filter(variavel == "INPC - Peso mensa
          `4.Vestuário`, `5.Transportes`, `6.Saúde e cuidados pessoais`, `7.Despesas pessoais`,
          `8.Educação`, `9.Comunicação`, data)
 
-# PIB (taxa trimestre contra mesmo trimestre do ano anterior) (Oferta)
+# PIB (TAXA TRIMESTRE CONTRA MESMO TRIMESTRE DO ANO ANTERIOR) (OFERTA)
 pib_var_ano <- sidrar::get_sidra(
   api = "/t/5932/n1/all/v/6561/p/all/c11255/90687,90691,90692,90693,90694,90695,90696,90697,90698,90699,90700,90701,90702,90703,90705,90706,90707/d/v6561%201"
 )
@@ -1232,8 +1223,7 @@ pib_var_ano <- pib_var_ano %>% mutate(
              `Impostos líquidos sobre produtos`, data) %>% 
   arrange(desc(data))
 
-
-# PIB (taxa acumulada em quatro trimestres) (Oferta)
+# PIB (TAXA ACUMULADA EM QUATRO TRIMESTRES) (OFERTA)
 pib_var_acum4t <- sidrar::get_sidra(
   api = "/t/5932/n1/all/v/6562/p/all/c11255/90687,90691,90692,90693,90694,90695,90696,90697,90698,90699,90700,90701,90702,90703,90705,90706,90707/d/v6562%201"
 )
@@ -1276,7 +1266,7 @@ pib_var_acum4t <- pib_var_acum4t %>% mutate(
              `Impostos líquidos sobre produtos`, data) %>% 
   arrange(desc(data))
 
-# PIB (taxa acumulada ao longo do ano) (Oferta)
+# PIB (TAXA ACUMULADA AO LONGO DO ANO) (OFERTA)
 pib_var_acum_ano <- sidrar::get_sidra(
   api = "/t/5932/n1/all/v/6563/p/all/c11255/90687,90691,90692,90693,90694,90695,90696,90697,90698,90699,90700,90701,90702,90703,90705,90706,90707/d/v6563%201"
 )
@@ -1319,7 +1309,7 @@ pib_var_acum_ano <- pib_var_acum_ano %>% mutate(
              `Impostos líquidos sobre produtos`, data) %>% 
   arrange(desc(data))
 
-# PIB (trimestre contra trimestre imediatamente anterior) (Oferta)
+# PIB (TRIMESTRE CONTRA TRIMESTRE IMEDIATAMENTE ANTERIOR) (OFERTA)
 pib_var_mg <- sidrar::get_sidra(
   api = "/t/5932/n1/all/v/6564/p/all/c11255/90687,90691,90692,90693,90694,90695,90696,90697,90698,90699,90700,90701,90702,90703,90705,90706,90707/d/v6564%201"
 )
@@ -1360,7 +1350,7 @@ pib_var_mg <- pib_var_mg %>% mutate(
              `Administração, saúde e educação públicas e seguridade social`, `Valor adicionado a preços básicos`, data) %>% 
   arrange(desc(data))
 
-# PIB (taxa trimestre contra mesmo trimestre do ano anterior) (Demanda)
+# PIB (TAXA TRIMESTRE CONTRA MESMO TRIMESTRE DO ANO ANTERIOR) (DEMANDA)
 pib_var_ano_dem <- sidrar::get_sidra(
   api = "/t/5932/n1/all/v/6561/p/all/c11255/90707,93404,93405,93406,93407,93408/d/v6561%201"
 )
@@ -1387,7 +1377,7 @@ pib_var_ano_dem <- pib_var_ano_dem %>% mutate(
          `Exportação de bens e serviços`, `Importação de bens e serviços (-)`, data) %>% 
   arrange(desc(data))
 
-# PIB (taxa acumulada em quatro trimestres) (Demanda)
+# PIB (TAXA ACUMULADA EM QUATRO TRIMESTRES) (DEMANDA)
 pib_var_acum4t_dem <- sidrar::get_sidra(
   api = "/t/5932/n1/all/v/6562/p/all/c11255/90707,93404,93405,93406,93407,93408/d/v6562%201"
 )
@@ -1414,7 +1404,7 @@ pib_var_acum4t_dem <- pib_var_acum4t_dem %>% mutate(
          `Exportação de bens e serviços`, `Importação de bens e serviços (-)`, data) %>% 
   arrange(desc(data))
 
-# PIB (taxa acumulada ao longo do ano) (Demanda)
+# PIB (TAXA ACUMULADA AO LONGO DO ANO) (DEMANDA)
 pib_var_acum_ano_dem <- sidrar::get_sidra(
   api = "/t/5932/n1/all/v/6563/p/all/c11255/90707,93404,93405,93406,93407,93408/d/v6563%201"
 )
@@ -1441,7 +1431,7 @@ pib_var_acum_ano_dem <- pib_var_acum_ano_dem %>% mutate(
          `Exportação de bens e serviços`, `Importação de bens e serviços (-)`, data) %>% 
   arrange(desc(data))
 
-# PIB (trimestre contra trimestre imediatamente anterior)
+# PIB (TRIMESTRE CONTRA TRIMESTRE IMEDIATAMENTE ANTERIOR)
 pib_var_mg_dem <- sidrar::get_sidra(
   api = "/t/5932/n1/all/v/6564/p/all/c11255/90707,93404,93405,93406,93407,93408/d/v6564%201"
 )
@@ -1468,7 +1458,7 @@ pib_var_mg_dem <- pib_var_mg_dem %>% mutate(
          `Exportação de bens e serviços`, `Importação de bens e serviços (-)`, data) %>% 
   arrange(desc(data))
 
-# Trigo
+# TRIGO:
 trigo <- fredr(
   series_id = "PWHEAMTUSDM"
 ) %>% mutate(
@@ -1485,7 +1475,7 @@ trigo <- fredr(
   arrange(desc(date)) %>%
   select(data_fmt, valor, var_mg, var_12m, date)
 
-# Minério de ferro
+# MINÉRIO DE FERRO:
 miner_ferro <- fredr(
   series_id = "PIORECRUSDM"
 ) %>% mutate(
@@ -1502,7 +1492,7 @@ miner_ferro <- fredr(
   arrange(desc(date)) %>%
   select(data_fmt, valor, var_mg, var_12m, date)
 
-# Café
+# CAFÉ:
 cafe_arab <- fredr(
   series_id = "PCOFFOTMUSDM"
 ) %>% mutate(
@@ -1538,7 +1528,7 @@ cafe_rob <- fredr(
 cafe <- left_join(cafe_arab, cafe_rob) %>% drop_na() %>%
   select(data_fmt, valor_arab, var_mg_arab, var_12m_arab, valor_rob, var_mg_rob, var_12m_rob, date)
 
-# Taxa de câmbio - Livre - Diária - Dólar americano (compra e venda):
+# TAXA DE CÂMBIO - LIVRE - DIÁRIA - DÓLAR AMERICANO (COMPRA E VENDA):
 cambio_venda1 <- get_series(
   code = c(valor_venda = 1),
   start_date = "1994-07-01",
@@ -1606,7 +1596,7 @@ cambio_nom <- cambio_nom %>%
   arrange(desc(date)) %>%
   select(data_fmt, valor_compra, valor_venda, cambio_nom, var_mg, date)
 
-# Taxa de câmbio - Livre - mensal - Dólar americano (compra e venda):
+# TAXA DE CÂMBIO - LIVRE - MENSAL - DÓLAR AMERICANO (COMPRA E VENDA):
 cambio_venda_mensal <- get_series(
   code = c(valor_venda = 3696),
   start_date = "1994-07-01"
@@ -1637,7 +1627,7 @@ cambio_nom_mensal <- cambio_nom_mensal %>%
   arrange(desc(date)) %>%
   select(data_fmt, valor_compra, valor_venda, cambio_nom_mensal, var_mg, var_12m, date)
 
-# Taxa de câmbio real (IPCA) - Jun/1994 = 100 - (códigos 11753 e 11752):
+# TAXA DE CÂMBIO REAL (IPCA) - DÓLAR AMERICANO E EFETIVA:
 cambio_real_dol <- get_series(
   code = c(valor_dol = 11753),
   start_date = "1994-07-01"
@@ -1675,7 +1665,7 @@ cambio_real <- cambio_real %>%
   select(data_fmt, valor_dol, var_mg_dol, var_12m_dol,
          valor_efet, var_mg_efet, var_12m_efet, date)
 
-# Termos de troca
+# TERMOS DE TROCA
 tt <- ipeadata(code = "FUNCEX12_TTR12") %>% mutate(valor_tt = value) %>% mutate(
     var_mg_tt = (valor_tt / lag(valor_tt) - 1) * 100,
     var_12m_tt = (valor_tt / lag(valor_tt, 12) - 1) * 100
@@ -1689,7 +1679,7 @@ tt <- ipeadata(code = "FUNCEX12_TTR12") %>% mutate(valor_tt = value) %>% mutate(
   arrange(desc(date)) %>%
   select(data_fmt, valor_tt, var_mg_tt, var_12m_tt, date)
 
-# Reservas internacionais (código 3546):
+# RESERVAS INTERNACIONAIS:
 res_int <- get_series(
   code = c(valor = 3546),
   start_date = "1970-12-01"
@@ -1707,7 +1697,7 @@ res_int <- get_series(
   arrange(desc(date)) %>%
   select(data_fmt, valor, var_mg, var_12m, date)
 
-# Dívida externa bruta (códigos 3684 e 11407):
+# DÍVIDA EXTERNA BRUTA:
 div_bruta_usd <- get_series(
   code = c(valor_usd = 3684),
   start_date = "1981-01-01"
@@ -1730,7 +1720,7 @@ div_bruta_pib <- get_series(
 div_bruta <- left_join(div_bruta_usd,div_bruta_pib) %>% arrange(desc(date)) %>%
   select(data_fmt, valor_usd, valor_pib, date)
 
-# Dívida externa líquida (códigos 3685 e 11409):
+# DÍVIDA EXTERNA LÍQUIDA:
 div_liq_usd <- get_series(
   code = c(valor_usd = 3685),
   start_date = "1981-01-01"
@@ -1753,7 +1743,7 @@ div_liq_pib <- get_series(
 div_liq <- left_join(div_liq_usd,div_liq_pib) %>% arrange(desc(date)) %>%
   select(data_fmt, valor_usd, valor_pib, date)
 
-# Reservas internacionais totais como % da dívida externa total (código FI.RES.TOTL.DT.ZS):
+# RESERVAS INTERNACIONAS TOTAIS (% DA DÍVIDA EXTERNA TOTAL):
 res_int_div_ext <- WDI(
   country = "BR",
   indicator = "FI.RES.TOTL.DT.ZS",
@@ -1764,7 +1754,7 @@ res_int_div_ext <- WDI(
   valor = number(valor, decimal.mark = ",", accuracy = 0.01)
 ) %>% select(ano, valor)
 
-# Reservas internacionais (em meses de importações) (código FI.RES.TOTL.MO):
+# RESERVAS INTERNACIONAIS (MESES DE IMPORTAÇÕES):
 res_int_imports <- WDI(
   country = "BR",
   indicator = "FI.RES.TOTL.MO",
@@ -1965,7 +1955,6 @@ cambio_saldo_total <- bind_rows(cambio_saldo_total1, cambio_saldo_total2) %>%
 cambio_contratado <- full_join(cambio_contratado, cambio_saldo_total)
 
 # CÂMBIO CONTRATADO (MENSAL):
-
 cc_exp_mensal <- get_series(
   code = c(valor_exp_mensal = 11045))
 
@@ -2042,8 +2031,7 @@ cambio_contratado_anual <- cambio_contratado_anual %>% mutate(
              cc_saldo, date) %>% arrange(desc(date))
 
 
-# Transações correntes (códigos 22701, 22702 e 22703):
-
+# TRANSAÇÕES CORRENTES:
 trans_cor_rec <- get_series(
   code = c(valor_rec = 22702)
 )
@@ -2072,7 +2060,7 @@ trans_cor <- trans_cor %>% mutate(
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
   arrange(desc(date))
 
-# Transações correntes como % do PIB:
+# TRANSAÇÕES CORRENTES COMO % DO PIB:
 pib_dol <- get_series(
   code = c(valor_pib_dol = 4385)
 )
@@ -2092,21 +2080,22 @@ trans_corr_12m <- trans_corr_12m %>% mutate(
 trans_corr_pib <- left_join(as_tibble(trans_corr_12m), as_tibble(pib_dol)) %>% drop_na() %>% select(
   date, trans_corr_12m, pib_dol_12m
 ) %>% mutate(
-  trans_corr_pib = (trans_corr_12m/pib_dol_12m) * 100
+  trans_corr_pib = (trans_corr_12m/pib_dol_12m) * 100,
+  trans_corr_12m = trans_corr_12m / 1000
 )
 
 trans_corr_pib <- trans_corr_pib %>% mutate(
     data_fmt = format(date, "%m/%Y"),
+    trans_corr_12m = number(trans_corr_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
     trans_corr_pib = number(trans_corr_pib, decimal.mark = ",", accuracy = 0.01)
   ) %>%
   arrange(desc(date)) %>%
-  select(data_fmt, trans_corr_pib, date)
+  select(data_fmt, trans_corr_12m, trans_corr_pib, date)
 
 trans_cor <- left_join(trans_cor, trans_corr_pib) %>%
-  select(data_fmt, valor_rec, valor_desp, valor_saldo, trans_corr_pib, date)
+  select(data_fmt, valor_rec, valor_desp, valor_saldo, trans_corr_12m, trans_corr_pib, date)
 
-
-# Balança comercial (códigos 22707, 22708 e 22709)
+# BALANÇA COMERCIAL:
 bc_exp <- get_series(
   code = c(valor_exp = 22708)
 )
@@ -2135,7 +2124,7 @@ bal_com <- bal_com %>% mutate(
   ) %>% select(data_fmt, valor_exp, valor_imp, valor_saldo, date) %>% 
   arrange(desc(date))
 
-# Balança comercial como % do PIB:
+# BALANÇA COMERCIAL COMO % DO PIB:
 bal_com_12m <- get_series(
   code = c(valor_bal_com_12m = 22707)
 )
@@ -2147,28 +2136,41 @@ bal_com_12m <- bal_com_12m %>% mutate(
 bal_com_pib <- left_join(as_tibble(bal_com_12m), as_tibble(pib_dol)) %>% drop_na() %>% select(
   date, bal_com_12m, pib_dol_12m
 ) %>% mutate(
-  bal_com_pib = (bal_com_12m/pib_dol_12m) * 100
+  bal_com_pib = (bal_com_12m/pib_dol_12m) * 100,
+  bal_com_12m = bal_com_12m / 1000
 )
 
 bal_com_pib <- bal_com_pib %>% mutate(
     data_fmt = format(date, "%m/%Y"),
+    bal_com_12m = number(bal_com_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.001),
     bal_com_pib = number(bal_com_pib, decimal.mark = ",", accuracy = 0.01)
   ) %>%
   arrange(desc(date)) %>%
-  select(data_fmt, bal_com_pib, date)
+  select(data_fmt, bal_com_12m, bal_com_pib, date)
 
 bal_com <- left_join(bal_com, bal_com_pib) %>%
-  select(data_fmt, valor_exp, valor_imp, valor_saldo, bal_com_pib, date)
+  select(data_fmt, valor_exp, valor_imp, valor_saldo, bal_com_12m, bal_com_pib, date)
 
 # Importações
-imp1 <- ipeadata(code = "SECEX12_MVTOT12") %>% mutate(
-  valor_imp = value,
+# imp1 <- ipeadata(code = "SECEX12_MVTOT12") %>% mutate(
+#   valor_imp = value,
+#   data_fmt = format(date, "%m/%Y")
+# ) %>% mutate(
+#   valor_imp = valor_imp / 1000000000
+# ) %>% mutate(
+#   valor_imp = number(valor_imp, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+# ) %>% select(data_fmt, valor_imp, date) %>% filter(date >= "1997-01-01") %>%
+#   arrange(desc(date))
+
+imp1 <- get_series(
+  code = c(valor_imp = 22709)
+) %>% mutate(
   data_fmt = format(date, "%m/%Y")
 ) %>% mutate(
-  valor_imp = valor_imp / 1000000000
+  valor_imp = valor_imp / 1000
 ) %>% mutate(
   valor_imp = number(valor_imp, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
-) %>% select(data_fmt, valor_imp, date) %>% filter(date >= "1997-01-01") %>% 
+) %>% select(data_fmt, valor_imp, date) %>%
   arrange(desc(date))
 
 imp2 <- ipeadata(code = "FUNCEX12_MDPT12") %>% mutate(
@@ -2190,9 +2192,9 @@ imp3 <- ipeadata(code = "FUNCEX12_MDQT12") %>% mutate(
 import <- left_join(imp1, imp2)
 import <- left_join(import, imp3) %>% select(data_fmt, valor_imp, ind_imp, qt_imp, date)
 
-# Importações como % do PIB:
+# IMPORTAÇÕES COMO % DO PIB:
 imp_12m <- get_series(
-  code = c(valor_imp_12m = 22712)
+  code = c(valor_imp_12m = 22709)
 )
 
 imp_12m <- imp_12m %>% mutate(
@@ -2203,27 +2205,41 @@ imp_pib <- left_join(as_tibble(imp_12m), as_tibble(pib_dol)) %>% drop_na() %>% s
   date, imp_12m, pib_dol_12m
 ) %>% mutate(
   imp_pib = (imp_12m/pib_dol_12m) * 100
+) %>% mutate(
+  imp_12m = imp_12m / 1000
 )
 
 imp_pib <- imp_pib %>% mutate(
     data_fmt = format(date, "%m/%Y"),
-    imp_pib = number(imp_pib, decimal.mark = ",", accuracy = 0.01)
+    imp_pib = number(imp_pib, decimal.mark = ",", accuracy = 0.01),
+    imp_12m = number(imp_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>%
   arrange(desc(date)) %>%
-  select(data_fmt, imp_pib, date)
+  select(data_fmt, imp_12m, imp_pib, date)
 
 import <- left_join(import, imp_pib) %>%
-  select(data_fmt, valor_imp, ind_imp, qt_imp, imp_pib, date)
+  select(data_fmt, valor_imp, ind_imp, qt_imp, imp_12m, imp_pib, date)
 
-# Exportações
-exp1 <- ipeadata(code = "SECEX12_XVTOT12") %>% mutate(
-  valor_exp = value,
+# EXPORTAÇÕES:
+# exp1 <- ipeadata(code = "SECEX12_XVTOT12") %>% mutate(
+#   valor_exp = value,
+#   data_fmt = format(date, "%m/%Y")
+# ) %>% mutate(
+#   valor_exp = valor_exp/1000000000
+# ) %>% mutate(
+#   valor_exp = number(valor_exp, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
+# )%>% select(data_fmt, valor_exp, date) %>% filter(date >= "1997-01-01") %>% 
+#   arrange(desc(date))
+
+exp1 <- get_series(
+  code = c(valor_exp = 22708)
+) %>% mutate(
   data_fmt = format(date, "%m/%Y")
 ) %>% mutate(
-  valor_exp = valor_exp/1000000000
+  valor_exp = valor_exp / 1000
 ) %>% mutate(
   valor_exp = number(valor_exp, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
-)%>% select(data_fmt, valor_exp, date) %>% filter(date >= "1997-01-01") %>% 
+) %>% select(data_fmt, valor_exp, date) %>%
   arrange(desc(date))
 
 exp2 <- ipeadata(code = "FUNCEX12_XPT12") %>% mutate(
@@ -2245,9 +2261,9 @@ exp3 <- ipeadata(code = "FUNCEX12_XQT12") %>% mutate(
 export <- left_join(exp1, exp2)
 export <- left_join(export, exp3) %>% select(data_fmt, valor_exp, ind_exp, qt_exp, date)
 
-# Exportações como % do PIB:
+# EXPORTAÇÕES COMO % DO PIB:
 exp_12m <- get_series(
-  code = c(valor_exp_12m = 22711)
+  code = c(valor_exp_12m = 22708)
 )
 
 exp_12m <- exp_12m %>% mutate(
@@ -2258,19 +2274,22 @@ exp_pib <- left_join(as_tibble(exp_12m), as_tibble(pib_dol)) %>% drop_na() %>% s
   date, exp_12m, pib_dol_12m
 ) %>% mutate(
   exp_pib = (exp_12m/pib_dol_12m) * 100
+) %>% mutate(
+  exp_12m = exp_12m / 1000
 )
 
 exp_pib <- exp_pib %>% mutate(
     data_fmt = format(date, "%m/%Y"),
-    exp_pib = number(exp_pib, decimal.mark = ",", accuracy = 0.01)
+    exp_pib = number(exp_pib, decimal.mark = ",", accuracy = 0.01),
+    exp_12m = number(exp_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>%
   arrange(desc(date)) %>%
-  select(data_fmt, exp_pib, date)
+  select(data_fmt, exp_12m, exp_pib, date)
 
 export <- left_join(export, exp_pib) %>%
-  select(data_fmt, valor_exp, ind_exp, qt_exp, exp_pib, date)
+  select(data_fmt, valor_exp, ind_exp, qt_exp, exp_12m, exp_pib, date)
 
-# Exportações de bens de capital
+# EXPORTAÇÕES DE BENS DE CAPITAL:
 bk1_exp <- ipeadata(code = "FUNCEX12_XVBKGCE12") %>% mutate(
   valor_bk = value,
   data_fmt = format(date, "%m/%Y")
@@ -3372,6 +3391,20 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
+### Saldo em 12 meses
+```{r}
+plot_ly(
+  data = trans_cor, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", trans_corr_12m)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US$ bilhões")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
 ### % do PIB
 ```{r}
 plot_ly(
@@ -3392,7 +3425,7 @@ Column {data-width=300}  {.tabset}
 ### Quadro-síntese
 ```{r}
 reactable(
-  trans_cor[, -6],
+  trans_cor[, -7],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -3411,6 +3444,11 @@ reactable(
     ),
     valor_saldo = colDef(
       name = "Saldo TC (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    trans_corr_12m = colDef(
+      name = "Saldo TC em 12 meses",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -3500,6 +3538,21 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
+### Saldo BC em 12 meses
+```{r}
+plot_ly(
+  data = bal_com, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", bal_com_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US$ bilhões")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
 ### % do PIB
 ```{r}
 plot_ly(
@@ -3520,7 +3573,7 @@ Column {data-width=400}  {.tabset}
 ### Quadro-síntese
 ```{r}
 reactable(
-  bal_com[, -6],
+  bal_com[, -7],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -3539,6 +3592,11 @@ reactable(
     ),
     valor_saldo = colDef(
       name = "Saldo BC (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    bal_com_12m = colDef(
+      name = "Saldo BC em 12 meses",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -3583,7 +3641,7 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### US$ bilhões
+### Valor mensal
 ```{r}
 plot_ly(
   data = export, 
@@ -3598,6 +3656,26 @@ plot_ly(
       title = "US$ bilhões",
       tick0 = 0,
       dtick = 5
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Acumulado em 12 meses
+```{r}
+plot_ly(
+  data = export, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", exp_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 50
     )
   ) %>%
   rangeslider(thickness = 0.05)
@@ -3668,7 +3746,7 @@ Column {data-width=400}  {.tabset}
 ### Quadro-síntese
 ```{r}
 reactable(
-  export[, -6],
+  export[, -7],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -3687,6 +3765,11 @@ reactable(
     ),
     qt_exp = colDef(
       name = "Índice de quantum",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    exp_12m = colDef(
+      name = "Acumulado em 12 meses",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -4356,6 +4439,26 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
+### Acumulado em 12 meses
+```{r}
+plot_ly(
+  data = import, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", imp_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 50
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
 ### Índíce de preços
 ```{r}
 plot_ly(
@@ -4421,7 +4524,7 @@ Column {data-width=400}  {.tabset}
 ### Quadro-síntese
 ```{r}
 reactable(
-  import[, -6],
+  import[, -7],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -4440,6 +4543,11 @@ reactable(
     ),
     qt_imp = colDef(
       name = "Índice de quantum",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    imp_12m = colDef(
+      name = "Acumulado em 12 meses",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -15098,7 +15206,7 @@ O **rendimento efetivo** consiste no rendimento de fato recebido em qualquer pos
 
 <br>
 
-**Fonte:** [Instituto Brasilero de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
 
 Column {data-width=900}  {.tabset}
 -----------------------------------------------------------------------
@@ -15223,7 +15331,7 @@ O **rendimento habitual** consiste no rendimento recebido por empregados, empreg
 
 <br>
 
-**Fonte:** [Instituto Brasilero de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
 
 Column {data-width=850}  {.tabset}
 -----------------------------------------------------------------------
