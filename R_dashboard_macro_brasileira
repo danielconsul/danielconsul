@@ -32,11 +32,37 @@ library(rio)
 library(tsibble)
 ```
 
-```{r, cache=FALSE}
+```{r, cache=TRUE}
 # Coleta de dados:
 
 # API key FRED
 fredr_set_key("0087fc9b146c214d78104e3737039ea4")
+
+# RENDIMENTO MÉDIO EFETIVO DO TRABALHO:
+rend <- sidrar::get_sidra(
+  api = "/t/6387/n1/all/v/5931,5935,8843,8844,8848,8849,8854,8855,8859,8860/p/all/d/v8843%201,v8848%201,v8854%201,v8859%201"
+)
+
+rend <- rend %>% mutate(
+  date = lubridate::ym(`Trimestre Móvel (Código)`),
+  variavel = Variável,
+  valor = Valor,
+  .keep = "none"
+)
+
+rend <- rend %>% pivot_wider(names_from = variavel, values_from = valor) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+) %>% select(data_fmt, `Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, date) %>% arrange(desc(date))
 
 # MASSA DE RENDIMENTO EFETIVO:
 massa_rend_efet <- sidrar::get_sidra(
@@ -2310,7 +2336,7 @@ bk2_exp <- ipeadata(code = "FUNCEX12_XQBKGCE12") %>% mutate(
 
 bk_exp <- left_join(bk1_exp, bk2_exp) %>% select(data_fmt, valor_bk, qt_bk, date)
 
-# Importações de bens de capital
+# IMPORTAÇÕES DE BENS DE CAPITAL:
 bk1 <- ipeadata(code = "FUNCEX12_MDVBKGCE12") %>% mutate(
   valor_bk = value,
   data_fmt = format(date, "%m/%Y")
@@ -2342,7 +2368,7 @@ bk <- left_join(bk, bk3)
 
 bk <- bk %>% select(data_fmt, valor_bk, ind_bk, qt_bk, date)
 
-# Importações de bens intermediários
+# IMPORTAÇÕES DE BENS INTERMEDIÁRIOS:
 bi1 <- ipeadata(code = "FUNCEX12_MDVBIGCE12") %>% mutate(
   valor_bi = value,
   data_fmt = format(date, "%m/%Y")
@@ -2374,7 +2400,7 @@ bi <- left_join(bi, bi3)
 
 bi <- bi %>% select(data_fmt, valor_bi, ind_bi, qt_bi, date)
 
-# Exportações de bens intermediários
+# EXPORTAÇÕES DE BENS INTERMEDIÁRIOS:
 bi1_exp <- ipeadata(code = "FUNCEX12_XVBIGCE12") %>% mutate(
   valor_bi = value,
   data_fmt = format(date, "%m/%Y")
@@ -2395,7 +2421,7 @@ bi2_exp <- ipeadata(code = "FUNCEX12_XQBIGCE12") %>% mutate(
 
 bi_exp <- left_join(bi1_exp, bi2_exp) %>% select(data_fmt, valor_bi, qt_bi, date)
 
-# Importações de bens de consumo
+# IMPORTAÇÕES DE BENS DE CONSUMO:
 bc <- ipeadata(code = "SECEX12_MBENCONGCE12") %>% mutate(
   valor_bc = value,
   data_fmt = format(date, "%m/%Y")
@@ -2406,7 +2432,7 @@ bc <- ipeadata(code = "SECEX12_MBENCONGCE12") %>% mutate(
 )%>% select(data_fmt, valor_bc, date) %>% 
   arrange(desc(date))
 
-# Exportações de bens de consumo
+# EXPORTAÇÕES DE BENS DE CONSUMO
 exp_bc <- ipeadata(code = "SECEX12_XBENCONGCE12") %>% mutate(
   valor_bc = value,
   data_fmt = format(date, "%m/%Y")
@@ -2417,7 +2443,7 @@ exp_bc <- ipeadata(code = "SECEX12_XBENCONGCE12") %>% mutate(
 )%>% select(data_fmt, valor_bc, date) %>% 
   arrange(desc(date))
 
-# Importações de bens de consumo duráveis
+# IMPORTAÇÕES DE BENS DE CONSUMO DURÁVEIS:
 bcd1 <- ipeadata(code = "FUNCEX12_MDVBCDGCE12") %>% mutate(
   valor_bcd = value,
   data_fmt = format(date, "%m/%Y")
@@ -2438,7 +2464,7 @@ bcd2 <- ipeadata(code = "FUNCEX12_MDQBCDGCE12") %>% mutate(
 
 bcd <- left_join(bcd1, bcd2) %>% select(data_fmt, valor_bcd, qt_bcd, date)
 
-# Exportações de bens de consumo duráveis
+# EXPORTAÇÕES DE BENS DE CONSUMO DURÁVEIS:
 bcd1_exp <- ipeadata(code = "FUNCEX12_XVBCDGCE12") %>% mutate(
   valor_bcd = value,
   data_fmt = format(date, "%m/%Y")
@@ -2470,7 +2496,7 @@ bcd_exp <- left_join(bcd_exp, bcd3_exp)
 
 bcd_exp <- bcd_exp %>% select(data_fmt, valor_bcd, ind_bcd, qt_bcd, date)
 
-# Importações de bens de consumo não duráveis
+# IMPORTAÇÕES DE BENS DE CONSUMO NÃO DURÁVEIS:
 bcnd1 <- ipeadata(code = "FUNCEX12_MDVBCNDGCE12") %>% mutate(
   valor_bcnd = value,
   data_fmt = format(date, "%m/%Y")
@@ -2491,7 +2517,7 @@ bcnd2 <- ipeadata(code = "FUNCEX12_MDQBCNDGCE12") %>% mutate(
 
 bcnd <- left_join(bcnd1, bcnd2) %>% select(data_fmt, valor_bcnd, qt_bcnd, date)
 
-# Exportações de bens de consumo não duráveis
+# EXPORTAÇÕES DE BENS DE CONSUMO NÃO DURÁVEIS:
 bcnd1_exp <- ipeadata(code = "FUNCEX12_XVBCNDGCE12") %>% mutate(
   valor_bcnd = value,
   data_fmt = format(date, "%m/%Y")
@@ -2512,7 +2538,7 @@ bcnd2_exp <- ipeadata(code = "FUNCEX12_XQBCNDGCE12") %>% mutate(
 
 bcnd_exp <- left_join(bcnd1_exp, bcnd2_exp) %>% select(data_fmt, valor_bcnd, qt_bcnd, date)
 
-# Importações de combustíveis
+# IMPORTAÇÕES DE COMBUSTÍVEIS:
 comb1 <- ipeadata(code = "FUNCEX12_MDVCOMBGCE12") %>% mutate(
   valor_comb = value,
   data_fmt = format(date, "%m/%Y")
@@ -2544,7 +2570,7 @@ comb <- left_join(comb, comb3)
 
 comb <- comb %>% select(data_fmt, valor_comb, ind_comb, qt_comb, date)
 
-# Exportações de combustíveis
+# EXPORTAÇÕES DE COMBUSTÍVEIS:
 comb1_exp <- ipeadata(code = "FUNCEX12_XVCOMBGCE12") %>% mutate(
   valor_comb = value,
   data_fmt = format(date, "%m/%Y")
@@ -2576,7 +2602,7 @@ comb_exp <- left_join(comb_exp, comb3_exp)
 
 comb_exp <- comb_exp %>% select(data_fmt, valor_comb, ind_comb, qt_comb, date)
 
-# Balança de serviços (códigos 22719, 22720 e 22721)
+# BALANÇA DE SERVIÇOS:
 bs_rec <- get_series(
   code = c(valor_rec = 22720)
 )
@@ -2605,7 +2631,7 @@ bs <- bs %>% mutate(
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
   arrange(desc(date))
 
-# Balança de serviços como % do PIB:
+# BALANÇA DE SERVIÇOS COMO % DO PIB:
 bs_12m <- get_series(
   code = c(valor_bs_12m = 22719)
 )
@@ -2618,19 +2644,22 @@ bs_pib <- left_join(as_tibble(bs_12m), as_tibble(pib_dol)) %>% drop_na() %>% sel
   date, bs_12m, pib_dol_12m
 ) %>% mutate(
   bs_pib = (bs_12m/pib_dol_12m) * 100
+) %>% mutate(
+  bs_12m = bs_12m / 1000
 )
 
 bs_pib <- bs_pib %>% mutate(
     data_fmt = format(date, "%m/%Y"),
-    bs_pib = number(bs_pib, decimal.mark = ",", accuracy = 0.01)
+    bs_pib = number(bs_pib, decimal.mark = ",", accuracy = 0.01),
+    bs_12m = number(bs_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>%
   arrange(desc(date)) %>%
-  select(data_fmt, bs_pib, date)
+  select(data_fmt, bs_12m, bs_pib, date)
 
 bs <- left_join(bs, bs_pib) %>%
-  select(data_fmt, valor_rec, valor_desp, valor_saldo, bs_pib, date)
+  select(data_fmt, valor_rec, valor_desp, valor_saldo, bs_12m, bs_pib, date)
 
-# Renda primária (códigos 22800, 22801 e 22802)
+# RENDA PRIMÁRIA:
 rp_rec <- get_series(
   code = c(valor_rec = 22801)
 )
@@ -2659,7 +2688,7 @@ rp <- rp %>% mutate(
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
   arrange(desc(date))
 
-# Renda primária como % do PIB:
+# RENDA PRIMÁRIA COMO % DO PIB:
 rp_12m <- get_series(
   code = c(valor_rp_12m = 22800)
 )
@@ -2672,19 +2701,22 @@ rp_pib <- left_join(as_tibble(rp_12m), as_tibble(pib_dol)) %>% drop_na() %>% sel
   date, rp_12m, pib_dol_12m
 ) %>% mutate(
   rp_pib = (rp_12m/pib_dol_12m) * 100
+) %>% mutate(
+  rp_12m = rp_12m / 1000
 )
 
 rp_pib <- rp_pib %>% mutate(
     data_fmt = format(date, "%m/%Y"),
-    rp_pib = number(rp_pib, decimal.mark = ",", accuracy = 0.01)
+    rp_pib = number(rp_pib, decimal.mark = ",", accuracy = 0.01),
+    rp_12m = number(rp_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>%
   arrange(desc(date)) %>%
-  select(data_fmt, rp_pib, date)
+  select(data_fmt, rp_12m, rp_pib, date)
 
 rp <- left_join(rp, rp_pib) %>%
-  select(data_fmt, valor_rec, valor_desp, valor_saldo, rp_pib, date)
+  select(data_fmt, valor_rec, valor_desp, valor_saldo, rp_12m, rp_pib, date)
 
-# Renda secundária (códigos 22838, 22839 e 22840)
+# RENDA SECUNDÁRIA:
 rs_rec <- get_series(
   code = c(valor_rec = 22839)
 )
@@ -2726,19 +2758,22 @@ rs_pib <- left_join(as_tibble(rs_12m), as_tibble(pib_dol)) %>% drop_na() %>% sel
   date, rs_12m, pib_dol_12m
 ) %>% mutate(
   rs_pib = (rs_12m/pib_dol_12m) * 100
+) %>% mutate(
+  rs_12m = rs_12m / 1000
 )
 
 rs_pib <- rs_pib %>% mutate(
     data_fmt = format(date, "%m/%Y"),
-    rs_pib = number(rs_pib, decimal.mark = ",", accuracy = 0.01)
+    rs_pib = number(rs_pib, decimal.mark = ",", accuracy = 0.01),
+    rs_12m = number(rs_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>%
   arrange(desc(date)) %>%
-  select(data_fmt, rs_pib, date)
+  select(data_fmt, rs_12m, rs_pib, date)
 
 rs <- left_join(rs, rs_pib) %>%
-  select(data_fmt, valor_rec, valor_desp, valor_saldo, rs_pib, date)
+  select(data_fmt, valor_rec, valor_desp, valor_saldo, rs_12m, rs_pib, date)
 
-# Conta capital (códigos 22851, 22852 e 22853)
+# CONTA CAPITAL:
 cc_rec <- get_series(
   code = c(valor_rec = 22852)
 )
@@ -2767,7 +2802,7 @@ cc <- cc %>% mutate(
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
   arrange(desc(date))
 
-# Conta capital como % do PIB:
+# CONTA CAPITAL COMO % DO PIB:
 cc_12m <- get_series(
   code = c(valor_cc_12m = 22851)
 )
@@ -2780,19 +2815,22 @@ cc_pib <- left_join(as_tibble(cc_12m), as_tibble(pib_dol)) %>% drop_na() %>% sel
   date, cc_12m, pib_dol_12m
 ) %>% mutate(
   cc_pib = (cc_12m/pib_dol_12m) * 100
+) %>% mutate(
+  cc_12m = cc_12m / 1000
 )
 
 cc_pib <- cc_pib %>% mutate(
     data_fmt = format(date, "%m/%Y"),
-    cc_pib = number(cc_pib, decimal.mark = ",", accuracy = 0.01)
+    cc_pib = number(cc_pib, decimal.mark = ",", accuracy = 0.01),
+    cc_12m = number(cc_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>%
   arrange(desc(date)) %>%
-  select(data_fmt, cc_pib, date)
+  select(data_fmt, cc_12m, cc_pib, date)
 
 cc <- left_join(cc, cc_pib) %>%
-  select(data_fmt, valor_rec, valor_desp, valor_saldo, cc_pib, date)
+  select(data_fmt, valor_rec, valor_desp, valor_saldo, cc_12m, cc_pib, date)
 
-# Conta capital - Ativos não financeiros não produzidos (códigos 22854, 22855 e 22856)
+# CONTA CAPITAL (ATIVOS NÃO FINANCEIROS NÃO PRODUZIDOS):
 cc_anfnp_rec <- get_series(
   code = c(valor_rec = 22855)
 )
@@ -2821,7 +2859,7 @@ cc_anfnp <- cc_anfnp %>% mutate(
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
   arrange(desc(date))
 
-# Conta capital - Ativos não financeiros não produzidos (passes de atletas) (códigos 22857, 22858 e 22859)
+# CONTA CAPITAL (ATIVOS NÃO FINANCEIROS NÃO PRODUZIDOS - PASSES DE ATLETAS):
 cc_anfnp_ps_rec <- get_series(
   code = c(valor_rec = 22858)
 )
@@ -2850,7 +2888,7 @@ cc_anfnp_ps <- cc_anfnp_ps %>% mutate(
   ) %>% select(data_fmt, valor_rec, valor_desp, valor_saldo, date) %>% 
   arrange(desc(date))
 
-# Conta financeira (código 22863)
+# CONTA FINANCEIRA:
 cf <- get_series(
   code = c(valor = 22863)
 )
@@ -2864,7 +2902,7 @@ cf <- cf %>% mutate(
   ) %>% select(data_fmt, valor, date) %>% 
   arrange(desc(date))
 
-# Conta financeira como % do PIB:
+# CONTA FINANCEIRA COMO % DO PIB:
 cf_12m <- get_series(
   code = c(valor_cf_12m = 22863)
 )
@@ -2877,19 +2915,22 @@ cf_pib <- left_join(as_tibble(cf_12m), as_tibble(pib_dol)) %>% drop_na() %>% sel
   date, cf_12m, pib_dol_12m
 ) %>% mutate(
   cf_pib = (cf_12m/pib_dol_12m) * 100
+) %>% mutate(
+  cf_12m = cf_12m / 1000
 )
 
 cf_pib <- cf_pib %>% mutate(
     data_fmt = format(date, "%m/%Y"),
-    cf_pib = number(cf_pib, decimal.mark = ",", accuracy = 0.01)
+    cf_pib = number(cf_pib, decimal.mark = ",", accuracy = 0.01),
+    cf_12m = number(cf_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>%
   arrange(desc(date)) %>%
-  select(data_fmt, cf_pib, date)
+  select(data_fmt, cf_12m, cf_pib, date)
 
 cf <- left_join(cf, cf_pib) %>%
-  select(data_fmt, valor, cf_pib, date)
+  select(data_fmt, valor, cf_12m, cf_pib, date)
 
-# Investimento direto (códigos 22864, 22865 e 22885)
+# INVESTIMENTO DIRETO (ESTRANGEIRO E NO PAÍS):
 ide <- get_series(
   code = c(valor_ide = 22865)
 )
@@ -2918,7 +2959,7 @@ inv_dir <- inv_dir %>% mutate(
   ) %>% select(data_fmt, valor_ide, valor_idp, valor_id, date) %>% 
   arrange(desc(date))
 
-# IDE como % do PIB:
+# IDE COMO % do PIB:
 ide_12m <- get_series(
   code = c(valor_ide_12m = 22865)
 )
@@ -2931,19 +2972,22 @@ ide_pib <- left_join(as_tibble(ide_12m), as_tibble(pib_dol)) %>% drop_na() %>% s
   date, ide_12m, pib_dol_12m
 ) %>% mutate(
   ide_pib = (ide_12m/pib_dol_12m) * 100
+) %>% mutate(
+  ide_12m = ide_12m / 1000
 )
 
 ide_pib <- ide_pib %>% mutate(
     data_fmt = format(date, "%m/%Y"),
-    ide_pib = number(ide_pib, decimal.mark = ",", accuracy = 0.01)
+    ide_pib = number(ide_pib, decimal.mark = ",", accuracy = 0.01),
+    ide_12m = number(ide_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>%
   arrange(desc(date)) %>%
-  select(data_fmt, ide_pib, date)
+  select(data_fmt, ide_12m, ide_pib, date)
 
 ide <- left_join(ide, ide_pib) %>%
-  select(data_fmt, valor_ide, ide_pib, date) %>% drop_na()
+  select(data_fmt, valor_ide, ide_12m, ide_pib, date) %>% drop_na()
 
-# IDP como % do PIB:
+# IDP COMO % do PIB:
 idp_12m <- get_series(
   code = c(valor_idp_12m = 22885)
 )
@@ -2956,19 +3000,22 @@ idp_pib <- left_join(as_tibble(idp_12m), as_tibble(pib_dol)) %>% drop_na() %>% s
   date, idp_12m, pib_dol_12m
 ) %>% mutate(
   idp_pib = (idp_12m/pib_dol_12m) * 100
+) %>% mutate(
+  idp_12m = idp_12m / 1000
 )
 
 idp_pib <- idp_pib %>% mutate(
     data_fmt = format(date, "%m/%Y"),
-    idp_pib = number(idp_pib, decimal.mark = ",", accuracy = 0.01)
+    idp_pib = number(idp_pib, decimal.mark = ",", accuracy = 0.01),
+    idp_12m = number(idp_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>%
   arrange(desc(date)) %>%
-  select(data_fmt, idp_pib, date)
+  select(data_fmt, idp_12m, idp_pib, date)
 
 idp <- left_join(idp, idp_pib) %>%
-  select(data_fmt, valor_idp, idp_pib, date) %>% drop_na()
+  select(data_fmt, valor_idp, idp_12m, idp_pib, date) %>% drop_na()
 
-# ID como % do PIB:
+# ID COMO % do PIB:
 id_12m <- get_series(
   code = c(valor_id_12m = 22864)
 )
@@ -2981,17 +3028,20 @@ id_pib <- left_join(as_tibble(id_12m), as_tibble(pib_dol)) %>% drop_na() %>% sel
   date, id_12m, pib_dol_12m
 ) %>% mutate(
   id_pib = (id_12m/pib_dol_12m) * 100
+) %>% mutate(
+  id_12m = id_12m / 1000
 )
 
 id_pib <- id_pib %>% mutate(
     data_fmt = format(date, "%m/%Y"),
-    id_pib = number(id_pib, decimal.mark = ",", accuracy = 0.01)
+    id_pib = number(id_pib, decimal.mark = ",", accuracy = 0.01),
+    id_12m = number(id_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>%
   arrange(desc(date)) %>%
-  select(data_fmt, id_pib, date)
+  select(data_fmt, id_12m, id_pib, date)
 
 id <- left_join(id, id_pib) %>%
-  select(data_fmt, valor_id, id_pib, date) %>% drop_na()
+  select(data_fmt, valor_id, id_12m, id_pib, date) %>% drop_na()
 
 inv_dir <- left_join(inv_dir, ide, by = "date")
 inv_dir <- left_join(inv_dir, idp, by = "date")
@@ -3002,8 +3052,8 @@ names(inv_dir)[names(inv_dir) == "valor_ide.x"] <- "valor_ide"
 names(inv_dir)[names(inv_dir) == "valor_idp.x"] <- "valor_idp"
 names(inv_dir)[names(inv_dir) == "valor_id.x"] <- "valor_id"
 
-inv_dir <- inv_dir %>% dplyr::select(data_fmt, valor_ide, valor_idp,
-                         valor_id, ide_pib, idp_pib, id_pib, date)
+inv_dir <- inv_dir %>% dplyr::select(data_fmt, valor_ide, ide_12m, ide_pib, valor_idp,
+                         idp_12m, idp_pib, valor_id, id_12m, id_pib, date)
 
 # INVESTIMENTO EM CARTEIRA:
 inv_cart <- get_series(
@@ -3032,17 +3082,20 @@ inv_cart_pib <- left_join(as_tibble(inv_cart_12m), as_tibble(pib_dol)) %>% drop_
   date, inv_cart_12m, pib_dol_12m
 ) %>% mutate(
   inv_cart_pib = (inv_cart_12m/pib_dol_12m) * 100
+) %>% mutate(
+  inv_cart_12m = inv_cart_12m / 1000
 )
 
 inv_cart_pib <- inv_cart_pib %>% mutate(
     data_fmt = format(date, "%m/%Y"),
-    inv_cart_pib = number(inv_cart_pib, decimal.mark = ",", accuracy = 0.01)
+    inv_cart_pib = number(inv_cart_pib, decimal.mark = ",", accuracy = 0.01),
+    inv_cart_12m = number(inv_cart_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.001)
   ) %>%
   arrange(desc(date)) %>%
-  select(data_fmt, inv_cart_pib, date)
+  select(data_fmt, inv_cart_12m, inv_cart_pib, date)
 
 inv_cart <- left_join(inv_cart, inv_cart_pib) %>%
-  select(data_fmt, valor, inv_cart_pib, date) %>% drop_na()
+  select(data_fmt, valor, inv_cart_12m, inv_cart_pib, date) %>% drop_na()
 
 # CONTA FINANCEIRA (OUTROS INVESTIMENTOS):
 outros_inv_ativos <- get_series(
@@ -3074,7 +3127,7 @@ outros_inv <- outros_inv %>% mutate(
                                   decimal.mark = ",", accuracy = 0.001)) %>% select(
                                     data_fmt, valor_outros_inv_ativos, valor_outros_inv_passivos, valor_outros_inv_liq, date) %>% arrange(desc(date))
 
-# Erros e omissões (código 23060)
+# ERROS E OMISSÕES:
 eo <- get_series(
   code = c(valor = 23060)
 ) %>% mutate(
@@ -3086,7 +3139,7 @@ eo <- get_series(
   ) %>% select(data_fmt, valor, date) %>% 
   arrange(desc(date))
 
-# Ativos de reservas (código 23043)
+# ATIVOS DE RESERVA:
 ativ_res <- get_series(
   code = c(valor = 23043)
 ) %>% mutate(
@@ -3098,7 +3151,7 @@ ativ_res <- get_series(
   ) %>% select(data_fmt, valor, date) %>% 
   arrange(desc(date))
 
-# Índice de commodities - Brasil (códigos 22574 e 29042)
+# ÍNDICE DE COMMODITIES - BRASIL:
 commod_bra <- get_series(
   code = c(valor_rs = 27574)
 ) %>% mutate(
@@ -3125,7 +3178,7 @@ commod <- left_join(commod_bra, commod_usd) %>%
   ) %>% select(data_fmt, valor_rs, valor_rs_mg, valor_rs_12m, valor_usd, valor_usd_mg, valor_usd_12m, date) %>% 
   arrange(desc(date))
 
-# Índice de commodities - Agropecuária (códigos 22574 e 29042)
+# ÍNDICE DE COMMODITIES - AGROPECUÁRIA:
 commod_agrop <- get_series(
   code = c(valor_rs = 27575)
 ) %>% mutate(
@@ -3152,7 +3205,7 @@ commod_agrop <- left_join(commod_agrop, commod_usd_agrop) %>%
   ) %>% select(data_fmt, valor_rs, valor_rs_mg, valor_rs_12m, valor_usd, valor_usd_mg, valor_usd_12m, date) %>% 
   arrange(desc(date))
 
-# Índice de commodities - Metal (códigos 27576 e 29040)
+# ÍNDICE DE COMMODITIES - METAL:
 commod_metal <- get_series(
   code = c(valor_rs = 27576)
 ) %>% mutate(
@@ -3179,7 +3232,7 @@ commod_metal <- left_join(commod_metal, commod_usd_metal) %>%
   ) %>% select(data_fmt, valor_rs, valor_rs_mg, valor_rs_12m, valor_usd, valor_usd_mg, valor_usd_12m, date) %>% 
   arrange(desc(date))
 
-# Índice de commodities - Energia (códigos 27577 e 29039)
+# ÍNDICE DE COMMODITIES - ENERGIA:
 commod_energia <- get_series(
   code = c(valor_rs = 27577)
 ) %>% mutate(
@@ -3206,7 +3259,7 @@ commod_energia <- left_join(commod_energia, commod_usd_energia) %>%
   ) %>% select(data_fmt, valor_rs, valor_rs_mg, valor_rs_12m, valor_usd, valor_usd_mg, valor_usd_12m, date) %>% 
   arrange(desc(date))
 
-# Petróleo Brent e WTI
+# PETRÓLEO BRENT E WTI:
 brent <- ipeadata(code = "EIA366_PBRENT366") %>% mutate(
   var_mg_brent = (value / lag(value) - 1) * 100
 ) %>% mutate(
@@ -3272,7 +3325,7 @@ petroleo_mensal <- left_join(brent_mensal, wti_mensal) %>% mutate(
 ) %>% select(data_fmt, valor_brent, var_mg_brent, var_12m_brent, valor_wti, var_mg_wti, var_12m_wti,
              date)
 
-# Soja
+# SOJA
 soja <- ipeadata(code = "IFS12_SOJAGP12") %>% mutate(
   var_mg = (value / lag(value) - 1) * 100,
   var_12m = (value / lag(value, 12) - 1) * 100
@@ -5272,6 +5325,21 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
+### Saldo em 12 meses
+```{r}
+plot_ly(
+  data = bs, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", bs_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US$ bilhões")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
 ### % do PIB
 ```{r}
 plot_ly(
@@ -5292,7 +5360,7 @@ Column {data-width=400}  {.tabset}
 ### Quadro-síntese
 ```{r}
 reactable(
-  bs[, -6],
+  bs[, -7],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -5311,6 +5379,11 @@ reactable(
     ),
     valor_saldo = colDef(
       name = "Saldo BS (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    bs_12m = colDef(
+      name = "Saldo BS em 12 meses",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -5415,6 +5488,26 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
+### Saldo RP em 12 meses
+```{r}
+plot_ly(
+  data = rp, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", rp_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 10
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
 ### % do PIB
 ```{r}
 plot_ly(
@@ -5440,7 +5533,7 @@ Column {data-width=400}  {.tabset}
 ### Quadro-síntese
 ```{r}
 reactable(
-  rp[, -6],
+  rp[, -7],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -5459,6 +5552,11 @@ reactable(
     ),
     valor_saldo = colDef(
       name = "Saldo RP (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    rp_12m = colDef(
+      name = "Saldo RP em 12 meses",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -5563,6 +5661,25 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
+### Saldo RS em 12 meses
+```{r}
+plot_ly(
+  data = rs, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", rs_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
 ### % do PIB
 ```{r}
 plot_ly(
@@ -5587,7 +5704,7 @@ Column {data-width=400}  {.tabset}
 ### Quadro-síntese
 ```{r}
 reactable(
-  rs[, -6],
+  rs[, -7],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -5606,6 +5723,11 @@ reactable(
     ),
     valor_saldo = colDef(
       name = "Saldo RS (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    rs_12m = colDef(
+      name = "Saldo RS em 12 meses",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -5710,6 +5832,25 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
+### Saldo CC em 12 meses
+```{r}
+plot_ly(
+  data = cc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", cc_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      dtick = 5
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
 ### % do PIB
 ```{r}
 plot_ly(
@@ -5735,7 +5876,7 @@ Column {data-width=400}  {.tabset}
 ### Quadro-síntese
 ```{r}
 reactable(
-  cc[, -6],
+  cc[, -7],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -5754,6 +5895,11 @@ reactable(
     ),
     valor_saldo = colDef(
       name = "Saldo CC (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    cc_12m = colDef(
+      name = "Saldo CC em 12 meses",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -6040,7 +6186,7 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Conta financeira
+### Saldo CF
 ```{r}
 plot_ly(
   data = cf, 
@@ -6054,7 +6200,27 @@ plot_ly(
     yaxis = list(
       title = "US$ bilhões",
       tick0 = 0,
-      dtick = 1
+      dtick = 2
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Saldo CF em 12 meses
+```{r}
+plot_ly(
+  data = cf, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", cf_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões",
+      tick0 = 0,
+      dtick = 10
     )
   ) %>%
   rangeslider(thickness = 0.05)
@@ -6085,7 +6251,7 @@ Column {data-width=400}  {.tabset}
 ### Quadro-síntese
 ```{r}
 reactable(
-  cf[, -4],
+  cf[, -5],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -6094,6 +6260,11 @@ reactable(
     ),
     valor = colDef(
       name = "Saldo CF",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    cf_12m = colDef(
+      name = "Saldo CF em 12 meses",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -6163,27 +6334,12 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### IDP (2)
+### IDE em 12 meses
 ```{r}
 plot_ly(
   data = inv_dir, 
   x = ~date, 
-  y = ~as.numeric(gsub(",", ".", valor_idp)),
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "US$ bilhões")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-### Saldo ID (3) (1-2)
-```{r}
-plot_ly(
-  data = inv_dir, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", valor_id)),
+  y = ~as.numeric(gsub(",", ".", ide_12m)),
   type = "scatter",
   mode = "lines"
 ) %>%
@@ -6207,6 +6363,36 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
+### IDP (2)
+```{r}
+plot_ly(
+  data = inv_dir, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_idp)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US$ bilhões")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### IDP em 12 meses
+```{r}
+plot_ly(
+  data = inv_dir, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", idp_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US$ bilhões")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
 ### IDP % do PIB
 ```{r}
 plot_ly(
@@ -6218,6 +6404,36 @@ plot_ly(
   layout(
     xaxis = list(title = " "),
     yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Saldo ID (3) (1-2)
+```{r}
+plot_ly(
+  data = inv_dir, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_id)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US$ bilhões")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### ID em 12 meses
+```{r}
+plot_ly(
+  data = inv_dir, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", id_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US$ bilhões")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
@@ -6241,7 +6457,7 @@ Column {data-width=400}  {.tabset}
 ### Quadro-síntese
 ```{r}
 reactable(
-  inv_dir[, -8],
+  inv_dir[, -11],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -6253,13 +6469,8 @@ reactable(
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_idp = colDef(
-      name = "IDP (2)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_id = colDef(
-      name = "Saldo ID (3) (1-2)",
+    ide_12m = colDef(
+      name = "IDE em 12 meses",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -6268,8 +6479,28 @@ reactable(
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
+    valor_idp = colDef(
+      name = "IDP (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    idp_12m = colDef(
+      name = "IDP em 12 meses",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
     idp_pib = colDef(
       name = "IDP % do PIB",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_id = colDef(
+      name = "Saldo ID (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    id_12m = colDef(
+      name = "ID em 12 meses",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -6300,8 +6531,7 @@ reactable(
 
 Column {.sidebar} {data-width=300}
 -----------------------------------------------------------------------
-
-**Investimento em carteira** é dividido em ativos e passivos. **Investimento em carteira ativos** são definidos como transações e posições realizadas através de títulos de dívida ou de capital, distintos dos incluídos em investimento direto ou ativos de reserva. São registrados fluxos constituídos pela emissão de títulos de crédito comumente negociados em mercados secundários. Divide-se em dois instrumentos principais: ações e cotas em fundos, e título de renda fixa. Ações e cotas em fundos compreendem todos os instrumentos e registros que reconhecem, uma vez liquidados todos os direitos dos credores, os direitos frente ao valor residual da empresa. Os títulos de participação no capital englobam as ações negociadas ou não em bolsa e outros tipos de participação no capital. Títulos de renda fixa são os instrumentos de dívida que exigem pagamento de juros e/ou principal em algum momento futuro. Os instrumentos de dívida que sensibilizam essa conta são aqueles que podem ser negociados em mercados secundários. Os papéis com prazo de vencimento original inferior a um ano são considerados de curto prazo, e os com vencimento original superior a esse prazo, de longo prazo. **Investimento em carteira passivos** são definidos como transações e posições realizadas através de títulos de dívida ou de capital, distintos dos incluídos em investimento direto. São registrados fluxos constituídos pela emissão de títulos de crédito comumente negociados em mercados secundários. Divide-se em dois instrumentos principais: ações e cotas em fundos e título de renda fixa. Ações e cotas em fundos compreendem todos os instrumentos e registros que reconhecem, uma vez liquidados todos os direitos dos credores, os direitos frente ao valor residual da empresa. Os títulos de participação no capital englobam as ações negociadas ou não em bolsa e outros tipos de participação no capital. Títulos de renda fixa são os instrumentos de dívida exigem pagamento de juros e/ou principal em algum momento futuro. Os instrumentos de dívida que sensibilizam essa conta são aqueles que podem ser negociados em mercados secundários. Os papéis com prazo de vencimento original inferior a um ano são considerados de curto prazo, e os com vencimento original superior a esse prazo, de longo prazo.
+**Investimento em carteira (IC)** é dividido em ativos e passivos. **Investimento em carteira ativos** são definidos como transações e posições realizadas através de títulos de dívida ou de capital, distintos dos incluídos em investimento direto ou ativos de reserva. São registrados fluxos constituídos pela emissão de títulos de crédito comumente negociados em mercados secundários. Divide-se em dois instrumentos principais: ações e cotas em fundos, e título de renda fixa. Ações e cotas em fundos compreendem todos os instrumentos e registros que reconhecem, uma vez liquidados todos os direitos dos credores, os direitos frente ao valor residual da empresa. Os títulos de participação no capital englobam as ações negociadas ou não em bolsa e outros tipos de participação no capital. Títulos de renda fixa são os instrumentos de dívida que exigem pagamento de juros e/ou principal em algum momento futuro. Os instrumentos de dívida que sensibilizam essa conta são aqueles que podem ser negociados em mercados secundários. Os papéis com prazo de vencimento original inferior a um ano são considerados de curto prazo, e os com vencimento original superior a esse prazo, de longo prazo. **Investimento em carteira passivos** são definidos como transações e posições realizadas através de títulos de dívida ou de capital, distintos dos incluídos em investimento direto. São registrados fluxos constituídos pela emissão de títulos de crédito comumente negociados em mercados secundários. Divide-se em dois instrumentos principais: ações e cotas em fundos e título de renda fixa. Ações e cotas em fundos compreendem todos os instrumentos e registros que reconhecem, uma vez liquidados todos os direitos dos credores, os direitos frente ao valor residual da empresa. Os títulos de participação no capital englobam as ações negociadas ou não em bolsa e outros tipos de participação no capital. Títulos de renda fixa são os instrumentos de dívida exigem pagamento de juros e/ou principal em algum momento futuro. Os instrumentos de dívida que sensibilizam essa conta são aqueles que podem ser negociados em mercados secundários. Os papéis com prazo de vencimento original inferior a um ano são considerados de curto prazo, e os com vencimento original superior a esse prazo, de longo prazo.
 
 <br>
 
@@ -6318,7 +6548,7 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 Column {data-width=350}  {.tabset}
 -----------------------------------------------------------------------
 
-### US$ bilhões
+### IC mensal
 ```{r}
 plot_ly(
   data = inv_cart, 
@@ -6333,6 +6563,24 @@ plot_ly(
       title = "US$ bilhões",
       tick0 = 0,
       dtick = 5
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### IC em 12 meses
+```{r}
+plot_ly(
+  data = inv_cart, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", inv_cart_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "US$ bilhões"
     )
   ) %>%
   rangeslider(thickness = 0.05)
@@ -6363,7 +6611,7 @@ Column {data-width=350}  {.tabset}
 ### Quadro-síntese
 ```{r}
 reactable(
-  inv_cart[, -4],
+  inv_cart[, -5],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -6371,7 +6619,12 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor = colDef(
-      name = "Saldo investimento em carteira",
+      name = "Saldo IC",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    inv_cart_12m = colDef(
+      name = "Saldo IC em 12 meses",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -6402,7 +6655,6 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 **Outros investimentos** é uma conta residual da conta financeira, dividida em ativos e passivos. Transações não incluídas em investimento direto, de carteira, derivativos financeiros ou ativos de reserva são registradas como outros investimentos, a exemplo de empréstimos, financiamento, créditos comerciais e depósitos. Os fluxos ativos e passivos se classificam principalmente por categorias dos instrumentos, por setores institucionais do residente e por prazo de vencimento.
 
 <br>
@@ -15709,7 +15961,136 @@ reactable(
 )
 ```
 
-# Rendimento médio {data-navmenu="Trabalho"}
+# Rendimento médio efetivo {data-navmenu="Trabalho"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Rendimento bruto nominal e real médio habitualmente recebido** no trabalho principal que as pessoas ocupadas com rendimento tinham na semana referência. A série em termos reais (deflacionada pelo IPCA) é a preços do mês do meio do trimestre mais recente que está sendo divulgado. O **rendimento habitual** consiste no rendimento recebido por empregados, empregadores e trabalhadores por conta própria, mensalmente, sem acréscimos extraordinários ou descontos esporádicos. 
+
+<br>
+
+**Rendimento bruto nominal real médio efetivamente recebido** no mês de referência no trabalho principal que as pessoas ocupadas com rendimento tinham na semana referência. A série em termos reais (deflacionada pelo IPCA) é a preços do mês do meio do trimestre mais recente que está sendo divulgado. O **rendimento efetivo** consiste no rendimento de fato recebido em qualquer posição na ocupação, no mês de referência, incluindo todos os pagamentos que não tenham caráter contínuo e considerando os descontos por ausências no trabalho.
+
+<br>
+
+As informações dos indicadores são divulgados a cada mês referentes ao último trimestre móvel. 
+ 
+ <br>
+
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
+
+Column {data-width=800}  {.tabset}
+-----------------------------------------------------------------------
+### Rendimento médio efetivo mensal nominal e real
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = rend,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Rendimento médio mensal nominal"
+  ) %>%
+  add_trace(
+    data =rend,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Rendimento médio mensal real"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "Mil R$", dtick = 1),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Quadro-síntese
+```{r}
+reactable(
+  rend[, -12],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Rend. médio mensal nominal (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Rend. médio mensal real (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. % três trim. móveis ant. (rend. nominal)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. três trim. móveis ant. (rend. nominal) (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. % mesmo trim. móvel ano ant. (rend. nominal)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. mesmo trim. móvel ano ant. (rend. nominal) (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. % três trim. móveis ant. (rend. real)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. três trim. móveis ant. (rend. real) (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. % mesmo trim. móvel ano ant. (rend. real)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. mesmo trim. móvel ano ant. (rend. real) (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Rendimento médio habitual {data-navmenu="Trabalho"}
 
 # Salário mínimo {data-navmenu="Trabalho"}
 
