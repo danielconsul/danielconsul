@@ -32,25 +32,598 @@ library(rio)
 library(tsibble)
 ```
 
-```{r, cache=TRUE}
+```{r, cache=FALSE}
 # Coleta de dados:
 
 # API key FRED
 fredr_set_key("0087fc9b146c214d78104e3737039ea4")
 
-# RENDIMENTO MÉDIO EFETIVO DO TRABALHO:
-rend <- sidrar::get_sidra(
-  api = "/t/6387/n1/all/v/5931,5935,8843,8844,8848,8849,8854,8855,8859,8860/p/all/d/v8843%201,v8848%201,v8854%201,v8859%201"
+# RESULTADO PRIMÁRIO:
+## GOVERNO CENTRAL (GOVERNO FEDERAL + BANCO CENTRAL):
+rp_gc_reais_corr <- get_series(
+  code = c(valor_rp_gc_reais_corr = 4639)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_gc_acum_ano <- get_series(
+  code = c(valor_rp_gc_acum_ano = 4782)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_gc_acum_12m <- get_series(
+  code = c(valor_rp_gc_acum_12m = 5068)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_gc_mensal_pib <- get_series(
+  code = c(valor_rp_gc_mensal_pib = 5354)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_gc_acum_ano_pib <- get_series(
+  code = c(valor_rp_gc_acum_ano_pib = 5497)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_gc_acum_12m_pib <- get_series(
+  code = c(valor_rp_gc_acum_12m_pib = 5783)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_gc <- rp_gc_reais_corr %>% 
+  left_join(rp_gc_acum_ano) %>% 
+  left_join(rp_gc_acum_12m) %>% 
+  left_join(rp_gc_mensal_pib) %>% 
+  left_join(rp_gc_acum_ano_pib) %>% 
+  left_join(rp_gc_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rp_gc_reais_corr = number(valor_rp_gc_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_gc_acum_ano = number(valor_rp_gc_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_gc_acum_12m = number(valor_rp_gc_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_gc_mensal_pib = number(valor_rp_gc_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_gc_acum_ano_pib = number(valor_rp_gc_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_gc_acum_12m_pib = number(valor_rp_gc_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rp_gc_reais_corr, valor_rp_gc_acum_ano, valor_rp_gc_acum_12m, valor_rp_gc_mensal_pib, valor_rp_gc_acum_ano_pib, valor_rp_gc_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## GOVERNO FEDERAL:
+rp_gf_reais_corr <- get_series(
+  code = c(valor_rp_gf_reais_corr = 4640)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_gf_acum_ano <- get_series(
+  code = c(valor_rp_gf_acum_ano = 4783)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_gf_acum_12m <- get_series(
+  code = c(valor_rp_gf_acum_12m = 5069)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_gf_mensal_pib <- get_series(
+  code = c(valor_rp_gf_mensal_pib = 5355)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_gf_acum_ano_pib <- get_series(
+  code = c(valor_rp_gf_acum_ano_pib = 5498)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_gf_acum_12m_pib <- get_series(
+  code = c(valor_rp_gf_acum_12m_pib = 5784)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_gf <- rp_gf_reais_corr %>% 
+  left_join(rp_gf_acum_ano) %>% 
+  left_join(rp_gf_acum_12m) %>% 
+  left_join(rp_gf_mensal_pib) %>% 
+  left_join(rp_gf_acum_ano_pib) %>% 
+  left_join(rp_gf_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rp_gf_reais_corr = number(valor_rp_gf_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_gf_acum_ano = number(valor_rp_gf_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_gf_acum_12m = number(valor_rp_gf_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_gf_mensal_pib = number(valor_rp_gf_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_gf_acum_ano_pib = number(valor_rp_gf_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_gf_acum_12m_pib = number(valor_rp_gf_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rp_gf_reais_corr, valor_rp_gf_acum_ano, valor_rp_gf_acum_12m, valor_rp_gf_mensal_pib, valor_rp_gf_acum_ano_pib, valor_rp_gf_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## BANCO CENTRAL:
+rp_bc_reais_corr <- get_series(
+  code = c(valor_rp_bc_reais_corr = 4641)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_bc_acum_ano <- get_series(
+  code = c(valor_rp_bc_acum_ano = 4784)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_bc_acum_12m <- get_series(
+  code = c(valor_rp_bc_acum_12m = 5070)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_bc_mensal_pib <- get_series(
+  code = c(valor_rp_bc_mensal_pib = 5356)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_bc_acum_ano_pib <- get_series(
+  code = c(valor_rp_bc_acum_ano_pib = 5499)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_bc_acum_12m_pib <- get_series(
+  code = c(valor_rp_bc_acum_12m_pib = 5785)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_bc <- rp_bc_reais_corr %>% 
+  left_join(rp_bc_acum_ano) %>% 
+  left_join(rp_bc_acum_12m) %>% 
+  left_join(rp_bc_mensal_pib) %>% 
+  left_join(rp_bc_acum_ano_pib) %>% 
+  left_join(rp_bc_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rp_bc_reais_corr = number(valor_rp_bc_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_bc_acum_ano = number(valor_rp_bc_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_bc_acum_12m = number(valor_rp_bc_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_bc_mensal_pib = number(valor_rp_bc_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_bc_acum_ano_pib = number(valor_rp_bc_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_bc_acum_12m_pib = number(valor_rp_bc_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rp_bc_reais_corr, valor_rp_bc_acum_ano, valor_rp_bc_acum_12m, valor_rp_bc_mensal_pib, valor_rp_bc_acum_ano_pib, valor_rp_bc_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## GOVERNOS ESTADUAIS E MUNICIPAIS:
+rp_em_reais_corr <- get_series(
+  code = c(valor_rp_em_reais_corr = 4642)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_em_acum_ano <- get_series(
+  code = c(valor_rp_em_acum_ano = 4785)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_em_acum_12m <- get_series(
+  code = c(valor_rp_em_acum_12m = 5071)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_em_mensal_pib <- get_series(
+  code = c(valor_rp_em_mensal_pib = 5357)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_em_acum_ano_pib <- get_series(
+  code = c(valor_rp_em_acum_ano_pib = 5500)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_em_acum_12m_pib <- get_series(
+  code = c(valor_rp_em_acum_12m_pib = 5786)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_em <- rp_em_reais_corr %>% 
+  left_join(rp_em_acum_ano) %>% 
+  left_join(rp_em_acum_12m) %>% 
+  left_join(rp_em_mensal_pib) %>% 
+  left_join(rp_em_acum_ano_pib) %>% 
+  left_join(rp_em_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rp_em_reais_corr = number(valor_rp_em_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_em_acum_ano = number(valor_rp_em_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_em_acum_12m = number(valor_rp_em_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_em_mensal_pib = number(valor_rp_em_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_em_acum_ano_pib = number(valor_rp_em_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_em_acum_12m_pib = number(valor_rp_em_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rp_em_reais_corr, valor_rp_em_acum_ano, valor_rp_em_acum_12m, valor_rp_em_mensal_pib, valor_rp_em_acum_ano_pib, valor_rp_em_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## GOVERNOS ESTADUAIS:
+rp_estad_reais_corr <- get_series(
+  code = c(valor_rp_estad_reais_corr = 4643)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estad_acum_ano <- get_series(
+  code = c(valor_rp_estad_acum_ano = 4786)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estad_acum_12m <- get_series(
+  code = c(valor_rp_estad_acum_12m = 5072)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estad_mensal_pib <- get_series(
+  code = c(valor_rp_estad_mensal_pib = 5358)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estad_acum_ano_pib <- get_series(
+  code = c(valor_rp_estad_acum_ano_pib = 5501)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estad_acum_12m_pib <- get_series(
+  code = c(valor_rp_estad_acum_12m_pib = 5787)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estad <- rp_estad_reais_corr %>% 
+  left_join(rp_estad_acum_ano) %>% 
+  left_join(rp_estad_acum_12m) %>% 
+  left_join(rp_estad_mensal_pib) %>% 
+  left_join(rp_estad_acum_ano_pib) %>% 
+  left_join(rp_estad_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rp_estad_reais_corr = number(valor_rp_estad_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estad_acum_ano = number(valor_rp_estad_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estad_acum_12m = number(valor_rp_estad_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estad_mensal_pib = number(valor_rp_estad_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estad_acum_ano_pib = number(valor_rp_estad_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estad_acum_12m_pib = number(valor_rp_estad_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rp_estad_reais_corr, valor_rp_estad_acum_ano, valor_rp_estad_acum_12m, valor_rp_estad_mensal_pib, valor_rp_estad_acum_ano_pib, valor_rp_estad_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## GOVERNOS MUNICIPAIS:
+rp_munic_reais_corr <- get_series(
+  code = c(valor_rp_munic_reais_corr = 4644)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_munic_acum_ano <- get_series(
+  code = c(valor_rp_munic_acum_ano = 4787)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_munic_acum_12m <- get_series(
+  code = c(valor_rp_munic_acum_12m = 5073)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_munic_mensal_pib <- get_series(
+  code = c(valor_rp_munic_mensal_pib = 5359)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_munic_acum_ano_pib <- get_series(
+  code = c(valor_rp_munic_acum_ano_pib = 5502)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_munic_acum_12m_pib <- get_series(
+  code = c(valor_rp_munic_acum_12m_pib = 5788)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_munic <- rp_munic_reais_corr %>% 
+  left_join(rp_munic_acum_ano) %>% 
+  left_join(rp_munic_acum_12m) %>% 
+  left_join(rp_munic_mensal_pib) %>% 
+  left_join(rp_munic_acum_ano_pib) %>% 
+  left_join(rp_munic_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rp_munic_reais_corr = number(valor_rp_munic_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_munic_acum_ano = number(valor_rp_munic_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_munic_acum_12m = number(valor_rp_munic_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_munic_mensal_pib = number(valor_rp_munic_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_munic_acum_ano_pib = number(valor_rp_munic_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_munic_acum_12m_pib = number(valor_rp_munic_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rp_munic_reais_corr, valor_rp_munic_acum_ano, valor_rp_munic_acum_12m, valor_rp_munic_mensal_pib, valor_rp_munic_acum_ano_pib, valor_rp_munic_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## EMPRESAS ESTATAIS:
+rp_estatais_reais_corr <- get_series(
+  code = c(valor_rp_estatais_reais_corr = 4645)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estatais_acum_ano <- get_series(
+  code = c(valor_rp_estatais_acum_ano = 4788)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estatais_acum_12m <- get_series(
+  code = c(valor_rp_estatais_acum_12m = 5074)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estatais_mensal_pib <- get_series(
+  code = c(valor_rp_estatais_mensal_pib = 5360)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estatais_acum_ano_pib <- get_series(
+  code = c(valor_rp_estatais_acum_ano_pib = 5503)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estatais_acum_12m_pib <- get_series(
+  code = c(valor_rp_estatais_acum_12m_pib = 5789)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estatais <- rp_estatais_reais_corr %>% 
+  left_join(rp_estatais_acum_ano) %>% 
+  left_join(rp_estatais_acum_12m) %>% 
+  left_join(rp_estatais_mensal_pib) %>% 
+  left_join(rp_estatais_acum_ano_pib) %>% 
+  left_join(rp_estatais_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rp_estatais_reais_corr = number(valor_rp_estatais_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estatais_acum_ano = number(valor_rp_estatais_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estatais_acum_12m = number(valor_rp_estatais_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estatais_mensal_pib = number(valor_rp_estatais_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estatais_acum_ano_pib = number(valor_rp_estatais_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estatais_acum_12m_pib = number(valor_rp_estatais_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rp_estatais_reais_corr, valor_rp_estatais_acum_ano, valor_rp_estatais_acum_12m, valor_rp_estatais_mensal_pib, valor_rp_estatais_acum_ano_pib, valor_rp_estatais_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## EMPRESAS ESTATAIS FEDERAIS:
+rp_estataisfed_reais_corr <- get_series(
+  code = c(valor_rp_estataisfed_reais_corr = 4646)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataisfed_acum_ano <- get_series(
+  code = c(valor_rp_estataisfed_acum_ano = 4789)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataisfed_acum_12m <- get_series(
+  code = c(valor_rp_estataisfed_acum_12m = 5075)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataisfed_mensal_pib <- get_series(
+  code = c(valor_rp_estataisfed_mensal_pib = 5361)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataisfed_acum_ano_pib <- get_series(
+  code = c(valor_rp_estataisfed_acum_ano_pib = 5504)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataisfed_acum_12m_pib <- get_series(
+  code = c(valor_rp_estataisfed_acum_12m_pib = 5790)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataisfed <- rp_estataisfed_reais_corr %>% 
+  left_join(rp_estataisfed_acum_ano) %>% 
+  left_join(rp_estataisfed_acum_12m) %>% 
+  left_join(rp_estataisfed_mensal_pib) %>% 
+  left_join(rp_estataisfed_acum_ano_pib) %>% 
+  left_join(rp_estataisfed_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rp_estataisfed_reais_corr = number(valor_rp_estataisfed_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estataisfed_acum_ano = number(valor_rp_estataisfed_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estataisfed_acum_12m = number(valor_rp_estataisfed_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estataisfed_mensal_pib = number(valor_rp_estataisfed_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estataisfed_acum_ano_pib = number(valor_rp_estataisfed_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estataisfed_acum_12m_pib = number(valor_rp_estataisfed_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rp_estataisfed_reais_corr, valor_rp_estataisfed_acum_ano, valor_rp_estataisfed_acum_12m, valor_rp_estataisfed_mensal_pib, valor_rp_estataisfed_acum_ano_pib, valor_rp_estataisfed_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## EMPRESAS ESTATAIS ESTADUAIS:
+rp_estataisestad_reais_corr <- get_series(
+  code = c(valor_rp_estataisestad_reais_corr = 4647)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataisestad_acum_ano <- get_series(
+  code = c(valor_rp_estataisestad_acum_ano = 4790)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataisestad_acum_12m <- get_series(
+  code = c(valor_rp_estataisestad_acum_12m = 5076)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataisestad_mensal_pib <- get_series(
+  code = c(valor_rp_estataisestad_mensal_pib = 5362)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataisestad_acum_ano_pib <- get_series(
+  code = c(valor_rp_estataisestad_acum_ano_pib = 5505)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataisestad_acum_12m_pib <- get_series(
+  code = c(valor_rp_estataisestad_acum_12m_pib = 5791)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataisestad <- rp_estataisestad_reais_corr %>% 
+  left_join(rp_estataisestad_acum_ano) %>% 
+  left_join(rp_estataisestad_acum_12m) %>% 
+  left_join(rp_estataisestad_mensal_pib) %>% 
+  left_join(rp_estataisestad_acum_ano_pib) %>% 
+  left_join(rp_estataisestad_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rp_estataisestad_reais_corr = number(valor_rp_estataisestad_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estataisestad_acum_ano = number(valor_rp_estataisestad_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estataisestad_acum_12m = number(valor_rp_estataisestad_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estataisestad_mensal_pib = number(valor_rp_estataisestad_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estataisestad_acum_ano_pib = number(valor_rp_estataisestad_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estataisestad_acum_12m_pib = number(valor_rp_estataisestad_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rp_estataisestad_reais_corr, valor_rp_estataisestad_acum_ano, valor_rp_estataisestad_acum_12m, valor_rp_estataisestad_mensal_pib, valor_rp_estataisestad_acum_ano_pib, valor_rp_estataisestad_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## EMPRESAS ESTATAIS MUNICIPAIS:
+rp_estataismunic_reais_corr <- get_series(
+  code = c(valor_rp_estataismunic_reais_corr = 4648)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataismunic_acum_ano <- get_series(
+  code = c(valor_rp_estataismunic_acum_ano = 4791)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataismunic_acum_12m <- get_series(
+  code = c(valor_rp_estataismunic_acum_12m = 5077)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataismunic_mensal_pib <- get_series(
+  code = c(valor_rp_estataismunic_mensal_pib = 5363)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataismunic_acum_ano_pib <- get_series(
+  code = c(valor_rp_estataismunic_acum_ano_pib = 5506)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataismunic_acum_12m_pib <- get_series(
+  code = c(valor_rp_estataismunic_acum_12m_pib = 5792)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_estataismunic <- rp_estataismunic_reais_corr %>% 
+  left_join(rp_estataismunic_acum_ano) %>% 
+  left_join(rp_estataismunic_acum_12m) %>% 
+  left_join(rp_estataismunic_mensal_pib) %>% 
+  left_join(rp_estataismunic_acum_ano_pib) %>% 
+  left_join(rp_estataismunic_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rp_estataismunic_reais_corr = number(valor_rp_estataismunic_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estataismunic_acum_ano = number(valor_rp_estataismunic_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estataismunic_acum_12m = number(valor_rp_estataismunic_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estataismunic_mensal_pib = number(valor_rp_estataismunic_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estataismunic_acum_ano_pib = number(valor_rp_estataismunic_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_estataismunic_acum_12m_pib = number(valor_rp_estataismunic_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rp_estataismunic_reais_corr, valor_rp_estataismunic_acum_ano, valor_rp_estataismunic_acum_12m, valor_rp_estataismunic_mensal_pib, valor_rp_estataismunic_acum_ano_pib, valor_rp_estataismunic_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## SETOR PÚBLICO CONSOLIDADO:
+rp_spc_reais_corr <- get_series(
+  code = c(valor_rp_spc_reais_corr = 4649)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_spc_acum_ano <- get_series(
+  code = c(valor_rp_spc_acum_ano = 4792)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_spc_acum_12m <- get_series(
+  code = c(valor_rp_spc_acum_12m = 5078)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_spc_mensal_pib <- get_series(
+  code = c(valor_rp_spc_mensal_pib = 5364)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_spc_acum_ano_pib <- get_series(
+  code = c(valor_rp_spc_acum_ano_pib = 5507)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_spc_acum_12m_pib <- get_series(
+  code = c(valor_rp_spc_acum_12m_pib = 5793)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_spc <- rp_spc_reais_corr %>% 
+  left_join(rp_spc_acum_ano) %>% 
+  left_join(rp_spc_acum_12m) %>% 
+  left_join(rp_spc_mensal_pib) %>% 
+  left_join(rp_spc_acum_ano_pib) %>% 
+  left_join(rp_spc_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rp_spc_reais_corr = number(valor_rp_spc_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_spc_acum_ano = number(valor_rp_spc_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_spc_acum_12m = number(valor_rp_spc_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_spc_mensal_pib = number(valor_rp_spc_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_spc_acum_ano_pib = number(valor_rp_spc_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_spc_acum_12m_pib = number(valor_rp_spc_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rp_spc_reais_corr, valor_rp_spc_acum_ano, valor_rp_spc_acum_12m, valor_rp_spc_mensal_pib, valor_rp_spc_acum_ano_pib, valor_rp_spc_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## GOVERNO FEDERAL SEM INSS:
+rp_govfedseminss_reais_corr <- get_series(
+  code = c(valor_rp_govfedseminss_reais_corr = 7853)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_govfedseminss_acum_ano <- get_series(
+  code = c(valor_rp_govfedseminss_acum_ano = 7855)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_govfedseminss_acum_12m <- get_series(
+  code = c(valor_rp_govfedseminss_acum_12m = 7859)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_govfedseminss_mensal_pib <- get_series(
+  code = c(valor_rp_govfedseminss_mensal_pib = 7863)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_govfedseminss_acum_ano_pib <- get_series(
+  code = c(valor_rp_govfedseminss_acum_ano_pib = 7865)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_govfedseminss_acum_12m_pib <- get_series(
+  code = c(valor_rp_govfedseminss_acum_12m_pib = 7869)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_govfedseminss <- rp_govfedseminss_reais_corr %>% 
+  left_join(rp_govfedseminss_acum_ano) %>% 
+  left_join(rp_govfedseminss_acum_12m) %>% 
+  left_join(rp_govfedseminss_mensal_pib) %>% 
+  left_join(rp_govfedseminss_acum_ano_pib) %>% 
+  left_join(rp_govfedseminss_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rp_govfedseminss_reais_corr = number(valor_rp_govfedseminss_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_govfedseminss_acum_ano = number(valor_rp_govfedseminss_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_govfedseminss_acum_12m = number(valor_rp_govfedseminss_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_govfedseminss_mensal_pib = number(valor_rp_govfedseminss_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_govfedseminss_acum_ano_pib = number(valor_rp_govfedseminss_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_govfedseminss_acum_12m_pib = number(valor_rp_govfedseminss_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rp_govfedseminss_reais_corr, valor_rp_govfedseminss_acum_ano, valor_rp_govfedseminss_acum_12m, valor_rp_govfedseminss_mensal_pib, valor_rp_govfedseminss_acum_ano_pib, valor_rp_govfedseminss_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## INSS:
+rp_inss_reais_corr <- get_series(
+  code = c(valor_rp_inss_reais_corr = 7854)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_inss_acum_ano <- get_series(
+  code = c(valor_rp_inss_acum_ano = 7856)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_inss_acum_12m <- get_series(
+  code = c(valor_rp_inss_acum_12m = 7860)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_inss_mensal_pib <- get_series(
+  code = c(valor_rp_inss_mensal_pib = 7864)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_inss_acum_ano_pib <- get_series(
+  code = c(valor_rp_inss_acum_ano_pib = 7866)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_inss_acum_12m_pib <- get_series(
+  code = c(valor_rp_inss_acum_12m_pib = 7870)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rp_inss <- rp_inss_reais_corr %>% 
+  left_join(rp_inss_acum_ano) %>% 
+  left_join(rp_inss_acum_12m) %>% 
+  left_join(rp_inss_mensal_pib) %>% 
+  left_join(rp_inss_acum_ano_pib) %>% 
+  left_join(rp_inss_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rp_inss_reais_corr = number(valor_rp_inss_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_inss_acum_ano = number(valor_rp_inss_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_inss_acum_12m = number(valor_rp_inss_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_inss_mensal_pib = number(valor_rp_inss_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_inss_acum_ano_pib = number(valor_rp_inss_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rp_inss_acum_12m_pib = number(valor_rp_inss_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rp_inss_reais_corr, valor_rp_inss_acum_ano, valor_rp_inss_acum_12m, valor_rp_inss_mensal_pib, valor_rp_inss_acum_ano_pib, valor_rp_inss_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# RENDIMENTO MÉDIO HABITUAL DO TRABALHO:
+rend_hab <- sidrar::get_sidra(
+  api = "/t/6390/n1/all/v/5929,5933,8821,8822,8826,8827,8832,8833,8837,8838/p/all/d/v8821%201,v8826%201,v8832%201,v8837%201"
 )
 
-rend <- rend %>% mutate(
+rend_hab <- rend_hab %>% mutate(
   date = lubridate::ym(`Trimestre Móvel (Código)`),
   variavel = Variável,
   valor = Valor,
   .keep = "none"
 )
 
-rend <- rend %>% pivot_wider(names_from = variavel, values_from = valor) %>% mutate(
+rend_hab <- rend_hab %>% pivot_wider(names_from = variavel, values_from = valor) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+  `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = number(`Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
+) %>% select(data_fmt, `Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`, date) %>% arrange(desc(date))
+
+# RENDIMENTO MÉDIO EFETIVO DO TRABALHO:
+rend_efet <- sidrar::get_sidra(
+  api = "/t/6387/n1/all/v/5931,5935,8843,8844,8848,8849,8854,8855,8859,8860/p/all/d/v8843%201,v8848%201,v8854%201,v8859%201"
+)
+
+rend_efet <- rend_efet %>% mutate(
+  date = lubridate::ym(`Trimestre Móvel (Código)`),
+  variavel = Variável,
+  valor = Valor,
+  .keep = "none"
+)
+
+rend_efet <- rend_efet %>% pivot_wider(names_from = variavel, values_from = valor) %>% mutate(
   data_fmt = format(date, "%m/%Y"),
   `Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
   `Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = number(`Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`, big.mark = ".", decimal.mark = ","),
@@ -3349,7 +3922,7 @@ Columns {.sidebar} {data-width=250}
 
 <div style="font-size:18px">
 Este _dashboard_ apresenta de forma centralizada uma série de dados macroeconômicos brasileiros nas últimas décadas.
-São apresentadas informações referentes ao balanço de pagamentos, termos de troca, preços e índices de commodities, estatísticas fiscais, inflação, estatísticas monetárias, produção, reservas internacionais e taxa de câmbio através de dados com frequências diárias, mensais, trimestrais e anuais coletados junto a órgãos como Banco Central do Brasil (BCB), Instituto Brasileiro de Geografia e Estatística (IBGE) e Instituto de Pesquisa Econômica Aplicada (IPEA).
+São apresentadas informações referentes ao balanço de pagamentos, termos de troca, reservas internacionais, preços e índices de commodities, estatísticas fiscais, inflação, mercado de trabalho, estatísticas monetárias, produção e taxa de câmbio através de dados com frequências diárias, mensais, trimestrais e anuais coletados junto a órgãos como Banco Central do Brasil (BCB), Instituto Brasileiro de Geografia e Estatística (IBGE) e Instituto de Pesquisa Econômica Aplicada (IPEA).
 
 <br>
 
@@ -6899,6 +7472,219 @@ reactable(
 )
 ```
 
+# Reservas internacionais {data-navmenu="Balanço de pagamentos"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+
+As **reservas internacionais** compreendem os ativos externos do país prontamente disponíveis e mantidos pelo Banco Central do Brasil com o objetivo de financiar eventuais déficits do balanço de pagamentos.
+
+<br>
+
+De acordo com o [Relatório de Gestão das Reservas Internacionais](https://www.bcb.gov.br/publicacoes/relgestaoreservas) do Banco Central do Brasil de março de 2025, em dezembro de 2024 a alocação das reservas por moedas se dava da seguinte maneira: 78,45% em dólar americano (USD), 5,31% em renminbi (CNY), 5,23% em euro (EUR), 3,69% em libra esterlina (GBP), 3,55% em ouro, 1,73% em iene (JPY), 1,05% em dólar canadense (CAD) e 0,99% em dólar australiano (AUD).
+
+<br>
+
+Também em dezembro de 2024, 84,08% das reservas pelo conceito caixa estavam aplicadas em títulos governamentais soberanos.
+
+<br>
+
+O prazo médio de investimento em 2024 foi de 3,19 anos.
+
+<br>
+
+**Fontes:** Código 3546 do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries) e [DataBank (World Bank)](https://databank.worldbank.org/)
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### US$ bilhões
+```{r}
+plot_ly(
+  data = res_int, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US$ bilhões")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Var. mensal (%)
+```{r}
+plot_ly(
+  data = res_int, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)), 
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Var. em 12 meses (%)
+```{r}
+plot_ly(
+  data = res_int, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)), 
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%", dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### % dívida externa total
+```{r}
+plot_ly(
+  data = res_int_div_ext, 
+  x = ~ano, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Meses de importações
+```{r}
+plot_ly(
+  data = res_int_imports, 
+  x = ~ano, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Meses de importações")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese
+```{r}
+reactable(
+  res_int[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "US$ bilhões",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### % dívida externa total
+```{r}
+reactable(
+  res_int_div_ext,
+  columns = list(
+    ano = colDef(
+      name = "Ano",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "% dívida externa total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Meses de importações
+```{r}
+reactable(
+  res_int_imports,
+  columns = list(
+    ano = colDef(
+      name = "Ano",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Meses de importações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # Termos de troca {data-navmenu="Balanço de pagamentos"}
 
 Column {.sidebar} {data-width=200}
@@ -8659,42 +9445,942 @@ Column {data-width=920}  {.tabset}
 
 # Resultado primário {data-navmenu="Fiscal"}
 
-Column {.sidebar} {data-width=80}
+Column {.sidebar} {data-width=150}
+-----------------------------------------------------------------------
+O **resultado primário** é o componente não-financeiro do resultado fiscal do setor público. Corresponde ao resultado nominal menos os juros nominais apropriados por competência, incidentes sobre a dívida.
+
+Trata-se de séries de fluxo mensal corrente, fluxo acumulado no ano e fluxo acumulado em 12 meses em reais correntes e como % do PIB para governo central (governo federal e Banco Central), governo federal, Banco Central, governos estaduais e municipais, governos estaduais, governos municipais, empresas Estatais, empresas Estatais federais, empresas Estatais estaduais, empresas Estatais municipais, setor público consolidado, governo federal sem INSS e INSS.
+
+<br>
+
+Obs.: Valores positivos representam déficits primários. Valores negativos representam superávits primários.
+
+<br>
+
+**Fonte:** Estatísticas fiscais (necessidades de financiamento sem desvalorização cambial) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+
+Column {data-width=850}  {.tabset}
 -----------------------------------------------------------------------
 
-Column {data-width=920}  {.tabset}
------------------------------------------------------------------------
+### Gov. Central (GF + BC)
+```{r}
+reactable(
+  rp_gc[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_gc_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_gc_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_gc_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_gc_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_gc_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_gc_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
-### Governo Central (GF + BC)
+### Gov. Central (Gráfico)
+```{r}
+plot_ly(
+  data = rp_gc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rp_gc_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
-### Governo Central (Gráfico)
+### Gov. Federal (GF)
+```{r}
+reactable(
+  rp_gf[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_gf_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_gf_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_gf_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_gf_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_gf_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_gf_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
-### Governo Federal (GF)
+### Gov. Federal (Gráfico)
+```{r}
+plot_ly(
+  data = rp_gf, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rp_gf_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Banco Central (BC)
+```{r}
+reactable(
+  rp_bc[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_bc_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_bc_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_bc_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_bc_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_bc_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_bc_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
-### Governos estaduais e municipais
+### Banco Central (Gráfico)
+```{r}
+plot_ly(
+  data = rp_bc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rp_bc_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
-### Governos estaduais
+### Gov. estaduais e municipais
+```{r}
+reactable(
+  rp_em[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_em_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_em_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_em_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_em_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_em_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_em_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
-### Governos municipais
+### Gov. estaduais e municipais (Gráfico)
+```{r}
+plot_ly(
+  data = rp_em, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rp_em_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Gov. estaduais
+```{r}
+reactable(
+  rp_estad[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estad_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estad_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estad_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estad_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estad_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estad_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Gov. estaduais (Gráfico)
+```{r}
+plot_ly(
+  data = rp_estad, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rp_estad_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Gov. municipais
+```{r}
+reactable(
+  rp_munic[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_munic_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_munic_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_munic_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_munic_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_munic_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_munic_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Gov. municipais (Gráfico)
+```{r}
+plot_ly(
+  data = rp_munic, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rp_munic_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Empresas Estatais
+```{r}
+reactable(
+  rp_estatais[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estatais_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estatais_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estatais_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estatais_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estatais_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estatais_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Empresas Estatais (Gráfico)
+```{r}
+plot_ly(
+  data = rp_estatais, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rp_estatais_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Empresas Estatais Federais
+```{r}
+plot_ly(
+  data = rp_munic, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rp_munic_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Empresas Estatais Federais (Gráfico)
+```{r}
+plot_ly(
+  data = rp_estataisfed, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rp_estataisfed_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Empresas Estatais estaduais
+```{r}
+reactable(
+  rp_estataisestad[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataisestad_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataisestad_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataisestad_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataisestad_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataisestad_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataisestad_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Empresas Estatais estaduais (Gráfico)
+```{r}
+plot_ly(
+  data = rp_estataisestad, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rp_estataisestad_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Empresas Estatais municipais
+```{r}
+reactable(
+  rp_estataismunic[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataismunic_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataismunic_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataismunic_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataismunic_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataismunic_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataismunic_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Empresas Estatais municipais (Gráfico)
+```{r}
+plot_ly(
+  data = rp_estataismunic, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rp_estataismunic_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Setor público consolidado
+```{r}
+reactable(
+  rp_spc[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_spc_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_spc_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_spc_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_spc_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_spc_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_spc_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 ### Setor público consolidado (Gráfico)
+```{r}
+plot_ly(
+  data = rp_spc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rp_spc_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
-### Governo Federal sem INSS
+### Gov. Federal sem INSS
+```{r}
+reactable(
+  rp_govfedseminss[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_govfedseminss_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_govfedseminss_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_govfedseminss_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_govfedseminss_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_govfedseminss_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_govfedseminss_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Gov. Federal sem INSS (Gráfico)
+```{r}
+plot_ly(
+  data = rp_govfedseminss, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rp_govfedseminss_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### INSS
+```{r}
+reactable(
+  rp_inss[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_inss_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_inss_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_inss_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_inss_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_inss_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_inss_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
+### INSS (Gráfico)
+```{r}
+plot_ly(
+  data = rp_inss, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rp_inss_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 # Índice de Preços ao Consumidor Amplo (IPCA) {data-navmenu="Inflação"}
 
@@ -11531,6 +13217,1088 @@ reactable(
     ),
     `9.Comunicação` = colDef(
       name = "9. Comunicação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# CAGED {data-navmenu="Mercado de trabalho"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Cadastro Geral de Empregados e Desempregados**. Para empregados consideram-se aqueles contratados por empregadores, pessoa física ou jurídica, sob o regime da CLT, por prazo indeterminado ou determinado, incluindo-se também os contratados a título de experiência ou para prestação de trabalho intermitente. Esta classificação abrange: empregados sob o regime CLT, trabalhadores temporários, trabalhadores avulsos, agentes públicos, trabalhadores cedidos e dirigentes sindicais. Os dados referem-se ao total de admissões e demissões de empregados.
+
+<br>
+
+**Fonte:** Ministério do Trabalho e Emprego via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Gráfico
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = caged_graph,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", adm)),
+    type = "bar",
+    name = "Admissões"
+  ) %>%
+  add_trace(
+    data = caged_graph,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", dem)),
+    type = "bar",
+    name = "Demissões"
+  ) %>%
+  add_trace(
+    data = caged_graph,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", saldo)),
+    type = "bar",
+    name = "Saldo"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "Admissões, demissões e saldo", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese
+```{r}
+reactable(
+  caged[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    adm = colDef(
+      name = "Admissões (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    dem = colDef(
+      name = "Demissões (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    saldo = colDef(
+      name = "Saldo (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Massa de rendimento efetivo {data-navmenu="Mercado de trabalho"}
+
+Column {.sidebar} {data-width=100}
+-----------------------------------------------------------------------
+A **massa de rendimento efetivo** é a soma dos rendimentos brutos nominais efetivamente recebidos no mês de referência por todas as pessoas ocupadas em todos os trabalhos que tinham na semana de referência. As informações dos indicadores são divulgados a cada mês referentes ao último trimestre móvel.
+
+O **rendimento efetivo** consiste no rendimento de fato recebido em qualquer posição na ocupação, no mês de referência, incluindo todos os pagamentos que não tenham caráter contínuo e considerando os descontos por ausências no trabalho
+
+<br>
+
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
+
+Column {data-width=900}  {.tabset}
+-----------------------------------------------------------------------
+
+### Massa de rendimento mensal efetivo nominal e real
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = massa_rend_efet,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Massa de rendimento mensal nominal efetivo"
+  ) %>%
+  add_trace(
+    data = massa_rend_efet,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Massa de rendimento mensal real efetivo"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "Milhões de R$", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Quadro-síntese
+```{r}
+reactable(
+  massa_rend_efet[, -12],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Massa rend. mensal nominal (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Massa rend. mensal real (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. % três trim. móveis ant. (rend. real)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. três trim. móveis ant. (rend. real) (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. % mesmo trim. móvel ano ant. (rend. real)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. mesmo trim. móvel ano ant. (rend. real) (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. % três trim. móveis ant. (rend. nominal)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. três trim. móveis ant. (rend. nominal) (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. % mesmo trim. móvel ano ant. (rend. nominal)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. mesmo trim. móvel ano ant. (rend. nominal) (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Massa de rendimento habitual {data-navmenu="Mercado de trabalho"}
+
+Column {.sidebar} {data-width=150}
+-----------------------------------------------------------------------
+A **massa de rendimento habitual** é a soma dos rendimentos brutos nominais habitualmente recebidos de todas as pessoas ocupadas em todos os trabalhos que tinham na semana de referência. As informações dos indicadores são divulgados a cada mês referentes ao último trimestre móvel.
+
+O **rendimento habitual** consiste no rendimento recebido por empregados, empregadores e trabalhadores por conta própria, mensalmente, sem acréscimos extraordinários ou descontos esporádicos. Para o empregado, o rendimento mensal habitualmente recebido exclui todas as parcelas que não tenham caráter contínuo (bonificação anual, salário atrasado, horas extras, participação anual nos lucros, 13o salário, 14o salário, adiantamento de salário, etc.) e não considera os descontos ocasionais (faltas, parte do 13o salário antecipado, prejuízo eventual causado ao empreendimento etc.). Caso o rendimento recebido de empregado, de trabalhador por conta própria e de empregador seja variável, considera-se o rendimento habitual aquele em média recebido pela pessoa no período em que realizava o trabalho declarado na semana de referência. Quando a remuneração varia em função do período ou estação do ano, considera-se o rendimento mensal que a pessoa ganha habitualmente nesse período sazonal.
+
+<br>
+
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
+
+Column {data-width=850}  {.tabset}
+-----------------------------------------------------------------------
+
+### Massa de rendimento mensal habitual nominal e real
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = massa_rend_hab,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Massa de rendimento mensal nominal habitual"
+  ) %>%
+  add_trace(
+    data = massa_rend_hab,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Massa de rendimento mensal real habitual"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "Milhões de R$", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Quadro-síntese
+```{r}
+reactable(
+  massa_rend_hab[, -12],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Massa rend. mensal nominal (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Massa rend. mensal real (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. % três trim. móveis ant. (rend. real)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. três trim. móveis ant. (rend. real) (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. % mesmo trim. móvel ano ant. (rend. real)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. mesmo trim. móvel ano ant. (rend. real) (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. % três trim. móveis ant. (rend. nominal)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. três trim. móveis ant. (rend. nominal) (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. % mesmo trim. móvel ano ant. (rend. nominal)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. mesmo trim. móvel ano ant. (rend. nominal) (milhões R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Ocupação {data-navmenu="Mercado de trabalho"}
+
+Column {.sidebar} {data-width=150}
+-----------------------------------------------------------------------
+A **Pesquisa Nacional por Amostra de Domicílios Contínua (PNAD/C)** visa acompanhar as flutuações trimestrais e a evolução, no curto, médio e longo prazos, da força de trabalho, e outras informações necessárias para o estudo do desenvolvimento socioeconômico do País. Para atender a tais objetivos, a pesquisa foi planejada para produzir indicadores trimestrais sobre a força de trabalho e indicadores anuais sobre temas suplementares permanentes (como trabalho e outras formas de trabalho, cuidados de pessoas e afazeres domésticos, tecnologia da informação e da comunicação etc.), investigados em um trimestre específico ou aplicados em uma parte da amostra a cada trimestre e acumulados para gerar resultados anuais, sendo produzidos, também, com periodicidade variável, indicadores sobre outros temas suplementares. Tem como unidade de investigação o domicílio.
+
+O **nível de ocupação** refere-se ao número de pessoas ocupadas na semana de referência. As informações dos indicadores são divulgados a cada mês referentes ao último trimestre móvel.
+
+<br>
+
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
+
+Column {data-width=850}  {.tabset}
+-----------------------------------------------------------------------
+
+### Pessoas ocupadas (mil pessoas)
+```{r}
+reactable(
+  ocup_grupos[, -13],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre móvel",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Total` = colDef(
+      name = "Total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Agricultura, pecuária, produção florestal, pesca e aquicultura` = colDef(
+      name = "Agric., pecuária, prod. florestal, pesca e aquicultura",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Indústria geral` = colDef(
+      name = "Indústria geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Construção` = colDef(
+      name = "Construção",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Comércio, reparação de veículos automotores e motocicletas` = colDef(
+      name = "Comércio, reparação de veículos automotores e motocicletas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Transporte, armazenagem e correio` = colDef(
+      name = "Transporte, armazenagem e correio",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Alojamento e alimentação` = colDef(
+      name = "Alojamento e alimentação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas` = colDef(
+      name = "Informação, comunicação e ativ. financ., imobiliárias, profissionais e adm.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais` = colDef(
+      name = "Adm. pública, defesa, seg. social, educação, saúde humana e serv. sociais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Outros serviços` = colDef(
+      name = "Outros serviços",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Serviços domésticos` = colDef(
+      name = "Serviços domésticos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Var. abs. (três trimestres móveis anteriores) (mil pessoas)
+```{r}
+reactable(
+  ocup_3t[, -13],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre móvel",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Total` = colDef(
+      name = "Total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Agricultura, pecuária, produção florestal, pesca e aquicultura` = colDef(
+      name = "Agric., pecuária, prod. florestal, pesca e aquicultura",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Indústria geral` = colDef(
+      name = "Indústria geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Construção` = colDef(
+      name = "Construção",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Comércio, reparação de veículos automotores e motocicletas` = colDef(
+      name = "Comércio, reparação de veículos automotores e motocicletas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Transporte, armazenagem e correio` = colDef(
+      name = "Transporte, armazenagem e correio",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Alojamento e alimentação` = colDef(
+      name = "Alojamento e alimentação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas` = colDef(
+      name = "Informação, comunicação e ativ. financ., imobiliárias, profissionais e adm.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais` = colDef(
+      name = "Adm. pública, defesa, seg. social, educação, saúde humana e serv. sociais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Outros serviços` = colDef(
+      name = "Outros serviços",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Serviços domésticos` = colDef(
+      name = "Serviços domésticos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Var. abs. (mesmo trimestre móvel do ano anterior) (mil pessoas)
+```{r}
+reactable(
+  ocup_ano_ant[, -13],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre móvel",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Total` = colDef(
+      name = "Total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Agricultura, pecuária, produção florestal, pesca e aquicultura` = colDef(
+      name = "Agric., pecuária, prod. florestal, pesca e aquicultura",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Indústria geral` = colDef(
+      name = "Indústria geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Construção` = colDef(
+      name = "Construção",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Comércio, reparação de veículos automotores e motocicletas` = colDef(
+      name = "Comércio, reparação de veículos automotores e motocicletas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Transporte, armazenagem e correio` = colDef(
+      name = "Transporte, armazenagem e correio",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Alojamento e alimentação` = colDef(
+      name = "Alojamento e alimentação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas` = colDef(
+      name = "Informação, comunicação e ativ. financ., imobiliárias, profissionais e adm.",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais` = colDef(
+      name = "Adm. pública, defesa, seg. social, educação, saúde humana e serv. sociais",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Outros serviços` = colDef(
+      name = "Outros serviços",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Serviços domésticos` = colDef(
+      name = "Serviços domésticos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Rendimento médio efetivo {data-navmenu="Mercado de trabalho"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Rendimento bruto nominal real médio efetivamente recebido** no mês de referência em todos os trabalhos que as pessoas ocupadas com rendimento tinham na semana referência. A série em termos reais (deflacionada pelo IPCA) é a preços do mês do meio do trimestre mais recente que está sendo divulgado. O **rendimento efetivo** consiste no rendimento de fato recebido em qualquer posição na ocupação, no mês de referência, incluindo todos os pagamentos que não tenham caráter contínuo e considerando os descontos por ausências no trabalho.
+
+<br>
+
+As informações dos indicadores são divulgados a cada mês referentes ao último trimestre móvel. 
+ 
+ <br>
+
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e), tabela [6387](https://sidra.ibge.gov.br/tabela/6387) do Banco de Dados Sidra.
+
+Column {data-width=800}  {.tabset}
+-----------------------------------------------------------------------
+### Rendimento médio efetivo mensal nominal e real
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = rend_efet,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Rendimento médio mensal nominal"
+  ) %>%
+  add_trace(
+    data =rend_efet,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Rendimento médio mensal real"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "Mil R$", dtick = 1),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Quadro-síntese
+```{r}
+reactable(
+  rend_efet[, -12],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Rend. médio mensal nominal (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Rend. médio mensal real (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. % três trim. móveis ant. (rend. nominal)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. três trim. móveis ant. (rend. nominal) (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. % mesmo trim. móvel ano ant. (rend. nominal)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. mesmo trim. móvel ano ant. (rend. nominal) (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. % três trim. móveis ant. (rend. real)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. três trim. móveis ant. (rend. real) (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. % mesmo trim. móvel ano ant. (rend. real)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. mesmo trim. móvel ano ant. (rend. real) (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Rendimento médio habitual {data-navmenu="Mercado de trabalho"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Rendimento bruto nominal e real médio habitualmente recebido** em todos os trabalhos que as pessoas ocupadas com rendimento tinham na semana referência. A série em termos reais (deflacionada pelo IPCA) é a preços do mês do meio do trimestre mais recente que está sendo divulgado. O **rendimento habitual** consiste no rendimento recebido por empregados, empregadores e trabalhadores por conta própria, mensalmente, sem acréscimos extraordinários ou descontos esporádicos. 
+
+<br>
+
+As informações dos indicadores são divulgados a cada mês referentes ao último trimestre móvel. 
+ 
+<br>
+
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e), Tabela [6390](https://sidra.ibge.gov.br/tabela/6390) do Banco de Dados Sidra
+
+Column {data-width=800}  {.tabset}
+-----------------------------------------------------------------------
+### Rendimento médio efetivo mensal nominal e real
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = rend_hab,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Rendimento médio mensal nominal"
+  ) %>%
+  add_trace(
+    data =rend_hab,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Rendimento médio mensal real"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "Mil R$", dtick = 1),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Quadro-síntese
+```{r}
+reactable(
+  rend_hab[, -12],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Rend. médio mensal nominal (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Rend. médio mensal real (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. % três trim. móveis ant. (rend. nominal)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. três trim. móveis ant. (rend. nominal) (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. % mesmo trim. móvel ano ant. (rend. nominal)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. mesmo trim. móvel ano ant. (rend. nominal) (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. % três trim. móveis ant. (rend. real)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. três trim. móveis ant. (rend. real) (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. % mesmo trim. móvel ano ant. (rend. real)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
+      name = "Var. abs. mesmo trim. móvel ano ant. (rend. real) (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Salário mínimo {data-navmenu="Mercado de trabalho"}
+
+Column {.sidebar} {data-width=300}
+-----------------------------------------------------------------------
+O **salário mínimo nominal vigente** não considera abonos salariais ocorridos nos períodos. O salário mínimo urbano foi instituído no Brasil por decreto-lei do presidente Getúlio Vargas, durante a ditadura do Estado Novo, e começou a vigorar em julho de 1940, com valores diferenciados entre estados e sub-regiões. Em 1943, foi incorporado à Consolidação das Leis do Trabalho (CLT) e, em 1963, foi estendido ao campo por meio do Estatuto do Trabalhador Rural. Foi nacionalmente unificado em maio de 1984, mas, desde 2000, a Lei Complementar 103 permite que os estados fixem pisos estaduais superiores ao mínimo nacional. Nota: Os dados desta série para o período em que a legislação federal definia faixas diversificadas referem-se ao maior salário mínimo vigente no país.
+
+<br>
+
+**Salário mínimo real:** é o valor do salário mínimo nominal ajustado pelo índice de inflação (R$ do último mês) (jul/1940-jan/19944: IPC-SP/Fipe; jan/1994-jan/1948: IPC-RJ/FGV; jan/1948-mar/1979: IGPC-Mtb; abr/1979-atual: INPC).
+
+<br>
+
+O **salário mínimo paridade do poder de compra (PPC)** representa, em cada mês, qual era o preço nos Estados Unidos da mesma cesta de bens que se podia adquirir com um salário mínimo no Brasil. Nota: A conversão é feita pela taxa de paridade de poder de compra (PPC) observada pelo Banco Mundial em 2011, corrigida pela inflação ao consumidor nos Estados Unidos e no Brasil. Para a inflação americana, utiliza-se o IPC do Bureau of Labor Statistics (BLS). Para a inflação brasileira, INPC/IBGE (a partir de março de 1979), IGPC-Mtb (jan/1948-mar/1979), IPC-RJ/FGV (jan/1944-jan/1948) e IPC-SP/Fipe (jul/1940-jan/1944).
+
+<br>
+
+**Fonte:** Instituto de Pesquisa Econômica Aplicada (IPEA) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
+
+Column {data-width=350}  {.tabset}
+-----------------------------------------------------------------------
+
+### Gráfico
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = sal_min_graph,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_sal_vigente)),
+    type = "scatter",
+    mode = "lines",
+    name = "Salário mínimo vigente (R$)"
+  ) %>%
+  add_trace(
+    data = sal_min_graph,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_sal_real)),
+    type = "scatter",
+    mode = "lines",
+    name = "Salário mínimo real (R$)"
+  ) %>%
+  add_trace(
+    data = sal_min_graph,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_sal_ppc)),
+    type = "scatter",
+    mode = "lines",
+    name = "Salário mínimo PPC (US$)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "Salário mínimo", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=350}  {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese
+```{r}
+reactable(
+  sal_min[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_sal_vigente = colDef(
+      name = "Salário mínimo vigente (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_sal_real = colDef(
+      name = "Salário mínimo real (R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_sal_ppc = colDef(
+      name = "Salário mínimo PPC (US$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Taxa de desocupação {data-navmenu="Mercado de trabalho"}
+
+Column {.sidebar} {data-width=250}
+-----------------------------------------------------------------------
+A **Pesquisa Nacional por Amostra de Domicílios Contínua (PNAD/C)** visa acompanhar as flutuações trimestrais e a evolução, no curto, médio e longo prazos, da força de trabalho, e outras informações necessárias para o estudo do desenvolvimento socioeconômico do País. Para atender a tais objetivos, a pesquisa foi planejada para produzir indicadores trimestrais sobre a força de trabalho e indicadores anuais sobre temas suplementares permanentes (como trabalho e outras formas de trabalho, cuidados de pessoas e afazeres domésticos, tecnologia da informação e da comunicação etc.), investigados em um trimestre específico ou aplicados em uma parte da amostra a cada trimestre e acumulados para gerar resultados anuais, sendo produzidos, também, com periodicidade variável, indicadores sobre outros temas suplementares. Tem como unidade de investigação o domicílio.
+
+A **taxa de desocupação** é o percentual de pessoas desocupadas em relação às pessoas na força de trabalho na semana de referência. Percentual das pessoas economicamente ativas que estavam procurando trabalho. As informações dos indicadores são divulgados a cada mês referentes ao último trimestre móvel.
+
+<br>
+
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
+
+Column {data-width=400}  {.tabset}
+-----------------------------------------------------------------------
+
+### Taxa de desocupação (%)
+```{r}
+plot_ly(
+  data = desocup, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", valor_tx_desoc)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Var. trim. móvel anterior (p.p)
+```{r}
+plot_ly(
+  data = desocup, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", valor_mg)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "p.p.",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Var. mesmo trim. móvel ano anterior (p.p)
+```{r}
+plot_ly(
+  data = desocup, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", valor_ano_ant)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "p.p.",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+Column {data-width=350}  {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese
+```{r}
+reactable(
+  desocup[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre móvel",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_tx_desoc = colDef(
+      name = "Taxa de desocupação (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_mg = colDef(
+      name = "Var. trim. móvel anterior (p.p.)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ano_ant = colDef(
+      name = "Var. mesmo trim. móvel ano anterior (p.p.)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -14575,218 +17343,6 @@ reactable(
 )
 ```
 
-# Res. internacionais
-
-Column {.sidebar} {data-width=200}
------------------------------------------------------------------------
-
-As **reservas internacionais** compreendem os ativos externos do país prontamente disponíveis e mantidos pelo Banco Central do Brasil com o objetivo de financiar eventuais déficits do balanço de pagamentos.
-
-<br>
-
-De acordo com o [Relatório de Gestão das Reservas Internacionais](https://www.bcb.gov.br/publicacoes/relgestaoreservas) do Banco Central do Brasil de março de 2025, em dezembro de 2024 a alocação das reservas por moedas se dava da seguinte maneira: 78,45% em dólar americano (USD), 5,31% em renminbi (CNY), 5,23% em euro (EUR), 3,69% em libra esterlina (GBP), 3,55% em ouro, 1,73% em iene (JPY), 1,05% em dólar canadense (CAD) e 0,99% em dólar australiano (AUD).
-
-<br>
-
-Também em dezembro de 2024, 84,08% das reservas pelo conceito caixa estavam aplicadas em títulos governamentais soberanos.
-
-<br>
-
-O prazo médio de investimento em 2024 foi de 3,19 anos.
-
-<br>
-
-**Fontes:** Código 3546 do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries) e [DataBank (World Bank)](https://databank.worldbank.org/)
-
-Column {data-width=400} {.tabset}
------------------------------------------------------------------------
-
-### US$ bilhões
-```{r}
-plot_ly(
-  data = res_int, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", valor)),
-  type = "scatter",
-  mode = "lines",
-  fill = "tozeroy"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "US$ bilhões")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-### Var. mensal (%)
-```{r}
-plot_ly(
-  data = res_int, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", var_mg)), 
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "%")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-### Var. em 12 meses (%)
-```{r}
-plot_ly(
-  data = res_int, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", var_12m)), 
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "%", dtick = 20)
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-### % dívida externa total
-```{r}
-plot_ly(
-  data = res_int_div_ext, 
-  x = ~ano, 
-  y = ~as.numeric(gsub(",", ".", valor)),
-  type = "bar"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "%")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-### Meses de importações
-```{r}
-plot_ly(
-  data = res_int_imports, 
-  x = ~ano, 
-  y = ~as.numeric(gsub(",", ".", valor)),
-  type = "bar"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "Meses de importações")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-
-Column {data-width=400}  {.tabset}
------------------------------------------------------------------------
-
-### Quadro-síntese
-```{r}
-reactable(
-  res_int[, -5],
-  columns = list(
-    data_fmt = colDef(
-      name = "Mês",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor = colDef(
-      name = "US$ bilhões",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    var_mg = colDef(
-      name = "Variação mensal (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    var_12m = colDef(
-      name = "Variação em 12 meses (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-### % dívida externa total
-```{r}
-reactable(
-  res_int_div_ext,
-  columns = list(
-    ano = colDef(
-      name = "Ano",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor = colDef(
-      name = "% dívida externa total",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-### Meses de importações
-```{r}
-reactable(
-  res_int_imports,
-  columns = list(
-    ano = colDef(
-      name = "Ano",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor = colDef(
-      name = "Meses de importações",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
 
 # Taxa de câmbio comercial {data-navmenu="Taxa de câmbio"}
 
@@ -15332,970 +17888,6 @@ reactable(
     ),
     cc_saldo = colDef(
       name = "Saldo câmbio contratado (7) (3+6)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-# CAGED {data-navmenu="Trabalho"}
-
-Column {.sidebar} {data-width=200}
------------------------------------------------------------------------
-**Cadastro Geral de Empregados e Desempregados**. Para empregados consideram-se aqueles contratados por empregadores, pessoa física ou jurídica, sob o regime da CLT, por prazo indeterminado ou determinado, incluindo-se também os contratados a título de experiência ou para prestação de trabalho intermitente. Esta classificação abrange: empregados sob o regime CLT, trabalhadores temporários, trabalhadores avulsos, agentes públicos, trabalhadores cedidos e dirigentes sindicais. Os dados referem-se ao total de admissões e demissões de empregados.
-
-<br>
-
-**Fonte:** Ministério do Trabalho e Emprego via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
-
-Column {data-width=400}  {.tabset}
------------------------------------------------------------------------
-
-### Gráfico
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = caged_graph,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", adm)),
-    type = "bar",
-    name = "Admissões"
-  ) %>%
-  add_trace(
-    data = caged_graph,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", dem)),
-    type = "bar",
-    name = "Demissões"
-  ) %>%
-  add_trace(
-    data = caged_graph,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", saldo)),
-    type = "bar",
-    name = "Saldo"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "Admissões, demissões e saldo", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
-```
-
-Column {data-width=400}  {.tabset}
------------------------------------------------------------------------
-
-### Quadro-síntese
-```{r}
-reactable(
-  caged[, -5],
-  columns = list(
-    data_fmt = colDef(
-      name = "Mês",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    adm = colDef(
-      name = "Admissões (1)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    dem = colDef(
-      name = "Demissões (2)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    saldo = colDef(
-      name = "Saldo (1-2)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-# Massa de rendimento efetivo {data-navmenu="Trabalho"}
-
-Column {.sidebar} {data-width=100}
------------------------------------------------------------------------
-A **massa de rendimento efetivo** é a soma dos rendimentos brutos nominais efetivamente recebidos no mês de referência por todas as pessoas ocupadas em todos os trabalhos que tinham na semana de referência. As informações dos indicadores são divulgados a cada mês referentes ao último trimestre móvel.
-
-O **rendimento efetivo** consiste no rendimento de fato recebido em qualquer posição na ocupação, no mês de referência, incluindo todos os pagamentos que não tenham caráter contínuo e considerando os descontos por ausências no trabalho
-
-<br>
-
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
-
-Column {data-width=900}  {.tabset}
------------------------------------------------------------------------
-
-### Massa de rendimento mensal efetivo nominal e real
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = massa_rend_efet,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Massa de rendimento mensal nominal efetivo"
-  ) %>%
-  add_trace(
-    data = massa_rend_efet,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Massa de rendimento mensal real efetivo"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "Milhões de R$", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
-```
-
-### Quadro-síntese
-```{r}
-reactable(
-  massa_rend_efet[, -12],
-  columns = list(
-    data_fmt = colDef(
-      name = "Trimestre",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Massa rend. mensal nominal (milhões R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Massa rend. mensal real (milhões R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Var. % três trim. móveis ant. (rend. real)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Var. abs. três trim. móveis ant. (rend. real) (milhões R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Var. % mesmo trim. móvel ano ant. (rend. real)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Var. abs. mesmo trim. móvel ano ant. (rend. real) (milhões R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Var. % três trim. móveis ant. (rend. nominal)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Var. abs. três trim. móveis ant. (rend. nominal) (milhões R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Var. % mesmo trim. móvel ano ant. (rend. nominal)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Var. abs. mesmo trim. móvel ano ant. (rend. nominal) (milhões R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-
-# Massa de rendimento habitual {data-navmenu="Trabalho"}
-
-Column {.sidebar} {data-width=150}
------------------------------------------------------------------------
-A **massa de rendimento habitual** é a soma dos rendimentos brutos nominais habitualmente recebidos de todas as pessoas ocupadas em todos os trabalhos que tinham na semana de referência. As informações dos indicadores são divulgados a cada mês referentes ao último trimestre móvel.
-
-O **rendimento habitual** consiste no rendimento recebido por empregados, empregadores e trabalhadores por conta própria, mensalmente, sem acréscimos extraordinários ou descontos esporádicos. Para o empregado, o rendimento mensal habitualmente recebido exclui todas as parcelas que não tenham caráter contínuo (bonificação anual, salário atrasado, horas extras, participação anual nos lucros, 13o salário, 14o salário, adiantamento de salário, etc.) e não considera os descontos ocasionais (faltas, parte do 13o salário antecipado, prejuízo eventual causado ao empreendimento etc.). Caso o rendimento recebido de empregado, de trabalhador por conta própria e de empregador seja variável, considera-se o rendimento habitual aquele em média recebido pela pessoa no período em que realizava o trabalho declarado na semana de referência. Quando a remuneração varia em função do período ou estação do ano, considera-se o rendimento mensal que a pessoa ganha habitualmente nesse período sazonal.
-
-<br>
-
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
-
-Column {data-width=850}  {.tabset}
------------------------------------------------------------------------
-
-### Massa de rendimento mensal habitual nominal e real
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = massa_rend_hab,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Massa de rendimento mensal nominal habitual"
-  ) %>%
-  add_trace(
-    data = massa_rend_hab,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Massa de rendimento mensal real habitual"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "Milhões de R$", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
-```
-
-### Quadro-síntese
-```{r}
-reactable(
-  massa_rend_hab[, -12],
-  columns = list(
-    data_fmt = colDef(
-      name = "Trimestre",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
-      name = "Massa rend. mensal nominal (milhões R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
-      name = "Massa rend. mensal real (milhões R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
-      name = "Var. % três trim. móveis ant. (rend. real)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
-      name = "Var. abs. três trim. móveis ant. (rend. real) (milhões R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
-      name = "Var. % mesmo trim. móvel ano ant. (rend. real)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
-      name = "Var. abs. mesmo trim. móvel ano ant. (rend. real) (milhões R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação percentual em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
-      name = "Var. % três trim. móveis ant. (rend. nominal)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação absoluta em relação a três trimestres móveis anteriores - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
-      name = "Var. abs. três trim. móveis ant. (rend. nominal) (milhões R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
-      name = "Var. % mesmo trim. móvel ano ant. (rend. nominal)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Massa de rendimento mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, habitualmente recebido em todos os trabalhos` = colDef(
-      name = "Var. abs. mesmo trim. móvel ano ant. (rend. nominal) (milhões R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-# Ocupação {data-navmenu="Trabalho"}
-
-Column {.sidebar} {data-width=150}
------------------------------------------------------------------------
-A **Pesquisa Nacional por Amostra de Domicílios Contínua (PNAD/C)** visa acompanhar as flutuações trimestrais e a evolução, no curto, médio e longo prazos, da força de trabalho, e outras informações necessárias para o estudo do desenvolvimento socioeconômico do País. Para atender a tais objetivos, a pesquisa foi planejada para produzir indicadores trimestrais sobre a força de trabalho e indicadores anuais sobre temas suplementares permanentes (como trabalho e outras formas de trabalho, cuidados de pessoas e afazeres domésticos, tecnologia da informação e da comunicação etc.), investigados em um trimestre específico ou aplicados em uma parte da amostra a cada trimestre e acumulados para gerar resultados anuais, sendo produzidos, também, com periodicidade variável, indicadores sobre outros temas suplementares. Tem como unidade de investigação o domicílio.
-
-O **nível de ocupação** refere-se ao número de pessoas ocupadas na semana de referência. As informações dos indicadores são divulgados a cada mês referentes ao último trimestre móvel.
-
-<br>
-
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
-
-Column {data-width=850}  {.tabset}
------------------------------------------------------------------------
-
-### Pessoas ocupadas (mil pessoas)
-```{r}
-reactable(
-  ocup_grupos[, -13],
-  columns = list(
-    data_fmt = colDef(
-      name = "Trimestre móvel",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Total` = colDef(
-      name = "Total",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Agricultura, pecuária, produção florestal, pesca e aquicultura` = colDef(
-      name = "Agric., pecuária, prod. florestal, pesca e aquicultura",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Indústria geral` = colDef(
-      name = "Indústria geral",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Construção` = colDef(
-      name = "Construção",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Comércio, reparação de veículos automotores e motocicletas` = colDef(
-      name = "Comércio, reparação de veículos automotores e motocicletas",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Transporte, armazenagem e correio` = colDef(
-      name = "Transporte, armazenagem e correio",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Alojamento e alimentação` = colDef(
-      name = "Alojamento e alimentação",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas` = colDef(
-      name = "Informação, comunicação e ativ. financ., imobiliárias, profissionais e adm.",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais` = colDef(
-      name = "Adm. pública, defesa, seg. social, educação, saúde humana e serv. sociais",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Outros serviços` = colDef(
-      name = "Outros serviços",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Serviços domésticos` = colDef(
-      name = "Serviços domésticos",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-### Var. abs. (três trimestres móveis anteriores) (mil pessoas)
-```{r}
-reactable(
-  ocup_3t[, -13],
-  columns = list(
-    data_fmt = colDef(
-      name = "Trimestre móvel",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Total` = colDef(
-      name = "Total",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Agricultura, pecuária, produção florestal, pesca e aquicultura` = colDef(
-      name = "Agric., pecuária, prod. florestal, pesca e aquicultura",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Indústria geral` = colDef(
-      name = "Indústria geral",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Construção` = colDef(
-      name = "Construção",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Comércio, reparação de veículos automotores e motocicletas` = colDef(
-      name = "Comércio, reparação de veículos automotores e motocicletas",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Transporte, armazenagem e correio` = colDef(
-      name = "Transporte, armazenagem e correio",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Alojamento e alimentação` = colDef(
-      name = "Alojamento e alimentação",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas` = colDef(
-      name = "Informação, comunicação e ativ. financ., imobiliárias, profissionais e adm.",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais` = colDef(
-      name = "Adm. pública, defesa, seg. social, educação, saúde humana e serv. sociais",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Outros serviços` = colDef(
-      name = "Outros serviços",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Serviços domésticos` = colDef(
-      name = "Serviços domésticos",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-### Var. abs. (mesmo trimestre móvel do ano anterior) (mil pessoas)
-```{r}
-reactable(
-  ocup_ano_ant[, -13],
-  columns = list(
-    data_fmt = colDef(
-      name = "Trimestre móvel",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Total` = colDef(
-      name = "Total",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Agricultura, pecuária, produção florestal, pesca e aquicultura` = colDef(
-      name = "Agric., pecuária, prod. florestal, pesca e aquicultura",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Indústria geral` = colDef(
-      name = "Indústria geral",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Construção` = colDef(
-      name = "Construção",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Comércio, reparação de veículos automotores e motocicletas` = colDef(
-      name = "Comércio, reparação de veículos automotores e motocicletas",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Transporte, armazenagem e correio` = colDef(
-      name = "Transporte, armazenagem e correio",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Alojamento e alimentação` = colDef(
-      name = "Alojamento e alimentação",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Informação, comunicação e atividades financeiras, imobiliárias, profissionais e administrativas` = colDef(
-      name = "Informação, comunicação e ativ. financ., imobiliárias, profissionais e adm.",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Administração pública, defesa, seguridade social, educação, saúde humana e serviços sociais` = colDef(
-      name = "Adm. pública, defesa, seg. social, educação, saúde humana e serv. sociais",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Outros serviços` = colDef(
-      name = "Outros serviços",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Serviços domésticos` = colDef(
-      name = "Serviços domésticos",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-# Rendimento médio efetivo {data-navmenu="Trabalho"}
-
-Column {.sidebar} {data-width=200}
------------------------------------------------------------------------
-**Rendimento bruto nominal e real médio habitualmente recebido** no trabalho principal que as pessoas ocupadas com rendimento tinham na semana referência. A série em termos reais (deflacionada pelo IPCA) é a preços do mês do meio do trimestre mais recente que está sendo divulgado. O **rendimento habitual** consiste no rendimento recebido por empregados, empregadores e trabalhadores por conta própria, mensalmente, sem acréscimos extraordinários ou descontos esporádicos. 
-
-<br>
-
-**Rendimento bruto nominal real médio efetivamente recebido** no mês de referência no trabalho principal que as pessoas ocupadas com rendimento tinham na semana referência. A série em termos reais (deflacionada pelo IPCA) é a preços do mês do meio do trimestre mais recente que está sendo divulgado. O **rendimento efetivo** consiste no rendimento de fato recebido em qualquer posição na ocupação, no mês de referência, incluindo todos os pagamentos que não tenham caráter contínuo e considerando os descontos por ausências no trabalho.
-
-<br>
-
-As informações dos indicadores são divulgados a cada mês referentes ao último trimestre móvel. 
- 
- <br>
-
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
-
-Column {data-width=800}  {.tabset}
------------------------------------------------------------------------
-### Rendimento médio efetivo mensal nominal e real
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = rend,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Rendimento médio mensal nominal"
-  ) %>%
-  add_trace(
-    data =rend,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Rendimento médio mensal real"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "Mil R$", dtick = 1),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
-```
-
-### Quadro-síntese
-```{r}
-reactable(
-  rend[, -12],
-  columns = list(
-    data_fmt = colDef(
-      name = "Trimestre",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Rend. médio mensal nominal (R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Rend. médio mensal real (R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Var. % três trim. móveis ant. (rend. nominal)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Var. abs. três trim. móveis ant. (rend. nominal) (R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Var. % mesmo trim. móvel ano ant. (rend. nominal)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal nominal das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Var. abs. mesmo trim. móvel ano ant. (rend. nominal) (R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação percentual em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Var. % três trim. móveis ant. (rend. real)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação absoluta em relação a três trimestres móveis anteriores - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Var. abs. três trim. móveis ant. (rend. real) (R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação percentual em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Var. % mesmo trim. móvel ano ant. (rend. real)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Variação absoluta em relação ao mesmo trimestre móvel do ano anterior - Rendimento médio mensal real das pessoas de 14 anos ou mais de idade ocupadas na semana de referência com rendimento de trabalho, efetivamente recebido em todos os trabalhos` = colDef(
-      name = "Var. abs. mesmo trim. móvel ano ant. (rend. real) (R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-# Rendimento médio habitual {data-navmenu="Trabalho"}
-
-# Salário mínimo {data-navmenu="Trabalho"}
-
-Column {.sidebar} {data-width=300}
------------------------------------------------------------------------
-O **salário mínimo nominal vigente** não considera abonos salariais ocorridos nos períodos. O salário mínimo urbano foi instituído no Brasil por decreto-lei do presidente Getúlio Vargas, durante a ditadura do Estado Novo, e começou a vigorar em julho de 1940, com valores diferenciados entre estados e sub-regiões. Em 1943, foi incorporado à Consolidação das Leis do Trabalho (CLT) e, em 1963, foi estendido ao campo por meio do Estatuto do Trabalhador Rural. Foi nacionalmente unificado em maio de 1984, mas, desde 2000, a Lei Complementar 103 permite que os estados fixem pisos estaduais superiores ao mínimo nacional. Nota: Os dados desta série para o período em que a legislação federal definia faixas diversificadas referem-se ao maior salário mínimo vigente no país.
-
-<br>
-
-**Salário mínimo real:** é o valor do salário mínimo nominal ajustado pelo índice de inflação (R$ do último mês) (jul/1940-jan/19944: IPC-SP/Fipe; jan/1994-jan/1948: IPC-RJ/FGV; jan/1948-mar/1979: IGPC-Mtb; abr/1979-atual: INPC).
-
-<br>
-
-O **salário mínimo paridade do poder de compra (PPC)** representa, em cada mês, qual era o preço nos Estados Unidos da mesma cesta de bens que se podia adquirir com um salário mínimo no Brasil. Nota: A conversão é feita pela taxa de paridade de poder de compra (PPC) observada pelo Banco Mundial em 2011, corrigida pela inflação ao consumidor nos Estados Unidos e no Brasil. Para a inflação americana, utiliza-se o IPC do Bureau of Labor Statistics (BLS). Para a inflação brasileira, INPC/IBGE (a partir de março de 1979), IGPC-Mtb (jan/1948-mar/1979), IPC-RJ/FGV (jan/1944-jan/1948) e IPC-SP/Fipe (jul/1940-jan/1944).
-
-<br>
-
-**Fonte:** Instituto de Pesquisa Econômica Aplicada (IPEA) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
-
-Column {data-width=350}  {.tabset}
------------------------------------------------------------------------
-
-### Gráfico
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = sal_min_graph,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_sal_vigente)),
-    type = "scatter",
-    mode = "lines",
-    name = "Salário mínimo vigente (R$)"
-  ) %>%
-  add_trace(
-    data = sal_min_graph,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_sal_real)),
-    type = "scatter",
-    mode = "lines",
-    name = "Salário mínimo real (R$)"
-  ) %>%
-  add_trace(
-    data = sal_min_graph,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_sal_ppc)),
-    type = "scatter",
-    mode = "lines",
-    name = "Salário mínimo PPC (US$)"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "Salário mínimo", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
-```
-
-Column {data-width=350}  {.tabset}
------------------------------------------------------------------------
-
-### Quadro-síntese
-```{r}
-reactable(
-  sal_min[, -5],
-  columns = list(
-    data_fmt = colDef(
-      name = "Mês",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_sal_vigente = colDef(
-      name = "Salário mínimo vigente (R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_sal_real = colDef(
-      name = "Salário mínimo real (R$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_sal_ppc = colDef(
-      name = "Salário mínimo PPC (US$)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-# Taxa de desocupação {data-navmenu="Trabalho"}
-
-Column {.sidebar} {data-width=250}
------------------------------------------------------------------------
-A **Pesquisa Nacional por Amostra de Domicílios Contínua (PNAD/C)** visa acompanhar as flutuações trimestrais e a evolução, no curto, médio e longo prazos, da força de trabalho, e outras informações necessárias para o estudo do desenvolvimento socioeconômico do País. Para atender a tais objetivos, a pesquisa foi planejada para produzir indicadores trimestrais sobre a força de trabalho e indicadores anuais sobre temas suplementares permanentes (como trabalho e outras formas de trabalho, cuidados de pessoas e afazeres domésticos, tecnologia da informação e da comunicação etc.), investigados em um trimestre específico ou aplicados em uma parte da amostra a cada trimestre e acumulados para gerar resultados anuais, sendo produzidos, também, com periodicidade variável, indicadores sobre outros temas suplementares. Tem como unidade de investigação o domicílio.
-
-A **taxa de desocupação** é o percentual de pessoas desocupadas em relação às pessoas na força de trabalho na semana de referência. Percentual das pessoas economicamente ativas que estavam procurando trabalho. As informações dos indicadores são divulgados a cada mês referentes ao último trimestre móvel.
-
-<br>
-
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
-
-Column {data-width=400}  {.tabset}
------------------------------------------------------------------------
-
-### Taxa de desocupação (%)
-```{r}
-plot_ly(
-  data = desocup, 
-  x = ~data, 
-  y = ~as.numeric(gsub(",", ".", valor_tx_desoc)),
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(
-      title = "%",
-      tick0 = 0,
-      dtick = 1
-    )
-  ) %>%
-  rangeslider(thickness = 0.05)
-```
-
-### Var. trim. móvel anterior (p.p)
-```{r}
-plot_ly(
-  data = desocup, 
-  x = ~data, 
-  y = ~as.numeric(gsub(",", ".", valor_mg)),
-  type = "bar"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(
-      title = "p.p.",
-      tick0 = 0,
-      dtick = 1
-    )
-  ) %>%
-  rangeslider(thickness = 0.05)
-```
-
-### Var. mesmo trim. móvel ano anterior (p.p)
-```{r}
-plot_ly(
-  data = desocup, 
-  x = ~data, 
-  y = ~as.numeric(gsub(",", ".", valor_ano_ant)),
-  type = "bar"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(
-      title = "p.p.",
-      tick0 = 0,
-      dtick = 1
-    )
-  ) %>%
-  rangeslider(thickness = 0.05)
-```
-
-Column {data-width=350}  {.tabset}
------------------------------------------------------------------------
-
-### Quadro-síntese
-```{r}
-reactable(
-  desocup[, -5],
-  columns = list(
-    data_fmt = colDef(
-      name = "Trimestre móvel",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_tx_desoc = colDef(
-      name = "Taxa de desocupação (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_mg = colDef(
-      name = "Var. trim. móvel anterior (p.p.)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_ano_ant = colDef(
-      name = "Var. mesmo trim. móvel ano anterior (p.p.)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
