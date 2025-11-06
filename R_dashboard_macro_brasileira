@@ -38,6 +38,912 @@ library(tsibble)
 # API key FRED
 fredr_set_key("0087fc9b146c214d78104e3737039ea4")
 
+# Sys.setlocale("LC_ALL", "pt_BR.UTF-8")
+
+# JUROS NOMINAIS:
+## GOVERNO CENTRAL (GOVERNO FEDERAL + BANCO CENTRAL):
+juros_nom_gc_reais_corr <- get_series(
+  code = c(valor_juros_nom_gc_reais_corr = 4606)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_gc_acum_ano <- get_series(
+  code = c(valor_juros_nom_gc_acum_ano = 4749)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_gc_acum_12m <- get_series(
+  code = c(valor_juros_nom_gc_acum_12m = 5035)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_gc_mensal_pib <- get_series(
+  code = c(valor_juros_nom_gc_mensal_pib = 5321)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_gc_acum_ano_pib <- get_series(
+  code = c(valor_juros_nom_gc_acum_ano_pib = 5464)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_gc_acum_12m_pib <- get_series(
+  code = c(valor_juros_nom_gc_acum_12m_pib = 5750)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_gc <- juros_nom_gc_reais_corr %>% 
+  left_join(juros_nom_gc_acum_ano) %>% 
+  left_join(juros_nom_gc_acum_12m) %>% 
+  left_join(juros_nom_gc_mensal_pib) %>% 
+  left_join(juros_nom_gc_acum_ano_pib) %>% 
+  left_join(juros_nom_gc_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_juros_nom_gc_reais_corr = number(valor_juros_nom_gc_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_gc_acum_ano = number(valor_juros_nom_gc_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_gc_acum_12m = number(valor_juros_nom_gc_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_gc_mensal_pib = number(valor_juros_nom_gc_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_gc_acum_ano_pib = number(valor_juros_nom_gc_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_gc_acum_12m_pib = number(valor_juros_nom_gc_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_juros_nom_gc_reais_corr, valor_juros_nom_gc_acum_ano, valor_juros_nom_gc_acum_12m, valor_juros_nom_gc_mensal_pib, valor_juros_nom_gc_acum_ano_pib, valor_juros_nom_gc_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## GOVERNO FEDERAL:
+juros_nom_gf_reais_corr <- get_series(
+  code = c(valor_juros_nom_gf_reais_corr = 4607)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_gf_acum_ano <- get_series(
+  code = c(valor_juros_nom_gf_acum_ano = 4750)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_gf_acum_12m <- get_series(
+  code = c(valor_juros_nom_gf_acum_12m = 5036)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_gf_mensal_pib <- get_series(
+  code = c(valor_juros_nom_gf_mensal_pib = 5322)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_gf_acum_ano_pib <- get_series(
+  code = c(valor_juros_nom_gf_acum_ano_pib = 5465)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_gf_acum_12m_pib <- get_series(
+  code = c(valor_juros_nom_gf_acum_12m_pib = 5751)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_gf <- juros_nom_gf_reais_corr %>% 
+  left_join(juros_nom_gf_acum_ano) %>% 
+  left_join(juros_nom_gf_acum_12m) %>% 
+  left_join(juros_nom_gf_mensal_pib) %>% 
+  left_join(juros_nom_gf_acum_ano_pib) %>% 
+  left_join(juros_nom_gf_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_juros_nom_gf_reais_corr = number(valor_juros_nom_gf_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_gf_acum_ano = number(valor_juros_nom_gf_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_gf_acum_12m = number(valor_juros_nom_gf_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_gf_mensal_pib = number(valor_juros_nom_gf_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_gf_acum_ano_pib = number(valor_juros_nom_gf_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_gf_acum_12m_pib = number(valor_juros_nom_gf_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_juros_nom_gf_reais_corr, valor_juros_nom_gf_acum_ano, valor_juros_nom_gf_acum_12m, valor_juros_nom_gf_mensal_pib, valor_juros_nom_gf_acum_ano_pib, valor_juros_nom_gf_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## BANCO CENTRAL:
+juros_nom_bc_reais_corr <- get_series(
+  code = c(valor_juros_nom_bc_reais_corr = 4608)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_bc_acum_ano <- get_series(
+  code = c(valor_juros_nom_bc_acum_ano = 4751)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_bc_acum_12m <- get_series(
+  code = c(valor_juros_nom_bc_acum_12m = 5037)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_bc_mensal_pib <- get_series(
+  code = c(valor_juros_nom_bc_mensal_pib = 5323)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_bc_acum_ano_pib <- get_series(
+  code = c(valor_juros_nom_bc_acum_ano_pib = 5466)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_bc_acum_12m_pib <- get_series(
+  code = c(valor_juros_nom_bc_acum_12m_pib = 5752)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_bc <- juros_nom_bc_reais_corr %>% 
+  left_join(juros_nom_bc_acum_ano) %>% 
+  left_join(juros_nom_bc_acum_12m) %>% 
+  left_join(juros_nom_bc_mensal_pib) %>% 
+  left_join(juros_nom_bc_acum_ano_pib) %>% 
+  left_join(juros_nom_bc_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_juros_nom_bc_reais_corr = number(valor_juros_nom_bc_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_bc_acum_ano = number(valor_juros_nom_bc_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_bc_acum_12m = number(valor_juros_nom_bc_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_bc_mensal_pib = number(valor_juros_nom_bc_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_bc_acum_ano_pib = number(valor_juros_nom_bc_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_bc_acum_12m_pib = number(valor_juros_nom_bc_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_juros_nom_bc_reais_corr, valor_juros_nom_bc_acum_ano, valor_juros_nom_bc_acum_12m, valor_juros_nom_bc_mensal_pib, valor_juros_nom_bc_acum_ano_pib, valor_juros_nom_bc_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## GOVERNOS ESTADUAIS E MUNICIPAIS:
+juros_nom_em_reais_corr <- get_series(
+  code = c(valor_juros_nom_em_reais_corr = 4609)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_em_acum_ano <- get_series(
+  code = c(valor_juros_nom_em_acum_ano = 4752)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_em_acum_12m <- get_series(
+  code = c(valor_juros_nom_em_acum_12m = 5038)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_em_mensal_pib <- get_series(
+  code = c(valor_juros_nom_em_mensal_pib = 5324)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_em_acum_ano_pib <- get_series(
+  code = c(valor_juros_nom_em_acum_ano_pib = 5467)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_em_acum_12m_pib <- get_series(
+  code = c(valor_juros_nom_em_acum_12m_pib = 5753)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_em <- juros_nom_em_reais_corr %>% 
+  left_join(juros_nom_em_acum_ano) %>% 
+  left_join(juros_nom_em_acum_12m) %>% 
+  left_join(juros_nom_em_mensal_pib) %>% 
+  left_join(juros_nom_em_acum_ano_pib) %>% 
+  left_join(juros_nom_em_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_juros_nom_em_reais_corr = number(valor_juros_nom_em_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_em_acum_ano = number(valor_juros_nom_em_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_em_acum_12m = number(valor_juros_nom_em_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_em_mensal_pib = number(valor_juros_nom_em_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_em_acum_ano_pib = number(valor_juros_nom_em_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_em_acum_12m_pib = number(valor_juros_nom_em_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_juros_nom_em_reais_corr, valor_juros_nom_em_acum_ano, valor_juros_nom_em_acum_12m, valor_juros_nom_em_mensal_pib, valor_juros_nom_em_acum_ano_pib, valor_juros_nom_em_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## GOVERNOS ESTADUAIS:
+juros_nom_estad_reais_corr <- get_series(
+  code = c(valor_juros_nom_estad_reais_corr = 4610)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estad_acum_ano <- get_series(
+  code = c(valor_juros_nom_estad_acum_ano = 4753)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estad_acum_12m <- get_series(
+  code = c(valor_juros_nom_estad_acum_12m = 5039)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estad_mensal_pib <- get_series(
+  code = c(valor_juros_nom_estad_mensal_pib = 5325)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estad_acum_ano_pib <- get_series(
+  code = c(valor_juros_nom_estad_acum_ano_pib = 5468)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estad_acum_12m_pib <- get_series(
+  code = c(valor_juros_nom_estad_acum_12m_pib = 5754)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estad <- juros_nom_estad_reais_corr %>% 
+  left_join(juros_nom_estad_acum_ano) %>% 
+  left_join(juros_nom_estad_acum_12m) %>% 
+  left_join(juros_nom_estad_mensal_pib) %>% 
+  left_join(juros_nom_estad_acum_ano_pib) %>% 
+  left_join(juros_nom_estad_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_juros_nom_estad_reais_corr = number(valor_juros_nom_estad_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estad_acum_ano = number(valor_juros_nom_estad_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estad_acum_12m = number(valor_juros_nom_estad_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estad_mensal_pib = number(valor_juros_nom_estad_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estad_acum_ano_pib = number(valor_juros_nom_estad_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estad_acum_12m_pib = number(valor_juros_nom_estad_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_juros_nom_estad_reais_corr, valor_juros_nom_estad_acum_ano, valor_juros_nom_estad_acum_12m, valor_juros_nom_estad_mensal_pib, valor_juros_nom_estad_acum_ano_pib, valor_juros_nom_estad_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## GOVERNOS MUNICIPAIS:
+juros_nom_munic_reais_corr <- get_series(
+  code = c(valor_juros_nom_munic_reais_corr = 4611)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_munic_acum_ano <- get_series(
+  code = c(valor_juros_nom_munic_acum_ano = 4754)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_munic_acum_12m <- get_series(
+  code = c(valor_juros_nom_munic_acum_12m = 5040)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_munic_mensal_pib <- get_series(
+  code = c(valor_juros_nom_munic_mensal_pib = 5326)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_munic_acum_ano_pib <- get_series(
+  code = c(valor_juros_nom_munic_acum_ano_pib = 5469)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_munic_acum_12m_pib <- get_series(
+  code = c(valor_juros_nom_munic_acum_12m_pib = 5755)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_munic <- juros_nom_munic_reais_corr %>% 
+  left_join(juros_nom_munic_acum_ano) %>% 
+  left_join(juros_nom_munic_acum_12m) %>% 
+  left_join(juros_nom_munic_mensal_pib) %>% 
+  left_join(juros_nom_munic_acum_ano_pib) %>% 
+  left_join(juros_nom_munic_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_juros_nom_munic_reais_corr = number(valor_juros_nom_munic_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_munic_acum_ano = number(valor_juros_nom_munic_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_munic_acum_12m = number(valor_juros_nom_munic_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_munic_mensal_pib = number(valor_juros_nom_munic_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_munic_acum_ano_pib = number(valor_juros_nom_munic_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_munic_acum_12m_pib = number(valor_juros_nom_munic_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_juros_nom_munic_reais_corr, valor_juros_nom_munic_acum_ano, valor_juros_nom_munic_acum_12m, valor_juros_nom_munic_mensal_pib, valor_juros_nom_munic_acum_ano_pib, valor_juros_nom_munic_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## EMPRESAS ESTATAIS:
+juros_nom_estatais_reais_corr <- get_series(
+  code = c(valor_juros_nom_estatais_reais_corr = 4612)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estatais_acum_ano <- get_series(
+  code = c(valor_juros_nom_estatais_acum_ano = 4755)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estatais_acum_12m <- get_series(
+  code = c(valor_juros_nom_estatais_acum_12m = 5041)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estatais_mensal_pib <- get_series(
+  code = c(valor_juros_nom_estatais_mensal_pib = 5327)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estatais_acum_ano_pib <- get_series(
+  code = c(valor_juros_nom_estatais_acum_ano_pib = 5470)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estatais_acum_12m_pib <- get_series(
+  code = c(valor_juros_nom_estatais_acum_12m_pib = 5756)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estatais <- juros_nom_estatais_reais_corr %>% 
+  left_join(juros_nom_estatais_acum_ano) %>% 
+  left_join(juros_nom_estatais_acum_12m) %>% 
+  left_join(juros_nom_estatais_mensal_pib) %>% 
+  left_join(juros_nom_estatais_acum_ano_pib) %>% 
+  left_join(juros_nom_estatais_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_juros_nom_estatais_reais_corr = number(valor_juros_nom_estatais_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estatais_acum_ano = number(valor_juros_nom_estatais_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estatais_acum_12m = number(valor_juros_nom_estatais_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estatais_mensal_pib = number(valor_juros_nom_estatais_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estatais_acum_ano_pib = number(valor_juros_nom_estatais_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estatais_acum_12m_pib = number(valor_juros_nom_estatais_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_juros_nom_estatais_reais_corr, valor_juros_nom_estatais_acum_ano, valor_juros_nom_estatais_acum_12m, valor_juros_nom_estatais_mensal_pib, valor_juros_nom_estatais_acum_ano_pib, valor_juros_nom_estatais_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## EMPRESAS ESTATAIS FEDERAIS:
+juros_nom_estataisfed_reais_corr <- get_series(
+  code = c(valor_juros_nom_estataisfed_reais_corr = 4613)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataisfed_acum_ano <- get_series(
+  code = c(valor_juros_nom_estataisfed_acum_ano = 4756)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataisfed_acum_12m <- get_series(
+  code = c(valor_juros_nom_estataisfed_acum_12m = 5042)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataisfed_mensal_pib <- get_series(
+  code = c(valor_juros_nom_estataisfed_mensal_pib = 5328)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataisfed_acum_ano_pib <- get_series(
+  code = c(valor_juros_nom_estataisfed_acum_ano_pib = 5471)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataisfed_acum_12m_pib <- get_series(
+  code = c(valor_juros_nom_estataisfed_acum_12m_pib = 5757)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataisfed <- juros_nom_estataisfed_reais_corr %>% 
+  left_join(juros_nom_estataisfed_acum_ano) %>% 
+  left_join(juros_nom_estataisfed_acum_12m) %>% 
+  left_join(juros_nom_estataisfed_mensal_pib) %>% 
+  left_join(juros_nom_estataisfed_acum_ano_pib) %>% 
+  left_join(juros_nom_estataisfed_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_juros_nom_estataisfed_reais_corr = number(valor_juros_nom_estataisfed_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estataisfed_acum_ano = number(valor_juros_nom_estataisfed_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estataisfed_acum_12m = number(valor_juros_nom_estataisfed_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estataisfed_mensal_pib = number(valor_juros_nom_estataisfed_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estataisfed_acum_ano_pib = number(valor_juros_nom_estataisfed_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estataisfed_acum_12m_pib = number(valor_juros_nom_estataisfed_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_juros_nom_estataisfed_reais_corr, valor_juros_nom_estataisfed_acum_ano, valor_juros_nom_estataisfed_acum_12m, valor_juros_nom_estataisfed_mensal_pib, valor_juros_nom_estataisfed_acum_ano_pib, valor_juros_nom_estataisfed_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## EMPRESAS ESTATAIS ESTADUAIS:
+juros_nom_estataisestad_reais_corr <- get_series(
+  code = c(valor_juros_nom_estataisestad_reais_corr = 4614)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataisestad_acum_ano <- get_series(
+  code = c(valor_juros_nom_estataisestad_acum_ano = 4757)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataisestad_acum_12m <- get_series(
+  code = c(valor_juros_nom_estataisestad_acum_12m = 5043)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataisestad_mensal_pib <- get_series(
+  code = c(valor_juros_nom_estataisestad_mensal_pib = 5329)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataisestad_acum_ano_pib <- get_series(
+  code = c(valor_juros_nom_estataisestad_acum_ano_pib = 5472)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataisestad_acum_12m_pib <- get_series(
+  code = c(valor_juros_nom_estataisestad_acum_12m_pib = 5758)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataisestad <- juros_nom_estataisestad_reais_corr %>% 
+  left_join(juros_nom_estataisestad_acum_ano) %>% 
+  left_join(juros_nom_estataisestad_acum_12m) %>% 
+  left_join(juros_nom_estataisestad_mensal_pib) %>% 
+  left_join(juros_nom_estataisestad_acum_ano_pib) %>% 
+  left_join(juros_nom_estataisestad_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_juros_nom_estataisestad_reais_corr = number(valor_juros_nom_estataisestad_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estataisestad_acum_ano = number(valor_juros_nom_estataisestad_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estataisestad_acum_12m = number(valor_juros_nom_estataisestad_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estataisestad_mensal_pib = number(valor_juros_nom_estataisestad_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estataisestad_acum_ano_pib = number(valor_juros_nom_estataisestad_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estataisestad_acum_12m_pib = number(valor_juros_nom_estataisestad_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_juros_nom_estataisestad_reais_corr, valor_juros_nom_estataisestad_acum_ano, valor_juros_nom_estataisestad_acum_12m, valor_juros_nom_estataisestad_mensal_pib, valor_juros_nom_estataisestad_acum_ano_pib, valor_juros_nom_estataisestad_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## EMPRESAS ESTATAIS MUNICIPAIS:
+juros_nom_estataismunic_reais_corr <- get_series(
+  code = c(valor_juros_nom_estataismunic_reais_corr = 4615)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataismunic_acum_ano <- get_series(
+  code = c(valor_juros_nom_estataismunic_acum_ano = 4758)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataismunic_acum_12m <- get_series(
+  code = c(valor_juros_nom_estataismunic_acum_12m = 5044)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataismunic_mensal_pib <- get_series(
+  code = c(valor_juros_nom_estataismunic_mensal_pib = 5330)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataismunic_acum_ano_pib <- get_series(
+  code = c(valor_juros_nom_estataismunic_acum_ano_pib = 5473)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataismunic_acum_12m_pib <- get_series(
+  code = c(valor_juros_nom_estataismunic_acum_12m_pib = 5759)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_estataismunic <- juros_nom_estataismunic_reais_corr %>% 
+  left_join(juros_nom_estataismunic_acum_ano) %>% 
+  left_join(juros_nom_estataismunic_acum_12m) %>% 
+  left_join(juros_nom_estataismunic_mensal_pib) %>% 
+  left_join(juros_nom_estataismunic_acum_ano_pib) %>% 
+  left_join(juros_nom_estataismunic_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_juros_nom_estataismunic_reais_corr = number(valor_juros_nom_estataismunic_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estataismunic_acum_ano = number(valor_juros_nom_estataismunic_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estataismunic_acum_12m = number(valor_juros_nom_estataismunic_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estataismunic_mensal_pib = number(valor_juros_nom_estataismunic_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estataismunic_acum_ano_pib = number(valor_juros_nom_estataismunic_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_estataismunic_acum_12m_pib = number(valor_juros_nom_estataismunic_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_juros_nom_estataismunic_reais_corr, valor_juros_nom_estataismunic_acum_ano, valor_juros_nom_estataismunic_acum_12m, valor_juros_nom_estataismunic_mensal_pib, valor_juros_nom_estataismunic_acum_ano_pib, valor_juros_nom_estataismunic_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## SETOR PÚBLICO CONSOLIDADO:
+juros_nom_spc_reais_corr <- get_series(
+  code = c(valor_juros_nom_spc_reais_corr = 4616)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_spc_acum_ano <- get_series(
+  code = c(valor_juros_nom_spc_acum_ano = 4759)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_spc_acum_12m <- get_series(
+  code = c(valor_juros_nom_spc_acum_12m = 5045)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_spc_mensal_pib <- get_series(
+  code = c(valor_juros_nom_spc_mensal_pib = 5331)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_spc_acum_ano_pib <- get_series(
+  code = c(valor_juros_nom_spc_acum_ano_pib = 5474)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_spc_acum_12m_pib <- get_series(
+  code = c(valor_juros_nom_spc_acum_12m_pib = 5760)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+juros_nom_spc <- juros_nom_spc_reais_corr %>% 
+  left_join(juros_nom_spc_acum_ano) %>% 
+  left_join(juros_nom_spc_acum_12m) %>% 
+  left_join(juros_nom_spc_mensal_pib) %>% 
+  left_join(juros_nom_spc_acum_ano_pib) %>% 
+  left_join(juros_nom_spc_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_juros_nom_spc_reais_corr = number(valor_juros_nom_spc_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_spc_acum_ano = number(valor_juros_nom_spc_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_spc_acum_12m = number(valor_juros_nom_spc_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_spc_mensal_pib = number(valor_juros_nom_spc_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_spc_acum_ano_pib = number(valor_juros_nom_spc_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_juros_nom_spc_acum_12m_pib = number(valor_juros_nom_spc_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_juros_nom_spc_reais_corr, valor_juros_nom_spc_acum_ano, valor_juros_nom_spc_acum_12m, valor_juros_nom_spc_mensal_pib, valor_juros_nom_spc_acum_ano_pib, valor_juros_nom_spc_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+# RESULTADO NOMINAL:
+## GOVERNO CENTRAL (GOVERNO FEDERAL + BANCO CENTRAL):
+rn_gc_reais_corr <- get_series(
+  code = c(valor_rn_gc_reais_corr = 4573)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_gc_acum_ano <- get_series(
+  code = c(valor_rn_gc_acum_ano = 4716)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_gc_acum_12m <- get_series(
+  code = c(valor_rn_gc_acum_12m = 5002)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_gc_mensal_pib <- get_series(
+  code = c(valor_rn_gc_mensal_pib = 5288)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_gc_acum_ano_pib <- get_series(
+  code = c(valor_rn_gc_acum_ano_pib = 5431)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_gc_acum_12m_pib <- get_series(
+  code = c(valor_rn_gc_acum_12m_pib = 5717)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_gc <- rn_gc_reais_corr %>% 
+  left_join(rn_gc_acum_ano) %>% 
+  left_join(rn_gc_acum_12m) %>% 
+  left_join(rn_gc_mensal_pib) %>% 
+  left_join(rn_gc_acum_ano_pib) %>% 
+  left_join(rn_gc_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rn_gc_reais_corr = number(valor_rn_gc_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_gc_acum_ano = number(valor_rn_gc_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_gc_acum_12m = number(valor_rn_gc_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_gc_mensal_pib = number(valor_rn_gc_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_gc_acum_ano_pib = number(valor_rn_gc_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_gc_acum_12m_pib = number(valor_rn_gc_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rn_gc_reais_corr, valor_rn_gc_acum_ano, valor_rn_gc_acum_12m, valor_rn_gc_mensal_pib, valor_rn_gc_acum_ano_pib, valor_rn_gc_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## GOVERNO FEDERAL:
+rn_gf_reais_corr <- get_series(
+  code = c(valor_rn_gf_reais_corr = 4574)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_gf_acum_ano <- get_series(
+  code = c(valor_rn_gf_acum_ano = 4717)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_gf_acum_12m <- get_series(
+  code = c(valor_rn_gf_acum_12m = 5003)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_gf_mensal_pib <- get_series(
+  code = c(valor_rn_gf_mensal_pib = 5289)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_gf_acum_ano_pib <- get_series(
+  code = c(valor_rn_gf_acum_ano_pib = 5432)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_gf_acum_12m_pib <- get_series(
+  code = c(valor_rn_gf_acum_12m_pib = 5718)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_gf <- rn_gf_reais_corr %>% 
+  left_join(rn_gf_acum_ano) %>% 
+  left_join(rn_gf_acum_12m) %>% 
+  left_join(rn_gf_mensal_pib) %>% 
+  left_join(rn_gf_acum_ano_pib) %>% 
+  left_join(rn_gf_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rn_gf_reais_corr = number(valor_rn_gf_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_gf_acum_ano = number(valor_rn_gf_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_gf_acum_12m = number(valor_rn_gf_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_gf_mensal_pib = number(valor_rn_gf_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_gf_acum_ano_pib = number(valor_rn_gf_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_gf_acum_12m_pib = number(valor_rn_gf_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rn_gf_reais_corr, valor_rn_gf_acum_ano, valor_rn_gf_acum_12m, valor_rn_gf_mensal_pib, valor_rn_gf_acum_ano_pib, valor_rn_gf_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## BANCO CENTRAL:
+rn_bc_reais_corr <- get_series(
+  code = c(valor_rn_bc_reais_corr = 4575)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_bc_acum_ano <- get_series(
+  code = c(valor_rn_bc_acum_ano = 4718)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_bc_acum_12m <- get_series(
+  code = c(valor_rn_bc_acum_12m = 5004)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_bc_mensal_pib <- get_series(
+  code = c(valor_rn_bc_mensal_pib = 5290)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_bc_acum_ano_pib <- get_series(
+  code = c(valor_rn_bc_acum_ano_pib = 5433)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_bc_acum_12m_pib <- get_series(
+  code = c(valor_rn_bc_acum_12m_pib = 5719)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_bc <- rn_bc_reais_corr %>% 
+  left_join(rn_bc_acum_ano) %>% 
+  left_join(rn_bc_acum_12m) %>% 
+  left_join(rn_bc_mensal_pib) %>% 
+  left_join(rn_bc_acum_ano_pib) %>% 
+  left_join(rn_bc_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rn_bc_reais_corr = number(valor_rn_bc_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_bc_acum_ano = number(valor_rn_bc_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_bc_acum_12m = number(valor_rn_bc_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_bc_mensal_pib = number(valor_rn_bc_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_bc_acum_ano_pib = number(valor_rn_bc_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_bc_acum_12m_pib = number(valor_rn_bc_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rn_bc_reais_corr, valor_rn_bc_acum_ano, valor_rn_bc_acum_12m, valor_rn_bc_mensal_pib, valor_rn_bc_acum_ano_pib, valor_rn_bc_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## GOVERNOS ESTADUAIS E MUNICIPAIS:
+rn_em_reais_corr <- get_series(
+  code = c(valor_rn_em_reais_corr = 4576)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_em_acum_ano <- get_series(
+  code = c(valor_rn_em_acum_ano = 4719)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_em_acum_12m <- get_series(
+  code = c(valor_rn_em_acum_12m = 5005)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_em_mensal_pib <- get_series(
+  code = c(valor_rn_em_mensal_pib = 5291)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_em_acum_ano_pib <- get_series(
+  code = c(valor_rn_em_acum_ano_pib = 5434)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_em_acum_12m_pib <- get_series(
+  code = c(valor_rn_em_acum_12m_pib = 5720)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_em <- rn_em_reais_corr %>% 
+  left_join(rn_em_acum_ano) %>% 
+  left_join(rn_em_acum_12m) %>% 
+  left_join(rn_em_mensal_pib) %>% 
+  left_join(rn_em_acum_ano_pib) %>% 
+  left_join(rn_em_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rn_em_reais_corr = number(valor_rn_em_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_em_acum_ano = number(valor_rn_em_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_em_acum_12m = number(valor_rn_em_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_em_mensal_pib = number(valor_rn_em_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_em_acum_ano_pib = number(valor_rn_em_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_em_acum_12m_pib = number(valor_rn_em_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rn_em_reais_corr, valor_rn_em_acum_ano, valor_rn_em_acum_12m, valor_rn_em_mensal_pib, valor_rn_em_acum_ano_pib, valor_rn_em_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## GOVERNOS ESTADUAIS:
+rn_estad_reais_corr <- get_series(
+  code = c(valor_rn_estad_reais_corr = 4577)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estad_acum_ano <- get_series(
+  code = c(valor_rn_estad_acum_ano = 4720)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estad_acum_12m <- get_series(
+  code = c(valor_rn_estad_acum_12m = 5006)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estad_mensal_pib <- get_series(
+  code = c(valor_rn_estad_mensal_pib = 5292)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estad_acum_ano_pib <- get_series(
+  code = c(valor_rn_estad_acum_ano_pib = 5435)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estad_acum_12m_pib <- get_series(
+  code = c(valor_rn_estad_acum_12m_pib = 5721)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estad <- rn_estad_reais_corr %>% 
+  left_join(rn_estad_acum_ano) %>% 
+  left_join(rn_estad_acum_12m) %>% 
+  left_join(rn_estad_mensal_pib) %>% 
+  left_join(rn_estad_acum_ano_pib) %>% 
+  left_join(rn_estad_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rn_estad_reais_corr = number(valor_rn_estad_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estad_acum_ano = number(valor_rn_estad_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estad_acum_12m = number(valor_rn_estad_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estad_mensal_pib = number(valor_rn_estad_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estad_acum_ano_pib = number(valor_rn_estad_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estad_acum_12m_pib = number(valor_rn_estad_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rn_estad_reais_corr, valor_rn_estad_acum_ano, valor_rn_estad_acum_12m, valor_rn_estad_mensal_pib, valor_rn_estad_acum_ano_pib, valor_rn_estad_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## GOVERNOS MUNICIPAIS:
+rn_munic_reais_corr <- get_series(
+  code = c(valor_rn_munic_reais_corr = 4578)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_munic_acum_ano <- get_series(
+  code = c(valor_rn_munic_acum_ano = 4721)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_munic_acum_12m <- get_series(
+  code = c(valor_rn_munic_acum_12m = 5007)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_munic_mensal_pib <- get_series(
+  code = c(valor_rn_munic_mensal_pib = 5293)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_munic_acum_ano_pib <- get_series(
+  code = c(valor_rn_munic_acum_ano_pib = 5436)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_munic_acum_12m_pib <- get_series(
+  code = c(valor_rn_munic_acum_12m_pib = 5722)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_munic <- rn_munic_reais_corr %>% 
+  left_join(rn_munic_acum_ano) %>% 
+  left_join(rn_munic_acum_12m) %>% 
+  left_join(rn_munic_mensal_pib) %>% 
+  left_join(rn_munic_acum_ano_pib) %>% 
+  left_join(rn_munic_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rn_munic_reais_corr = number(valor_rn_munic_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_munic_acum_ano = number(valor_rn_munic_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_munic_acum_12m = number(valor_rn_munic_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_munic_mensal_pib = number(valor_rn_munic_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_munic_acum_ano_pib = number(valor_rn_munic_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_munic_acum_12m_pib = number(valor_rn_munic_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rn_munic_reais_corr, valor_rn_munic_acum_ano, valor_rn_munic_acum_12m, valor_rn_munic_mensal_pib, valor_rn_munic_acum_ano_pib, valor_rn_munic_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## EMPRESAS ESTATAIS:
+rn_estatais_reais_corr <- get_series(
+  code = c(valor_rn_estatais_reais_corr = 4579)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estatais_acum_ano <- get_series(
+  code = c(valor_rn_estatais_acum_ano = 4722)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estatais_acum_12m <- get_series(
+  code = c(valor_rn_estatais_acum_12m = 5008)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estatais_mensal_pib <- get_series(
+  code = c(valor_rn_estatais_mensal_pib = 5294)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estatais_acum_ano_pib <- get_series(
+  code = c(valor_rn_estatais_acum_ano_pib = 5437)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estatais_acum_12m_pib <- get_series(
+  code = c(valor_rn_estatais_acum_12m_pib = 5723)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estatais <- rn_estatais_reais_corr %>% 
+  left_join(rn_estatais_acum_ano) %>% 
+  left_join(rn_estatais_acum_12m) %>% 
+  left_join(rn_estatais_mensal_pib) %>% 
+  left_join(rn_estatais_acum_ano_pib) %>% 
+  left_join(rn_estatais_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rn_estatais_reais_corr = number(valor_rn_estatais_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estatais_acum_ano = number(valor_rn_estatais_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estatais_acum_12m = number(valor_rn_estatais_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estatais_mensal_pib = number(valor_rn_estatais_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estatais_acum_ano_pib = number(valor_rn_estatais_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estatais_acum_12m_pib = number(valor_rn_estatais_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rn_estatais_reais_corr, valor_rn_estatais_acum_ano, valor_rn_estatais_acum_12m, valor_rn_estatais_mensal_pib, valor_rn_estatais_acum_ano_pib, valor_rn_estatais_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## EMPRESAS ESTATAIS FEDERAIS:
+rn_estataisfed_reais_corr <- get_series(
+  code = c(valor_rn_estataisfed_reais_corr = 4580)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataisfed_acum_ano <- get_series(
+  code = c(valor_rn_estataisfed_acum_ano = 4723)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataisfed_acum_12m <- get_series(
+  code = c(valor_rn_estataisfed_acum_12m = 5009)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataisfed_mensal_pib <- get_series(
+  code = c(valor_rn_estataisfed_mensal_pib = 5295)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataisfed_acum_ano_pib <- get_series(
+  code = c(valor_rn_estataisfed_acum_ano_pib = 5438)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataisfed_acum_12m_pib <- get_series(
+  code = c(valor_rn_estataisfed_acum_12m_pib = 5724)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataisfed <- rn_estataisfed_reais_corr %>% 
+  left_join(rn_estataisfed_acum_ano) %>% 
+  left_join(rn_estataisfed_acum_12m) %>% 
+  left_join(rn_estataisfed_mensal_pib) %>% 
+  left_join(rn_estataisfed_acum_ano_pib) %>% 
+  left_join(rn_estataisfed_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rn_estataisfed_reais_corr = number(valor_rn_estataisfed_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estataisfed_acum_ano = number(valor_rn_estataisfed_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estataisfed_acum_12m = number(valor_rn_estataisfed_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estataisfed_mensal_pib = number(valor_rn_estataisfed_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estataisfed_acum_ano_pib = number(valor_rn_estataisfed_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estataisfed_acum_12m_pib = number(valor_rn_estataisfed_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rn_estataisfed_reais_corr, valor_rn_estataisfed_acum_ano, valor_rn_estataisfed_acum_12m, valor_rn_estataisfed_mensal_pib, valor_rn_estataisfed_acum_ano_pib, valor_rn_estataisfed_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## EMPRESAS ESTATAIS ESTADUAIS:
+rn_estataisestad_reais_corr <- get_series(
+  code = c(valor_rn_estataisestad_reais_corr = 4581)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataisestad_acum_ano <- get_series(
+  code = c(valor_rn_estataisestad_acum_ano = 4724)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataisestad_acum_12m <- get_series(
+  code = c(valor_rn_estataisestad_acum_12m = 5010)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataisestad_mensal_pib <- get_series(
+  code = c(valor_rn_estataisestad_mensal_pib = 5296)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+# rn_estataisestad_acum_ano_pib <- get_series(
+#   code = c(valor_rn_estataisestad_acum_ano_pib = 5439)
+# ) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataisestad_acum_12m_pib <- get_series(
+  code = c(valor_rn_estataisestad_acum_12m_pib = 5725)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataisestad <- rn_estataisestad_reais_corr %>% 
+  left_join(rn_estataisestad_acum_ano) %>% 
+  left_join(rn_estataisestad_acum_12m) %>% 
+  left_join(rn_estataisestad_mensal_pib) %>% 
+  # left_join(rn_estataisestad_acum_ano_pib) %>% 
+  left_join(rn_estataisestad_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rn_estataisestad_reais_corr = number(valor_rn_estataisestad_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estataisestad_acum_ano = number(valor_rn_estataisestad_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estataisestad_acum_12m = number(valor_rn_estataisestad_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estataisestad_mensal_pib = number(valor_rn_estataisestad_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    # valor_rn_estataisestad_acum_ano_pib = number(valor_rn_estataisestad_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estataisestad_acum_12m_pib = number(valor_rn_estataisestad_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rn_estataisestad_reais_corr, valor_rn_estataisestad_acum_ano, valor_rn_estataisestad_acum_12m, valor_rn_estataisestad_mensal_pib, valor_rn_estataisestad_acum_12m_pib, date) %>%
+  arrange(desc(date))
+
+## EMPRESAS ESTATAIS MUNICIPAIS:
+rn_estataismunic_reais_corr <- get_series(
+  code = c(valor_rn_estataismunic_reais_corr = 4582)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataismunic_acum_ano <- get_series(
+  code = c(valor_rn_estataismunic_acum_ano = 4725)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataismunic_acum_12m <- get_series(
+  code = c(valor_rn_estataismunic_acum_12m = 5011)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataismunic_mensal_pib <- get_series(
+  code = c(valor_rn_estataismunic_mensal_pib = 5297)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataismunic_acum_ano_pib <- get_series(
+  code = c(valor_rn_estataismunic_acum_ano_pib = 5440)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataismunic_acum_12m_pib <- get_series(
+  code = c(valor_rn_estataismunic_acum_12m_pib = 5726)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_estataismunic <- rn_estataismunic_reais_corr %>% 
+  left_join(rn_estataismunic_acum_ano) %>% 
+  left_join(rn_estataismunic_acum_12m) %>% 
+  left_join(rn_estataismunic_mensal_pib) %>% 
+  left_join(rn_estataismunic_acum_ano_pib) %>% 
+  left_join(rn_estataismunic_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rn_estataismunic_reais_corr = number(valor_rn_estataismunic_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estataismunic_acum_ano = number(valor_rn_estataismunic_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estataismunic_acum_12m = number(valor_rn_estataismunic_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estataismunic_mensal_pib = number(valor_rn_estataismunic_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estataismunic_acum_ano_pib = number(valor_rn_estataismunic_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_estataismunic_acum_12m_pib = number(valor_rn_estataismunic_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rn_estataismunic_reais_corr, valor_rn_estataismunic_acum_ano, valor_rn_estataismunic_acum_12m, valor_rn_estataismunic_mensal_pib, valor_rn_estataismunic_acum_ano_pib, valor_rn_estataismunic_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
+## SETOR PÚBLICO CONSOLIDADO:
+rn_spc_reais_corr <- get_series(
+  code = c(valor_rn_spc_reais_corr = 4583)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_spc_acum_ano <- get_series(
+  code = c(valor_rn_spc_acum_ano = 4726)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_spc_acum_12m <- get_series(
+  code = c(valor_rn_spc_acum_12m = 5012)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_spc_mensal_pib <- get_series(
+  code = c(valor_rn_spc_mensal_pib = 5298)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_spc_acum_ano_pib <- get_series(
+  code = c(valor_rn_spc_acum_ano_pib = 5441)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_spc_acum_12m_pib <- get_series(
+  code = c(valor_rn_spc_acum_12m_pib = 5727)
+) %>% dplyr::filter(date >= "1996-01-01")
+
+rn_spc <- rn_spc_reais_corr %>% 
+  left_join(rn_spc_acum_ano) %>% 
+  left_join(rn_spc_acum_12m) %>% 
+  left_join(rn_spc_mensal_pib) %>% 
+  left_join(rn_spc_acum_ano_pib) %>% 
+  left_join(rn_spc_acum_12m_pib) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_rn_spc_reais_corr = number(valor_rn_spc_reais_corr, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_spc_acum_ano = number(valor_rn_spc_acum_ano, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_spc_acum_12m = number(valor_rn_spc_acum_12m, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_spc_mensal_pib = number(valor_rn_spc_mensal_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_spc_acum_ano_pib = number(valor_rn_spc_acum_ano_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_rn_spc_acum_12m_pib = number(valor_rn_spc_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_rn_spc_reais_corr, valor_rn_spc_acum_ano, valor_rn_spc_acum_12m, valor_rn_spc_mensal_pib, valor_rn_spc_acum_ano_pib, valor_rn_spc_acum_12m_pib, date) %>% 
+  arrange(desc(date))
+
 # RESULTADO PRIMÁRIO:
 ## GOVERNO CENTRAL (GOVERNO FEDERAL + BANCO CENTRAL):
 rp_gc_reais_corr <- get_series(
@@ -9375,73 +10281,1678 @@ reactable(
 
 # Resultado nominal {data-navmenu="Fiscal"}
 
-Column {.sidebar} {data-width=80}
+Column {.sidebar} {data-width=150}
+-----------------------------------------------------------------------
+O **resultado nominal** corresponde à variação nominal dos saldos da dívida líquida, deduzidos os ajustes patrimoniais e metodológicos efetuados no período. Abrange o componente de atualização monetária da dívida, os juros reais e o resultado fiscal primário. São apresentados valores totais, referentes à dívida interna e externa.
+
+Trata-se de séries de fluxo mensal corrente, fluxo acumulado no ano e fluxo acumulado em 12 meses em reais correntes e como % do PIB para governo central (governo federal e Banco Central), governo federal, Banco Central, governos estaduais e municipais, governos estaduais, governos municipais, empresas Estatais, empresas Estatais federais, empresas Estatais estaduais, empresas Estatais municipais, setor público consolidado, governo federal sem INSS e INSS.
+
+<br>
+
+Obs.: Valores positivos representam déficits primários. Valores negativos representam superávits primários.
+
+<br>
+
+**Fonte:** Estatísticas fiscais (necessidades de financiamento sem desvalorização cambial) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+
+Column {data-width=850}  {.tabset}
 -----------------------------------------------------------------------
 
-Column {data-width=920}  {.tabset}
------------------------------------------------------------------------
+### Gov. Central (GF + BC)
+```{r}
+reactable(
+  rn_gc[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_gc_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_gc_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_gc_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_gc_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_gc_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_gc_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
-### Governo Central (GF + BC)
+### Gov. Central (Gráfico)
+```{r}
+plot_ly(
+  data = rn_gc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rn_gc_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
-### Governo Central (Gráfico)
+### Gov. Federal (GF)
+```{r}
+reactable(
+  rn_gf[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_gf_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_gf_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_gf_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_gf_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_gf_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_gf_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
-### Governo Federal (GF)
+### Gov. Federal (Gráfico)
+```{r}
+plot_ly(
+  data = rn_gf, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rn_gf_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Banco Central (BC)
+```{r}
+reactable(
+  rn_bc[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_bc_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_bc_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_bc_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_bc_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_bc_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_bc_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
-### Governos estaduais e municipais
+### Banco Central (Gráfico)
+```{r}
+plot_ly(
+  data = rn_bc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rn_bc_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
-### Governos estaduais
+### Gov. estaduais e municipais
+```{r}
+reactable(
+  rn_em[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_em_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_em_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_em_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_em_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_em_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_em_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
-### Governos municipais
+### Gov. estaduais e municipais (Gráfico)
+```{r}
+plot_ly(
+  data = rn_em, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rn_em_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Gov. estaduais
+```{r}
+reactable(
+  rn_estad[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estad_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estad_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estad_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estad_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estad_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estad_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Gov. estaduais (Gráfico)
+```{r}
+plot_ly(
+  data = rn_estad, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rn_estad_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Gov. municipais
+```{r}
+reactable(
+  rn_munic[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_munic_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_munic_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_munic_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_munic_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_munic_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_munic_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Gov. municipais (Gráfico)
+```{r}
+plot_ly(
+  data = rn_munic, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rn_munic_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Empresas Estatais
+```{r}
+reactable(
+  rn_estatais[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estatais_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estatais_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estatais_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estatais_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estatais_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estatais_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Empresas Estatais (Gráfico)
+```{r}
+plot_ly(
+  data = rn_estatais, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rn_estatais_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Empresas Estatais Federais
+```{r}
+reactable(
+  rn_estataisfed[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estataisfed_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estataisfed_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estataisfed_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estataisfed_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estataisfed_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estataisfed_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Empresas Estatais Federais (Gráfico)
+```{r}
+plot_ly(
+  data = rn_estataisfed, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rn_estataisfed_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Empresas Estatais estaduais
+```{r}
+reactable(
+  rn_estataisestad[, -7],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estataisestad_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estataisestad_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estataisestad_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estataisestad_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    # valor_rn_estataisestad_acum_ano_pib = colDef(
+    #   name = "Acum. ano (% do PIB)",
+    #   align = "center",
+    #   headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    # ),
+    valor_rn_estataisestad_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Empresas Estatais estaduais (Gráfico)
+```{r}
+plot_ly(
+  data = rn_estataisestad, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rn_estataisestad_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Empresas Estatais municipais
+```{r}
+reactable(
+  rn_estataismunic[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estataismunic_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estataismunic_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estataismunic_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estataismunic_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estataismunic_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_estataismunic_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Empresas Estatais municipais (Gráfico)
+```{r}
+plot_ly(
+  data = rn_estataismunic, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rn_estataismunic_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Setor público consolidado
+```{r}
+reactable(
+  rn_spc[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_spc_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_spc_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_spc_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_spc_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_spc_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rn_spc_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 ### Setor público consolidado (Gráfico)
+```{r}
+plot_ly(
+  data = rn_spc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_rn_spc_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Juros nominais {data-navmenu="Fiscal"}
 
-Column {.sidebar} {data-width=80}
+Column {.sidebar} {data-width=150}
+-----------------------------------------------------------------------
+Os **juros nominais** referem-se ao fluxo de juros, apropriados por competência, incidentes sobre a dívida interna e externa. Engloba os juros reais e o componente de atualização monetária da dívida. Corresponde ao componente financeiro do resultado fiscal. Exclui o impacto da variação cambial sobre a dívida externa e sobre a dívida mobiliária interna indexada ao dólar. 
+
+Trata-se de séries de fluxo mensal corrente, fluxo acumulado no ano e fluxo acumulado em 12 meses em reais correntes e como % do PIB para governo central (governo federal e Banco Central), governo federal, Banco Central, governos estaduais e municipais, governos estaduais, governos municipais, empresas Estatais, empresas Estatais federais, empresas Estatais estaduais, empresas Estatais municipais, setor público consolidado, governo federal sem INSS e INSS.
+
+<br>
+
+**Fonte:** Estatísticas fiscais (necessidades de financiamento sem desvalorização cambial) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+
+Column {data-width=850}  {.tabset}
 -----------------------------------------------------------------------
 
-Column {data-width=920}  {.tabset}
------------------------------------------------------------------------
+### Gov. Central (GF + BC)
+```{r}
+reactable(
+  juros_nom_gc[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_gc_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_gc_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_gc_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_gc_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_gc_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_gc_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
-### Governo Central (GF + BC)
+### Gov. Central (Gráfico)
+```{r}
+plot_ly(
+  data = juros_nom_gc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_juros_nom_gc_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
-### Governo Central (Gráfico)
+### Gov. Federal (GF)
+```{r}
+reactable(
+  juros_nom_gf[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_gf_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_gf_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_gf_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_gf_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_gf_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_gf_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
-### Governo Federal (GF)
+### Gov. Federal (Gráfico)
+```{r}
+plot_ly(
+  data = juros_nom_gf, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_juros_nom_gf_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Banco Central (BC)
+```{r}
+reactable(
+  juros_nom_bc[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_bc_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_bc_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_bc_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_bc_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_bc_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_bc_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
-### Governos estaduais e municipais
+### Banco Central (Gráfico)
+```{r}
+plot_ly(
+  data = juros_nom_bc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_juros_nom_bc_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
-### Governos estaduais
+### Gov. estaduais e municipais
+```{r}
+reactable(
+  juros_nom_em[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_em_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_em_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_em_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_em_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_em_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_em_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
-### Governos municipais
+### Gov. estaduais e municipais (Gráfico)
+```{r}
+plot_ly(
+  data = juros_nom_em, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_juros_nom_em_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Gov. estaduais
+```{r}
+reactable(
+  juros_nom_estad[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estad_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estad_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estad_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estad_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estad_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estad_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Gov. estaduais (Gráfico)
+```{r}
+plot_ly(
+  data = juros_nom_estad, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_juros_nom_estad_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Gov. municipais
+```{r}
+reactable(
+  juros_nom_munic[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_munic_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_munic_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_munic_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_munic_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_munic_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_munic_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Gov. municipais (Gráfico)
+```{r}
+plot_ly(
+  data = juros_nom_munic, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_juros_nom_munic_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Empresas Estatais
+```{r}
+reactable(
+  juros_nom_estatais[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estatais_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estatais_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estatais_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estatais_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estatais_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estatais_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Empresas Estatais (Gráfico)
+```{r}
+plot_ly(
+  data = juros_nom_estatais, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_juros_nom_estatais_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Empresas Estatais Federais
+```{r}
+reactable(
+  juros_nom_estataisfed[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataisfed_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataisfed_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataisfed_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataisfed_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataisfed_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataisfed_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Empresas Estatais Federais (Gráfico)
+```{r}
+plot_ly(
+  data = juros_nom_estataisfed, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_juros_nom_estataisfed_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Empresas Estatais estaduais
+```{r}
+reactable(
+  juros_nom_estataisestad[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataisestad_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataisestad_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataisestad_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataisestad_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataisestad_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataisestad_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Empresas Estatais estaduais (Gráfico)
+```{r}
+plot_ly(
+  data = juros_nom_estataisestad, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_juros_nom_estataisestad_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Empresas Estatais municipais
+```{r}
+reactable(
+  juros_nom_estataismunic[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataismunic_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataismunic_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataismunic_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataismunic_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataismunic_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_estataismunic_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Empresas Estatais municipais (Gráfico)
+```{r}
+plot_ly(
+  data = juros_nom_estataismunic, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_juros_nom_estataismunic_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 ### Setor público consolidado
+```{r}
+reactable(
+  juros_nom_spc[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_spc_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_spc_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_spc_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_spc_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_spc_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_juros_nom_spc_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 ### Setor público consolidado (Gráfico)
-
+```{r}
+plot_ly(
+  data = juros_nom_spc, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_juros_nom_spc_acum_12m_pib)),
+  type = "scatter",
+  mode = "lines",
+  fill = "tozeroy"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
+  ) %>% rangeslider(thickness = 0.05)
+```
 
 # Resultado primário {data-navmenu="Fiscal"}
 
@@ -9982,18 +12493,60 @@ plot_ly(
 
 ### Empresas Estatais Federais
 ```{r}
-plot_ly(
-  data = rp_munic, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", valor_rp_munic_acum_12m_pib)),
-  type = "scatter",
-  mode = "lines",
-  fill = "tozeroy"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "Acum. em 12 meses (% do PIB)")
-  ) %>% rangeslider(thickness = 0.05)
+reactable(
+  rp_estataisfed[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataisfed_reais_corr = colDef(
+      name = "Mensal (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataisfed_acum_ano = colDef(
+      name = "Acum. ano (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataisfed_acum_12m = colDef(
+      name = "Acum. em 12 meses (milhões de R$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataisfed_mensal_pib = colDef(
+      name = "Mensal (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataisfed_acum_ano_pib = colDef(
+      name = "Acum. ano (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rp_estataisfed_acum_12m_pib = colDef(
+      name = "Acum. em 12 meses (% do PIB)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )    
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
 ```
 
 ### Empresas Estatais Federais (Gráfico)
