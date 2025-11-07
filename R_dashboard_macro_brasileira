@@ -40,6 +40,25 @@ fredr_set_key("0087fc9b146c214d78104e3737039ea4")
 
 # Sys.setlocale("LC_ALL", "pt_BR.UTF-8")
 
+# PRODUÇÃO DE OVOS DE GALINHA (POG):
+pog <- sidrar::get_sidra(
+  api = "/t/7524/n1/all/v/allxp/p/all/c12716/115236/c1835/72208"
+)
+
+pog <- pog %>% mutate(
+  date = lubridate::ym(`Trimestre (Código)`),
+  variavel = Variável,
+  valor = Valor,
+  .keep = "none"
+)
+
+pog <- pog %>% pivot_wider(names_from = variavel, values_from = valor) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Número de informantes` = number(`Número de informantes`, big.mark = ".", decimal.mark = ","),
+  `Número de cabeças de galinhas poedeiras nos estabelecimentos agropecuários` = number(`Número de cabeças de galinhas poedeiras nos estabelecimentos agropecuários`, big.mark = ".", decimal.mark = ","),
+  `Quantidade de ovos produzidos` = number(`Quantidade de ovos produzidos`, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, `Número de informantes`, `Número de cabeças de galinhas poedeiras nos estabelecimentos agropecuários`, `Quantidade de ovos produzidos`, date) %>% arrange(desc(date))
+
 # JUROS NOMINAIS:
 ## GOVERNO CENTRAL (GOVERNO FEDERAL + BANCO CENTRAL):
 juros_nom_gc_reais_corr <- get_series(
@@ -17473,6 +17492,63 @@ reactable(
   )
 )
 ```
+
+# Produção de Ovos de Galinha (POG) {data-navmenu="Produção"}
+
+Column {.sidebar} {data-width=100}
+-----------------------------------------------------------------------
+A pesquisa **Produção de Ovos de Galinha (POG)** fornece indicadores da variação da produção física de ovos de galinha, tendo como unidade de coleta o estabelecimento agropecuário que se dedica à atividade de produção de ovos de galinha, independentemente de sua finalidade, e com capacidade de alojamento de 10.000 ou mais galinhas poedeiras e/ou matrizeiras. Quanto à finalidade da produção, os dados tratam-se do somatório de consumo e incubação.
+
+<br>
+
+**Fonte:** [Tabela 7524](https://sidra.ibge.gov.br/tabela/7524) do Banco de Dados Sidra do [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9216-pesquisa-trimestral-da-producao-de-ovos-de-galinha.html?edicao=20753&t=o-que-e)
+
+Column {data-width=900} {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese
+```{r}
+reactable(
+  pog[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Número de informantes` = colDef(
+      name = "Nº de informantes (unidades)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Número de cabeças de galinhas poedeiras nos estabelecimentos agropecuários` = colDef(
+      name = "Nº de cabeças de galinhas poedeiras nos estabelecimentos agropecuários (unidades)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Quantidade de ovos produzidos` = colDef(
+      name = "Quantidade de ovos produzidos (mil dúzias)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),  
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 
 
 # Pesquisa Industrial Mensal - Produção física (PIM-PF) {data-navmenu="Produção"}
