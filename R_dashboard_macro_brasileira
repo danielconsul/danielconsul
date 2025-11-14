@@ -40,6 +40,74 @@ fredr_set_key("0087fc9b146c214d78104e3737039ea4")
 
 # Sys.setlocale("LC_ALL", "pt_BR.UTF-8")
 
+# IPCA - NÚCLEOS E DIFUSÃO:
+# Núcleo por exclusão EX0: 11427
+# Núcleo por exclusão EX1: 16121
+# Núcleo por exclusão EX2: 27838
+# Núcleo por exclusão EX3: 27839
+# Núcleo de dupla ponderação: 16122
+# Núcleo percentil 55: 28750
+# Núcleo ex-alimentação e energia: 28751
+# Índice de difusão: 21379
+
+ipca_mensal_nuc_dif <- get_series(
+  code = c(valor_ipca = 433)
+) %>% dplyr::filter(date >= "1995-01-01")
+
+ipca_ex0 <- get_series(
+  code = c(valor_ipca_ex0 = 11427)
+) %>% dplyr::filter(date >= "1995-01-01")
+
+ipca_ex1 <- get_series(
+  code = c(valor_ipca_ex1 = 16121)
+) %>% dplyr::filter(date >= "1995-01-01")
+
+ipca_ex2 <- get_series(
+  code = c(valor_ipca_ex2 = 27838)
+) %>% dplyr::filter(date >= "1995-01-01")
+
+ipca_ex3 <- get_series(
+  code = c(valor_ipca_ex3 = 27839)
+) %>% dplyr::filter(date >= "1995-01-01")
+
+ipca_dp <- get_series(
+  code = c(valor_ipca_dp = 16122)
+) %>% dplyr::filter(date >= "1995-01-01")
+
+ipca_p55 <- get_series(
+  code = c(valor_ipca_p55 = 28750)
+) %>% dplyr::filter(date >= "1995-01-01")
+
+ipca_ex_alim_energ <- get_series(
+  code = c(valor_ipca_ex_alim_energ = 28751)
+) %>% dplyr::filter(date >= "1995-01-01")
+
+ipca_dif <- get_series(
+  code = c(valor_ipca_dif = 21379)
+) %>% dplyr::filter(date >= "1995-01-01")
+
+ipca_nuc_dif <- ipca_mensal_nuc_dif %>% 
+  left_join(ipca_ex0) %>% 
+  left_join(ipca_ex1) %>%
+  left_join(ipca_ex2) %>%
+  left_join(ipca_ex3) %>%
+  left_join(ipca_dp) %>%
+  left_join(ipca_p55) %>%
+  left_join(ipca_ex_alim_energ) %>%
+  left_join(ipca_dif) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor_ipca = number(valor_ipca, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_ipca_ex0 = number(valor_ipca_ex0, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_ipca_ex1 = number(valor_ipca_ex1, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_ipca_ex2 = number(valor_ipca_ex2, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_ipca_ex3 = number(valor_ipca_ex3, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_ipca_dp = number(valor_ipca_dp, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_ipca_p55 = number(valor_ipca_p55, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_ipca_ex_alim_energ = number(valor_ipca_ex_alim_energ, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    valor_ipca_dif = number(valor_ipca_dif, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+  ) %>% select(data_fmt, valor_ipca, valor_ipca_ex0, valor_ipca_ex1, valor_ipca_ex2, valor_ipca_ex3, valor_ipca_dp, valor_ipca_p55, valor_ipca_ex_alim_energ, valor_ipca_dif, date) %>% 
+  arrange(desc(date))
+
 # PRODUÇÃO DE OVOS DE GALINHA (POG):
 pog <- sidrar::get_sidra(
   api = "/t/7524/n1/all/v/allxp/p/all/c12716/115236/c1835/72208"
@@ -12956,16 +13024,34 @@ plot_ly(
 
 # Índice de Preços ao Consumidor Amplo (IPCA) {data-navmenu="Inflação"}
 
-Column {.sidebar} {data-width=80}
+Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 
 O **Índice de Preços ao Consumidor Amplo (IPCA)** tem como unidade de coleta estabelecimentos comerciais e de prestação de serviços, concessionária de serviços públicos e intenet e sua coleta estende-se, em geral, do dia 01 a 30 do mês de referência. Atualmente, a população-objetivo do IPCA abrange as **famílias com rendimentos de 1 a 40 salários mínimos**, qualquer que seja a fonte, residentes nas áreas urbanas das regiões de abrangência do Sistema Nacional de Índices de Preços ao Consumidor (SNIPC), as quais são: regiões metropolitanas de Belém, Fortaleza, Recife, Salvador, Belo Horizonte, Vitória, Rio de Janeiro, São Paulo, Curitiba, Porto Alegre, além do Distrito Federal e dos municípios de Goiânia, Campo Grande, Rio Branco, São Luís e Aracaju.
 
 <br>
 
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html?=&t=o-que-e)
+**Núcleo por exclusão EX0:** núcleo calculado por exclusão da alimentação no domicílio e dos preços administrados.
+<br>
+**Núcleo por exclusão EX1:** núcleo calculado por exclusão de 10 dos 16 itens do subgrupo 11 do IPCA, Alimentação no Domicílio, (Tubérculos, raízes e legumes; Cereais, leguminosas e oleaginosas; Hortaliças e verduras; Frutas; Carnes; Pescados; Açúcares e derivados; Leites e derivados; Aves e ovos; e Óleos e gorduras), além do item Combustíveis (domésticos), do subgrupo 22, Combustíveis e energia, e do item Combustíveis (veículos), do subgrupo 51, Transportes.
+<br>
+**Núcleo por exclusão EX2:** exclui os seguintes componentes de cada segmento do IPCA: Administrados: todos os preços; Alimentação no domicílio: Cereais, leguminosas e oleaginosas; Farinhas, féculas e massas; Tubérculos, raízes e legumes; Açúcares e derivados; Hortaliças e verduras; Frutas; Carnes; Pescados; Aves e ovos; Leite e derivados; Óleos e gorduras; Sal e condimentos; Serviços: empregado doméstico, mão-de-obra, turismo, educação e comunicação (todos os serviços ex-subjacente); Bens industriais: Aparelhos eletroeletrônicos; Automóvel novo; Automóvel usado; Etanol; Fumo.
+<br>
+**Núcleo por exclusão EX3:** no período que utiliza a POF 2018-2019 (janeiro de 2020 em diante), o núcleo EX-3 é calculado pela exclusão dos seguintes componentes de cada segmento do IPCA: Administrados: todos os preços; Alimentação no domicílio: todos os preços; Serviços: Passagem aérea; Hospedagem; Pacote turístico; Mão-de-obra; Transporte por aplicativo; Empregado doméstico; Cursos regulares; Cursos diversos; Plano de telefonia móvel; TV por assinatura; Acesso à internet; Serviços de streaming; Combo de telefonia, internet e TV por assinatura; Bens industriais: Aparelhos eletroeletrônicos; Automóvel novo; Automóvel usado; Etanol; Fumo. No período que utiliza a POF 2008-2009 (janeiro de 2012 a dezembro de 2019), o núcleo EX-3 é calculado pela exclusão dos seguintes componentes de cada segmento do IPCA: Administrados: todos os preços; Alimentação no domicílio: todos os preços; Serviços: Passagem aérea; Hotel; Excursão; Mão-de-obra; Empregado doméstico; Cursos regulares; Cursos diversos; Telefone celular; Acesso à internet; Telefone com internet; TV por assinatura com internet; Bens industriais: Aparelhos eletroeletrônicos; Automóvel novo; Automóvel usado; Etanol; Fumo.
+<br>
+**Núcleo de dupla ponderação:** ajusta os pesos originais de cada item de acordo com sua volatilidade relativa, reduzindo a importância de componentes mais voláteis.
+<br>
+**Núcleo percentil 55:** corresponde à variação do 55-ésimo percentil da distribuição ponderada pelos pesos dos subitens. A medida se assemelha à mediana da inflação.
+<br>
+**Núcleo ex-alimentação e energia:** exclui os seguintes componentes do IPCA: Alimentação no domicílio: Todos os subitens, com exceção dos subitens Cerveja, Vinho e outras bebidas alcoólicas; Item Combustíveis e energia; Subitem Óleo lubrificante; Item Combustíveis (veículos).
+<br>
+**Índice de difusão:** percentual de subitens do IPCA com variação positiva no mês. O peso de cada subitem não é considerado no cálculo.
 
-Column {data-width=920}  {.tabset}
+<br>
+
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html?=&t=o-que-e) e códigos 11427 (EX0), 16121 (EX1), 27838 (EX2), 27839 (EX3), 16122 (dupla ponderação), 28750 (percentil 55), 28751 (ex-alimentação e energia) e 21379 (índice de difusão) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)
+
+Column {data-width=800}  {.tabset}
 -----------------------------------------------------------------------
 
 ### Tx. M/M-1 (Gráfico)
@@ -13245,6 +13331,93 @@ reactable(
     headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
   )
 )
+```
+
+### Núcleos e difusão (%)
+```{r}
+reactable(
+  ipca_nuc_dif[, -11],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ipca = colDef(
+      name = "IPCA mensal",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ipca_ex0 = colDef(
+      name = "Núcleo EX0",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ipca_ex1 = colDef(
+      name = "Núcleo EX1",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ipca_ex2 = colDef(
+      name = "Núcleo EX2",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ipca_ex3 = colDef(
+      name = "Núcleo EX3",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ipca_dp = colDef(
+      name = "Núcleo de dupla ponderação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ipca_p55 = colDef(
+      name = "Núcleo ercentil 55",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ipca_ex_alim_energ = colDef(
+      name = "Núcleo ex-alimentação e energia",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ipca_dif = colDef(
+      name = "Índice de difusão",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Índice de difusão (Gráfico)
+```{r}
+plot_ly(
+  data = ipca_nuc_dif, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_ipca_dif)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
 ```
 
 ### Peso mensal (Grupos) (%)
