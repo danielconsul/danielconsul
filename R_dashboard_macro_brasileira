@@ -40,6 +40,76 @@ fredr_set_key("0087fc9b146c214d78104e3737039ea4")
 
 # Sys.setlocale("LC_ALL", "pt_BR.UTF-8")
 
+# PESQUISA TRIMESTRAL DO LEITE:
+ptl <- sidrar::get_sidra(
+  api = "/t/1086/n1/all/v/282,283,2522/p/all/c12716/115236/c12529/118225/d/v282%200,v283%200,v2522%202"
+)
+
+ptl <- ptl %>% mutate(
+  date = lubridate::ym(`Trimestre (Código)`),
+  variavel = Variável,
+  valor = Valor,
+  .keep = "none"
+)
+
+ptl_table <- ptl %>% pivot_wider(names_from = variavel, values_from = valor) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Quantidade de leite cru, resfriado ou não, adquirido` = number(`Quantidade de leite cru, resfriado ou não, adquirido`, big.mark = ".", decimal.mark = ","),
+  `Quantidade de leite cru, resfriado ou não, industrializado` = number(`Quantidade de leite cru, resfriado ou não, industrializado`, big.mark = ".", decimal.mark = ","),
+  `Preço médio` = number(`Preço médio`, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, `Quantidade de leite cru, resfriado ou não, adquirido`, `Quantidade de leite cru, resfriado ou não, industrializado`, `Preço médio`, date) %>% arrange(desc(date))
+
+ptl_graph <- ptl %>% pivot_wider(names_from = variavel, values_from = valor) %>% mutate(
+  data_fmt = format(date, "%m/%Y")
+) %>% select(data_fmt, `Quantidade de leite cru, resfriado ou não, adquirido`, `Quantidade de leite cru, resfriado ou não, industrializado`, `Preço médio`, date) %>% arrange(desc(date))
+
+# PESQUISA TRIMESTRAL DO ABATE:
+## Bovinos
+pta_bovinos <- sidrar::get_sidra(
+  api = "/t/1092/n1/all/v/284/p/all/c12716/115236/c18/992/c12529/118225"
+)
+
+pta_bovinos <- pta_bovinos %>% mutate(
+  date = lubridate::ym(`Trimestre (Código)`),
+  valor_bovinos = Valor,
+  .keep = "none"
+)
+
+## Suínos
+pta_suinos <- sidrar::get_sidra(
+  api = "/t/1093/n1/all/v/284/p/all/c12716/115236/c12529/118225"
+)
+
+pta_suinos <- pta_suinos %>% mutate(
+  date = lubridate::ym(`Trimestre (Código)`),
+  valor_suinos = Valor,
+  .keep = "none"
+)
+
+## Frangos
+pta_frangos <- sidrar::get_sidra(
+  api = "/t/1094/n1/all/v/284/p/all/c12716/115236/c12529/118225"
+)
+
+pta_frangos <- pta_frangos %>% mutate(
+  date = lubridate::ym(`Trimestre (Código)`),
+  valor_frangos = Valor,
+  .keep = "none"
+)
+
+pta <- pta_bovinos %>% left_join(pta_suinos) %>% left_join(pta_frangos) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_bovinos = number(valor_bovinos, big.mark = ".", decimal.mark = ","),
+  valor_suinos = number(valor_suinos, big.mark = ".", decimal.mark = ","),
+  valor_frangos = number(valor_frangos, big.mark = ".", decimal.mark = ","),
+) %>% select(data_fmt, valor_bovinos, valor_suinos, valor_frangos, date) %>% 
+  arrange(desc(date))
+
+pta_graph <- pta_bovinos %>% left_join(pta_suinos) %>% left_join(pta_frangos) %>% mutate(
+  data_fmt = format(date, "%m/%Y")
+) %>% select(data_fmt, valor_bovinos, valor_suinos, valor_frangos, date) %>% 
+  arrange(desc(date))
+
 # DÍVIDA LÍQUIDA:
 ## SALDOS EM R$ CORRENTES:
 
@@ -17877,7 +17947,205 @@ reactable(
 
 # Pesquisa Trimestral do Abate de Animais {data-navmenu="Produção"}
 
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+A **Pesquisa Trimestral do Abate** investiga informações sobre a quantidade de animais abatidos e o peso total das carcaças, por espécie pesquisada, tendo como unidade de coleta o estabelecimento que efetua o abate sob fiscalização sanitária federal, estadual ou municipal. A pesquisa fornece informações sobre o total de cabeças abatidas e o peso total das carcaças para as espécies de bovinos (bois, vacas, novilhos e novilhas), suínos e frangos.
+
+<br>
+
+**Fonte:** Tabelas [1092](https://sidra.ibge.gov.br/tabela/1092), [1093](https://sidra.ibge.gov.br/tabela/1093) e [1094](https://sidra.ibge.gov.br/tabela/1094) do banco de dados Sidra do [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9203-pesquisas-trimestrais-do-abate-de-animais.html?=&t=o-que-e).
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Bovinos
+```{r}
+plot_ly(
+  data = pta_graph, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_bovinos)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Bovinos abatidos (cabeças)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Suínos
+```{r}
+plot_ly(
+  data = pta_graph, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_suinos)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Suínos abatidos (cabeças)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Frangos
+```{r}
+plot_ly(
+  data = pta_graph, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_frangos)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Frangos abatidos (cabeças)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+
+### Quadro-síntese
+```{r}
+reactable(
+  pta[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_bovinos = colDef(
+      name = "Bovinos abatidos (cabeças)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_suinos = colDef(
+      name = "Suínos abatidos (cabeças)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_frangos = colDef(
+      name = "Frangos abatidos (cabeças)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # Pesquisa Trimestral do Leite {data-navmenu="Produção"}
+
+Column {.sidebar} {data-width=150}
+-----------------------------------------------------------------------
+A **Pesquisa Trimestral do Leite** investiga informações sobre as quantidades de leite fluido cru, tendo como unidade de coleta o estabelecimento que se dedica à industrialização de leite de vaca e está sob fiscalização sanitária federal, estadual ou municipal.
+
+<br>
+
+**Fonte:** Tabela [1086](https://sidra.ibge.gov.br/tabela/1086) do banco de dados Sidra do [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9209-pesquisa-trimestral-do-leite.html?=&t=o-que-e).
+
+Column {data-width=850} {.tabset}
+-----------------------------------------------------------------------
+
+### Leite cru adquirido
+```{r}
+plot_ly(
+  data = ptl_graph, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Quantidade de leite cru, resfriado ou não, adquirido`)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Qtde. leite cru adquirido (mil litros)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Leite cru industrializado
+```{r}
+plot_ly(
+  data = ptl_graph, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Quantidade de leite cru, resfriado ou não, industrializado`)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Qtde. leite cru industrializado (mil litros)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Preço médio
+```{r}
+plot_ly(
+  data = ptl_table, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Preço médio`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Preço médio (R$ por litro)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=850} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  ptl_table[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Quantidade de leite cru, resfriado ou não, adquirido` = colDef(
+      name = "Leite cru adquirido (mil litros)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Quantidade de leite cru, resfriado ou não, industrializado` = colDef(
+      name = "Leite cru industrializado (mil litros)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Preço médio` = colDef(
+      name = "Preço médio (R$ por litro)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # Pesquisa Trimestral do Couro {data-navmenu="Produção"}
 
