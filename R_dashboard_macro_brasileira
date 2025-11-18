@@ -32,13 +32,323 @@ library(rio)
 library(tsibble)
 ```
 
-```{r, cache=FALSE}
+```{r, cache=TRUE}
 # Coleta de dados:
 
 # API key FRED
 fredr_set_key("0087fc9b146c214d78104e3737039ea4")
 
 # Sys.setlocale("LC_ALL", "pt_BR.UTF-8")
+
+# PESQUISA MENSAL DO COMÉRCIO - COMÉRCIO VAREJISTA:
+## IRNV:
+pmc_com_var <- sidrar::get_sidra(
+  api = "/t/8880/n1/all/v/7170,11708,11709,11710/p/all/c11046/all/d/v7170%205,v11708%201,v11709%201,v11710%201")
+
+pmc_com_var <- pmc_com_var %>% mutate(
+  date = lubridate::ym(`Mês (Código)`),
+  variavel = Variável,
+  indice = `Tipos de índice`,
+  valor = Valor,
+  .keep = "none"
+)
+
+pmc_com_var_ni_irnv <- pmc_com_var %>% dplyr::filter(variavel == "PMC - Número-índice com ajuste sazonal (2022=100)" & indice == "Índice de receita nominal de vendas no comércio varejista") %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_ni_irnv = valor
+) %>% mutate(
+  valor_ni_irnv = number(valor_ni_irnv, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_ni_irnv, date) %>% arrange(desc(date))
+
+pmc_com_var_mg_irnv <- pmc_com_var %>% dplyr::filter(variavel == "PMC - Variação mês/mês imediatamente anterior, com ajuste sazonal (M/M-1)" & indice == "Índice de receita nominal de vendas no comércio varejista") %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_mg_irnv = valor
+) %>% mutate(
+  valor_mg_irnv = number(valor_mg_irnv, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_mg_irnv, date) %>% arrange(desc(date))
+
+pmc_com_var_12m_irnv <- pmc_com_var %>% dplyr::filter(variavel == "PMC - Variação mês/mesmo mês do ano anterior (M/M-12)" & indice == "Índice de receita nominal de vendas no comércio varejista") %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_12m_irnv = valor
+) %>% mutate(
+  valor_12m_irnv = number(valor_12m_irnv, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_12m_irnv, date) %>% arrange(desc(date))
+
+pmc_com_var_acum_ano_irnv <- pmc_com_var %>% dplyr::filter(variavel == "PMC - Variação acumulada no ano (em relação ao mesmo período do ano anterior)" & indice == "Índice de receita nominal de vendas no comércio varejista") %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_acum_ano_irnv = valor
+) %>% mutate(
+  valor_acum_ano_irnv = number(valor_acum_ano_irnv, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_acum_ano_irnv, date) %>% arrange(desc(date))
+
+## IVV:
+pmc_com_var_ni_ivv <- pmc_com_var %>% dplyr::filter(variavel == "PMC - Número-índice com ajuste sazonal (2022=100)" & indice == "Índice de volume de vendas no comércio varejista") %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_ni_ivv = valor
+) %>% mutate(
+  valor_ni_ivv = number(valor_ni_ivv, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_ni_ivv, date) %>% arrange(desc(date))
+
+pmc_com_var_mg_ivv <- pmc_com_var %>% dplyr::filter(variavel == "PMC - Variação mês/mês imediatamente anterior, com ajuste sazonal (M/M-1)" & indice == "Índice de volume de vendas no comércio varejista") %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_mg_ivv = valor
+) %>% mutate(
+  valor_mg_ivv = number(valor_mg_ivv, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_mg_ivv, date) %>% arrange(desc(date))
+
+pmc_com_var_12m_ivv <- pmc_com_var %>% dplyr::filter(variavel == "PMC - Variação mês/mesmo mês do ano anterior (M/M-12)" & indice == "Índice de volume de vendas no comércio varejista") %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_12m_ivv = valor
+) %>% mutate(
+  valor_12m_ivv = number(valor_12m_ivv, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_12m_ivv, date) %>% arrange(desc(date))
+
+pmc_com_var_acum_ano_ivv <- pmc_com_var %>% dplyr::filter(variavel == "PMC - Variação acumulada no ano (em relação ao mesmo período do ano anterior)" & indice == "Índice de volume de vendas no comércio varejista") %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_acum_ano_ivv = valor
+) %>% mutate(
+  valor_acum_ano_ivv = number(valor_acum_ano_ivv, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_acum_ano_ivv, date) %>% arrange(desc(date))
+
+pmc_com_var_table <- pmc_com_var_ni_irnv %>% left_join(pmc_com_var_ni_ivv) %>% left_join(pmc_com_var_mg_irnv) %>% left_join(pmc_com_var_mg_ivv) %>% left_join(pmc_com_var_acum_ano_irnv) %>% left_join(pmc_com_var_acum_ano_ivv) %>% left_join(pmc_com_var_12m_irnv) %>% left_join(pmc_com_var_12m_ivv) %>% mutate(
+  data_fmt = format(date, "%m/%Y")
+) %>% select(data_fmt, valor_ni_irnv, valor_mg_irnv, valor_acum_ano_irnv, valor_12m_irnv,
+             valor_ni_ivv, valor_mg_ivv, valor_acum_ano_ivv, valor_12m_ivv, date)
+
+# PESQUISA MENSAL DO COMÉRCIO - COMÉRCIO VAREJISTA AMPLIADO:
+## IRNV:
+pmc_com_amp <- sidrar::get_sidra(
+  api = "/t/8881/n1/all/v/7170,11708,11709,11710/p/all/c11046/all/d/v7170%205,v11708%201,v11709%201,v11710%201")
+
+pmc_com_amp <- pmc_com_amp %>% mutate(
+  date = lubridate::ym(`Mês (Código)`),
+  variavel = Variável,
+  indice = `Tipos de índice`,
+  valor = Valor,
+  .keep = "none"
+)
+
+pmc_com_amp_ni_irnv <- pmc_com_amp %>% dplyr::filter(variavel == "PMC - Número-índice com ajuste sazonal (2022=100)" & indice == "Índice de receita nominal de vendas no comércio varejista ampliado") %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_ni_irnv = valor
+) %>% mutate(
+  valor_ni_irnv = number(valor_ni_irnv, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_ni_irnv, date) %>% arrange(desc(date))
+
+pmc_com_amp_mg_irnv <- pmc_com_amp %>% dplyr::filter(variavel == "PMC - Variação mês/mês imediatamente anterior, com ajuste sazonal (M/M-1)" & indice == "Índice de receita nominal de vendas no comércio varejista ampliado") %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_mg_irnv = valor
+) %>% mutate(
+  valor_mg_irnv = number(valor_mg_irnv, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_mg_irnv, date) %>% arrange(desc(date))
+
+pmc_com_amp_12m_irnv <- pmc_com_amp %>% dplyr::filter(variavel == "PMC - Variação mês/mesmo mês do ano anterior (M/M-12)" & indice == "Índice de receita nominal de vendas no comércio varejista ampliado") %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_12m_irnv = valor
+) %>% mutate(
+  valor_12m_irnv = number(valor_12m_irnv, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_12m_irnv, date) %>% arrange(desc(date))
+
+pmc_com_amp_acum_ano_irnv <- pmc_com_amp %>% dplyr::filter(variavel == "PMC - Variação acumulada no ano (em relação ao mesmo período do ano anterior)" & indice == "Índice de receita nominal de vendas no comércio varejista ampliado") %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_acum_ano_irnv = valor
+) %>% mutate(
+  valor_acum_ano_irnv = number(valor_acum_ano_irnv, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_acum_ano_irnv, date) %>% arrange(desc(date))
+
+## IVV:
+pmc_com_amp_ni_ivv <- pmc_com_amp %>% dplyr::filter(variavel == "PMC - Número-índice com ajuste sazonal (2022=100)" & indice == "Índice de volume de vendas no comércio varejista ampliado") %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_ni_ivv = valor
+) %>% mutate(
+  valor_ni_ivv = number(valor_ni_ivv, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_ni_ivv, date) %>% arrange(desc(date))
+
+pmc_com_amp_mg_ivv <- pmc_com_amp %>% dplyr::filter(variavel == "PMC - Variação mês/mês imediatamente anterior, com ajuste sazonal (M/M-1)" & indice == "Índice de volume de vendas no comércio varejista ampliado") %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_mg_ivv = valor
+) %>% mutate(
+  valor_mg_ivv = number(valor_mg_ivv, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_mg_ivv, date) %>% arrange(desc(date))
+
+pmc_com_amp_12m_ivv <- pmc_com_amp %>% dplyr::filter(variavel == "PMC - Variação mês/mesmo mês do ano anterior (M/M-12)" & indice == "Índice de volume de vendas no comércio varejista ampliado") %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_12m_ivv = valor
+) %>% mutate(
+  valor_12m_ivv = number(valor_12m_ivv, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_12m_ivv, date) %>% arrange(desc(date))
+
+pmc_com_amp_acum_ano_ivv <- pmc_com_amp %>% dplyr::filter(variavel == "PMC - Variação acumulada no ano (em relação ao mesmo período do ano anterior)" & indice == "Índice de volume de vendas no comércio varejista ampliado") %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  valor_acum_ano_ivv = valor
+) %>% mutate(
+  valor_acum_ano_ivv = number(valor_acum_ano_ivv, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
+) %>% select(data_fmt, valor_acum_ano_ivv, date) %>% arrange(desc(date))
+
+pmc_com_amp_table <- pmc_com_amp_ni_irnv %>% left_join(pmc_com_amp_ni_ivv) %>% left_join(pmc_com_amp_mg_irnv) %>% left_join(pmc_com_amp_mg_ivv) %>% left_join(pmc_com_amp_acum_ano_irnv) %>% left_join(pmc_com_amp_acum_ano_ivv) %>% left_join(pmc_com_amp_12m_irnv) %>% left_join(pmc_com_amp_12m_ivv) %>% mutate(
+  data_fmt = format(date, "%m/%Y")
+) %>% select(data_fmt, valor_ni_irnv, valor_mg_irnv, valor_acum_ano_irnv, valor_12m_irnv,
+             valor_ni_ivv, valor_mg_ivv, valor_acum_ano_ivv, valor_12m_ivv, date)
+
+
+
+# LEVANTAMENTO SISTEMÁTICO DA PRODUÇÃO AGRÍCOLA:
+## Área plantada:
+
+lspa_area_plant <- sidrar::get_sidra(
+  api = "/t/6588/n1/all/v/109/p/last%20200/c48/0,39428,39447,39448,39449,39450,39451,39452,39453,39456,39457,39458,39459,39460,39461,39462,39463,39464,39465,39467,39468,39469,39470,39471,40527"
+)
+
+lspa_area_plant <- lspa_area_plant %>% mutate(
+  date = lubridate::ym(`Mês (Código)`),
+  produto_area_plant = `Produto das lavouras`,
+  valor_area_plant = Valor,
+  .keep = "none"
+) %>% pivot_wider(names_from = produto_area_plant, values_from = valor_area_plant) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Total` = number(`Total`, big.mark = ".", decimal.mark = ","),
+  `1 Cereais, leguminosas e oleaginosas` = number(`1 Cereais, leguminosas e oleaginosas`, big.mark = ".", decimal.mark = ","),
+  `2 Abacaxi` = number(`2 Abacaxi`, big.mark = ".", decimal.mark = ","),
+  `3 Alho` = number(`3 Alho`, big.mark = ".", decimal.mark = ","),
+  `4 Banana` = number(`4 Banana`, big.mark = ".", decimal.mark = ","),
+  `5 Batata - inglesa (1ª Safra)` = number(`5 Batata - inglesa (1ª Safra)`, big.mark = ".", decimal.mark = ","),
+  `6 Batata - inglesa (2ª Safra)` = number(`6 Batata - inglesa (2ª Safra)`, big.mark = ".", decimal.mark = ","),
+  `7 Batata - inglesa (3ª Safra)` = number(`7 Batata - inglesa (3ª Safra)`, big.mark = ".", decimal.mark = ","),
+  `8 Cacau` = number(`8 Cacau`, big.mark = ".", decimal.mark = ","),
+  `9/10 Café total` = number(`9/10 Café total`, big.mark = ".", decimal.mark = ","),
+  `11 Cana-de-açúcar` = number(`11 Cana-de-açúcar`, big.mark = ".", decimal.mark = ","),
+  `12 Castanha-de-caju` = number(`12 Castanha-de-caju`, big.mark = ".", decimal.mark = ","),
+  `13 Cebola` = number(`13 Cebola`, big.mark = ".", decimal.mark = ","),
+  `14 Coco-da-baía` = number(`14 Coco-da-baía`, big.mark = ".", decimal.mark = ","),
+  `15 Fumo` = number(`15 Fumo`, big.mark = ".", decimal.mark = ","),
+  `16 Guaraná` = number(`16 Guaraná`, big.mark = ".", decimal.mark = ","),
+  `17 Juta` = number(`17 Juta`, big.mark = ".", decimal.mark = ","),
+  `18 Laranja` = number(`18 Laranja`, big.mark = ".", decimal.mark = ","),
+  `19 Maçã` = number(`19 Maçã`, big.mark = ".", decimal.mark = ","),
+  `20 Malva` = number(`20 Malva`, big.mark = ".", decimal.mark = ","),
+  `21 Mandioca` = number(`21 Mandioca`, big.mark = ".", decimal.mark = ","),
+  `22 Pimenta-do-reino` = number(`22 Pimenta-do-reino`, big.mark = ".", decimal.mark = ","),
+  `23 Sisal ou agave` = number(`23 Sisal ou agave`, big.mark = ".", decimal.mark = ","),
+  `24 Tomate` = number(`24 Tomate`, big.mark = ".", decimal.mark = ","),
+  `25 Uva` = number(`25 Uva`, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, `Total`, `1 Cereais, leguminosas e oleaginosas`, `2 Abacaxi`, `3 Alho`, `4 Banana`, `5 Batata - inglesa (1ª Safra)`, `6 Batata - inglesa (2ª Safra)`, `7 Batata - inglesa (3ª Safra)`, `8 Cacau`, `9/10 Café total`, `11 Cana-de-açúcar`, `12 Castanha-de-caju`, `13 Cebola`, `14 Coco-da-baía`, `15 Fumo`, `16 Guaraná`, `17 Juta`, `18 Laranja`, `19 Maçã`, `20 Malva`, `21 Mandioca`, `22 Pimenta-do-reino`, `23 Sisal ou agave`, `24 Tomate`,`25 Uva`, date) %>% arrange(desc(date))
+
+## Área colhida:
+lspa_area_col <- sidrar::get_sidra(
+  api = "/t/6588/n1/all/v/216/p/last%20200/c48/0,39428,39447,39448,39449,39450,39451,39452,39453,39456,39457,39458,39459,39460,39461,39462,39463,39464,39465,39467,39468,39469,39470,39471,40527"
+)
+
+lspa_area_col <- lspa_area_col %>% mutate(
+  date = lubridate::ym(`Mês (Código)`),
+  produto_area_col = `Produto das lavouras`,
+  valor_area_col = Valor,
+  .keep = "none"
+) %>% pivot_wider(names_from = produto_area_col, values_from = valor_area_col) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Total` = number(`Total`, big.mark = ".", decimal.mark = ","),
+  `1 Cereais, leguminosas e oleaginosas` = number(`1 Cereais, leguminosas e oleaginosas`, big.mark = ".", decimal.mark = ","),
+  `2 Abacaxi` = number(`2 Abacaxi`, big.mark = ".", decimal.mark = ","),
+  `3 Alho` = number(`3 Alho`, big.mark = ".", decimal.mark = ","),
+  `4 Banana` = number(`4 Banana`, big.mark = ".", decimal.mark = ","),
+  `5 Batata - inglesa (1ª Safra)` = number(`5 Batata - inglesa (1ª Safra)`, big.mark = ".", decimal.mark = ","),
+  `6 Batata - inglesa (2ª Safra)` = number(`6 Batata - inglesa (2ª Safra)`, big.mark = ".", decimal.mark = ","),
+  `7 Batata - inglesa (3ª Safra)` = number(`7 Batata - inglesa (3ª Safra)`, big.mark = ".", decimal.mark = ","),
+  `8 Cacau` = number(`8 Cacau`, big.mark = ".", decimal.mark = ","),
+  `9/10 Café total` = number(`9/10 Café total`, big.mark = ".", decimal.mark = ","),
+  `11 Cana-de-açúcar` = number(`11 Cana-de-açúcar`, big.mark = ".", decimal.mark = ","),
+  `12 Castanha-de-caju` = number(`12 Castanha-de-caju`, big.mark = ".", decimal.mark = ","),
+  `13 Cebola` = number(`13 Cebola`, big.mark = ".", decimal.mark = ","),
+  `14 Coco-da-baía` = number(`14 Coco-da-baía`, big.mark = ".", decimal.mark = ","),
+  `15 Fumo` = number(`15 Fumo`, big.mark = ".", decimal.mark = ","),
+  `16 Guaraná` = number(`16 Guaraná`, big.mark = ".", decimal.mark = ","),
+  `17 Juta` = number(`17 Juta`, big.mark = ".", decimal.mark = ","),
+  `18 Laranja` = number(`18 Laranja`, big.mark = ".", decimal.mark = ","),
+  `19 Maçã` = number(`19 Maçã`, big.mark = ".", decimal.mark = ","),
+  `20 Malva` = number(`20 Malva`, big.mark = ".", decimal.mark = ","),
+  `21 Mandioca` = number(`21 Mandioca`, big.mark = ".", decimal.mark = ","),
+  `22 Pimenta-do-reino` = number(`22 Pimenta-do-reino`, big.mark = ".", decimal.mark = ","),
+  `23 Sisal ou agave` = number(`23 Sisal ou agave`, big.mark = ".", decimal.mark = ","),
+  `24 Tomate` = number(`24 Tomate`, big.mark = ".", decimal.mark = ","),
+  `25 Uva` = number(`25 Uva`, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, `Total`, `1 Cereais, leguminosas e oleaginosas`, `2 Abacaxi`, `3 Alho`, `4 Banana`, `5 Batata - inglesa (1ª Safra)`, `6 Batata - inglesa (2ª Safra)`, `7 Batata - inglesa (3ª Safra)`, `8 Cacau`, `9/10 Café total`, `11 Cana-de-açúcar`, `12 Castanha-de-caju`, `13 Cebola`, `14 Coco-da-baía`, `15 Fumo`, `16 Guaraná`, `17 Juta`, `18 Laranja`, `19 Maçã`, `20 Malva`, `21 Mandioca`, `22 Pimenta-do-reino`, `23 Sisal ou agave`, `24 Tomate`,`25 Uva`, date) %>% arrange(desc(date))
+
+## Produção:
+lspa_prod <- sidrar::get_sidra(
+  api = "/t/6588/n1/all/v/35/p/last%20200/c48/0,39428,39447,39448,39449,39450,39451,39452,39453,39456,39457,39458,39459,39460,39461,39462,39463,39464,39465,39467,39468,39469,39470,39471,40527"
+)
+
+lspa_prod <- lspa_prod %>% mutate(
+  date = lubridate::ym(`Mês (Código)`),
+  produto_prod = `Produto das lavouras`,
+  valor_prod = Valor,
+  .keep = "none"
+) %>% pivot_wider(names_from = produto_prod, values_from = valor_prod) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Total` = number(`Total`, big.mark = ".", decimal.mark = ","),
+  `1 Cereais, leguminosas e oleaginosas` = number(`1 Cereais, leguminosas e oleaginosas`, big.mark = ".", decimal.mark = ","),
+  `2 Abacaxi` = number(`2 Abacaxi`, big.mark = ".", decimal.mark = ","),
+  `3 Alho` = number(`3 Alho`, big.mark = ".", decimal.mark = ","),
+  `4 Banana` = number(`4 Banana`, big.mark = ".", decimal.mark = ","),
+  `5 Batata - inglesa (1ª Safra)` = number(`5 Batata - inglesa (1ª Safra)`, big.mark = ".", decimal.mark = ","),
+  `6 Batata - inglesa (2ª Safra)` = number(`6 Batata - inglesa (2ª Safra)`, big.mark = ".", decimal.mark = ","),
+  `7 Batata - inglesa (3ª Safra)` = number(`7 Batata - inglesa (3ª Safra)`, big.mark = ".", decimal.mark = ","),
+  `8 Cacau` = number(`8 Cacau`, big.mark = ".", decimal.mark = ","),
+  `9/10 Café total` = number(`9/10 Café total`, big.mark = ".", decimal.mark = ","),
+  `11 Cana-de-açúcar` = number(`11 Cana-de-açúcar`, big.mark = ".", decimal.mark = ","),
+  `12 Castanha-de-caju` = number(`12 Castanha-de-caju`, big.mark = ".", decimal.mark = ","),
+  `13 Cebola` = number(`13 Cebola`, big.mark = ".", decimal.mark = ","),
+  `14 Coco-da-baía` = number(`14 Coco-da-baía`, big.mark = ".", decimal.mark = ","),
+  `15 Fumo` = number(`15 Fumo`, big.mark = ".", decimal.mark = ","),
+  `16 Guaraná` = number(`16 Guaraná`, big.mark = ".", decimal.mark = ","),
+  `17 Juta` = number(`17 Juta`, big.mark = ".", decimal.mark = ","),
+  `18 Laranja` = number(`18 Laranja`, big.mark = ".", decimal.mark = ","),
+  `19 Maçã` = number(`19 Maçã`, big.mark = ".", decimal.mark = ","),
+  `20 Malva` = number(`20 Malva`, big.mark = ".", decimal.mark = ","),
+  `21 Mandioca` = number(`21 Mandioca`, big.mark = ".", decimal.mark = ","),
+  `22 Pimenta-do-reino` = number(`22 Pimenta-do-reino`, big.mark = ".", decimal.mark = ","),
+  `23 Sisal ou agave` = number(`23 Sisal ou agave`, big.mark = ".", decimal.mark = ","),
+  `24 Tomate` = number(`24 Tomate`, big.mark = ".", decimal.mark = ","),
+  `25 Uva` = number(`25 Uva`, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, `Total`, `1 Cereais, leguminosas e oleaginosas`, `2 Abacaxi`, `3 Alho`, `4 Banana`, `5 Batata - inglesa (1ª Safra)`, `6 Batata - inglesa (2ª Safra)`, `7 Batata - inglesa (3ª Safra)`, `8 Cacau`, `9/10 Café total`, `11 Cana-de-açúcar`, `12 Castanha-de-caju`, `13 Cebola`, `14 Coco-da-baía`, `15 Fumo`, `16 Guaraná`, `17 Juta`, `18 Laranja`, `19 Maçã`, `20 Malva`, `21 Mandioca`, `22 Pimenta-do-reino`, `23 Sisal ou agave`, `24 Tomate`,`25 Uva`, date) %>% arrange(desc(date))
+
+## Rendimento médio:
+lspa_rend_medio <- sidrar::get_sidra(
+  api = "/t/6588/n1/all/v/36/p/last%20200/c48/0,39428,39447,39448,39449,39450,39451,39452,39453,39456,39457,39458,39459,39460,39461,39462,39463,39464,39465,39467,39468,39469,39470,39471,40527"
+)
+
+lspa_rend_medio <- lspa_rend_medio %>% mutate(
+  date = lubridate::ym(`Mês (Código)`),
+  produto_rend_medio = `Produto das lavouras`,
+  valor_rend_medio = Valor,
+  .keep = "none"
+) %>% pivot_wider(names_from = produto_rend_medio, values_from = valor_rend_medio) %>% mutate(
+  data_fmt = format(date, "%m/%Y"),
+  `Total` = number(`Total`, big.mark = ".", decimal.mark = ","),
+  `1 Cereais, leguminosas e oleaginosas` = number(`1 Cereais, leguminosas e oleaginosas`, big.mark = ".", decimal.mark = ","),
+  `2 Abacaxi` = number(`2 Abacaxi`, big.mark = ".", decimal.mark = ","),
+  `3 Alho` = number(`3 Alho`, big.mark = ".", decimal.mark = ","),
+  `4 Banana` = number(`4 Banana`, big.mark = ".", decimal.mark = ","),
+  `5 Batata - inglesa (1ª Safra)` = number(`5 Batata - inglesa (1ª Safra)`, big.mark = ".", decimal.mark = ","),
+  `6 Batata - inglesa (2ª Safra)` = number(`6 Batata - inglesa (2ª Safra)`, big.mark = ".", decimal.mark = ","),
+  `7 Batata - inglesa (3ª Safra)` = number(`7 Batata - inglesa (3ª Safra)`, big.mark = ".", decimal.mark = ","),
+  `8 Cacau` = number(`8 Cacau`, big.mark = ".", decimal.mark = ","),
+  `9/10 Café total` = number(`9/10 Café total`, big.mark = ".", decimal.mark = ","),
+  `11 Cana-de-açúcar` = number(`11 Cana-de-açúcar`, big.mark = ".", decimal.mark = ","),
+  `12 Castanha-de-caju` = number(`12 Castanha-de-caju`, big.mark = ".", decimal.mark = ","),
+  `13 Cebola` = number(`13 Cebola`, big.mark = ".", decimal.mark = ","),
+  `14 Coco-da-baía` = number(`14 Coco-da-baía`, big.mark = ".", decimal.mark = ","),
+  `15 Fumo` = number(`15 Fumo`, big.mark = ".", decimal.mark = ","),
+  `16 Guaraná` = number(`16 Guaraná`, big.mark = ".", decimal.mark = ","),
+  `17 Juta` = number(`17 Juta`, big.mark = ".", decimal.mark = ","),
+  `18 Laranja` = number(`18 Laranja`, big.mark = ".", decimal.mark = ","),
+  `19 Maçã` = number(`19 Maçã`, big.mark = ".", decimal.mark = ","),
+  `20 Malva` = number(`20 Malva`, big.mark = ".", decimal.mark = ","),
+  `21 Mandioca` = number(`21 Mandioca`, big.mark = ".", decimal.mark = ","),
+  `22 Pimenta-do-reino` = number(`22 Pimenta-do-reino`, big.mark = ".", decimal.mark = ","),
+  `23 Sisal ou agave` = number(`23 Sisal ou agave`, big.mark = ".", decimal.mark = ","),
+  `24 Tomate` = number(`24 Tomate`, big.mark = ".", decimal.mark = ","),
+  `25 Uva` = number(`25 Uva`, big.mark = ".", decimal.mark = ",")
+) %>% select(data_fmt, `Total`, `1 Cereais, leguminosas e oleaginosas`, `2 Abacaxi`, `3 Alho`, `4 Banana`, `5 Batata - inglesa (1ª Safra)`, `6 Batata - inglesa (2ª Safra)`, `7 Batata - inglesa (3ª Safra)`, `8 Cacau`, `9/10 Café total`, `11 Cana-de-açúcar`, `12 Castanha-de-caju`, `13 Cebola`, `14 Coco-da-baía`, `15 Fumo`, `16 Guaraná`, `17 Juta`, `18 Laranja`, `19 Maçã`, `20 Malva`, `21 Mandioca`, `22 Pimenta-do-reino`, `23 Sisal ou agave`, `24 Tomate`,`25 Uva`, date) %>% arrange(desc(date))
 
 # PESQUISA TRIMESTRAL DO LEITE:
 ptl <- sidrar::get_sidra(
@@ -18147,9 +18457,630 @@ reactable(
 )
 ```
 
-# Pesquisa Trimestral do Couro {data-navmenu="Produção"}
-
 # Levantamento Sistemático da Produção Agrícola {data-navmenu="Produção"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+O **Levantamento Sistemático da Produção Agrícola** fornece estimativas de área plantada, área colhida, quantidade produzida e rendimento médio de produtos selecionados com base em critérios de importância econômica e social para o País. Ele permite não só o acompanhamento de cada cultura investigada, desde a fase de intenção de plantio até o final da colheita, no ano civil de referência, como também o prognóstico da safra do próximo ano, para o qual é realizado o levantamento nos meses de outubro, novembro e dezembro.
+
+<br>
+
+**Fonte:** Tabela [6588](https://sidra.ibge.gov.br/tabela/6588) do banco de dados Sidra do [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9201-levantamento-sistematico-da-producao-agricola.html?edicao=45099&t=o-que-e).
+
+Column {data-width=800} {.tabset}
+-----------------------------------------------------------------------
+
+### Área plantada (hectares)
+```{r}
+reactable(
+  lspa_area_plant[, -27],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Total` = colDef(
+      name = "Total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1 Cereais, leguminosas e oleaginosas` = colDef(
+      name = "Cereais, leguminosas e oleaginosas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2 Abacaxi` = colDef(
+      name = "Abacaxi",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3 Alho` = colDef(
+      name = "Alho",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4 Banana` = colDef(
+      name = "Banana",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5 Batata - inglesa (1ª Safra)` = colDef(
+      name = "Batata-inglesa (1ª Safra)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6 Batata - inglesa (2ª Safra)` = colDef(
+      name = "Batata-inglesa (2ª Safra)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7 Batata - inglesa (3ª Safra)` = colDef(
+      name = "Batata-inglesa (3ª Safra)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8 Cacau` = colDef(
+      name = "Cacau",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9/10 Café total` = colDef(
+      name = "`Café total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `11 Cana-de-açúcar` = colDef(
+      name = "Cana-de-açúcar",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `12 Castanha-de-caju` = colDef(
+      name = "Castanha-de-caju",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `13 Cebola` = colDef(
+      name = "Cebola",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `14 Coco-da-baía` = colDef(
+      name = "Côco-da-baía",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `15 Fumo` = colDef(
+      name = "Fumo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `16 Guaraná` = colDef(
+      name = "`Guaraná",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `17 Juta` = colDef(
+      name = "Juta",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `18 Laranja` = colDef(
+      name = "Laranja",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `19 Maçã` = colDef(
+      name = "Maçã",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `20 Malva` = colDef(
+      name = "Malva",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `21 Mandioca` = colDef(
+      name = "Mandioca",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `22 Pimenta-do-reino` = colDef(
+      name = "Pimenta-do-reino",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `23 Sisal ou agave` = colDef(
+      name = "Sisal ou agave",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `24 Tomate` = colDef(
+      name = "Tomate",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `25 Uva` = colDef(
+      name = "Uva",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Área colhida (hectares)
+```{r}
+reactable(
+  lspa_area_col[, -27],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Total` = colDef(
+      name = "Total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1 Cereais, leguminosas e oleaginosas` = colDef(
+      name = "Cereais, leguminosas e oleaginosas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2 Abacaxi` = colDef(
+      name = "Abacaxi",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3 Alho` = colDef(
+      name = "Alho",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4 Banana` = colDef(
+      name = "Banana",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5 Batata - inglesa (1ª Safra)` = colDef(
+      name = "Batata-inglesa (1ª Safra)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6 Batata - inglesa (2ª Safra)` = colDef(
+      name = "Batata-inglesa (2ª Safra)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7 Batata - inglesa (3ª Safra)` = colDef(
+      name = "Batata-inglesa (3ª Safra)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8 Cacau` = colDef(
+      name = "Cacau",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9/10 Café total` = colDef(
+      name = "`Café total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `11 Cana-de-açúcar` = colDef(
+      name = "Cana-de-açúcar",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `12 Castanha-de-caju` = colDef(
+      name = "Castanha-de-caju",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `13 Cebola` = colDef(
+      name = "Cebola",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `14 Coco-da-baía` = colDef(
+      name = "Côco-da-baía",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `15 Fumo` = colDef(
+      name = "Fumo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `16 Guaraná` = colDef(
+      name = "`Guaraná",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `17 Juta` = colDef(
+      name = "Juta",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `18 Laranja` = colDef(
+      name = "Laranja",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `19 Maçã` = colDef(
+      name = "Maçã",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `20 Malva` = colDef(
+      name = "Malva",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `21 Mandioca` = colDef(
+      name = "Mandioca",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `22 Pimenta-do-reino` = colDef(
+      name = "Pimenta-do-reino",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `23 Sisal ou agave` = colDef(
+      name = "Sisal ou agave",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `24 Tomate` = colDef(
+      name = "Tomate",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `25 Uva` = colDef(
+      name = "Uva",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Produção (toneladas)
+```{r}
+reactable(
+  lspa_prod[, -27],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Total` = colDef(
+      name = "Total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1 Cereais, leguminosas e oleaginosas` = colDef(
+      name = "Cereais, leguminosas e oleaginosas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2 Abacaxi` = colDef(
+      name = "Abacaxi",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3 Alho` = colDef(
+      name = "Alho",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4 Banana` = colDef(
+      name = "Banana",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5 Batata - inglesa (1ª Safra)` = colDef(
+      name = "Batata-inglesa (1ª Safra)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6 Batata - inglesa (2ª Safra)` = colDef(
+      name = "Batata-inglesa (2ª Safra)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7 Batata - inglesa (3ª Safra)` = colDef(
+      name = "Batata-inglesa (3ª Safra)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8 Cacau` = colDef(
+      name = "Cacau",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9/10 Café total` = colDef(
+      name = "`Café total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `11 Cana-de-açúcar` = colDef(
+      name = "Cana-de-açúcar",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `12 Castanha-de-caju` = colDef(
+      name = "Castanha-de-caju",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `13 Cebola` = colDef(
+      name = "Cebola",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `14 Coco-da-baía` = colDef(
+      name = "Côco-da-baía",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `15 Fumo` = colDef(
+      name = "Fumo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `16 Guaraná` = colDef(
+      name = "`Guaraná",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `17 Juta` = colDef(
+      name = "Juta",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `18 Laranja` = colDef(
+      name = "Laranja",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `19 Maçã` = colDef(
+      name = "Maçã",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `20 Malva` = colDef(
+      name = "Malva",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `21 Mandioca` = colDef(
+      name = "Mandioca",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `22 Pimenta-do-reino` = colDef(
+      name = "Pimenta-do-reino",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `23 Sisal ou agave` = colDef(
+      name = "Sisal ou agave",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `24 Tomate` = colDef(
+      name = "Tomate",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `25 Uva` = colDef(
+      name = "Uva",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Rendimento médio (quilogramas por hectare)
+```{r}
+reactable(
+  lspa_rend_medio[, -27],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Total` = colDef(
+      name = "Total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1 Cereais, leguminosas e oleaginosas` = colDef(
+      name = "Cereais, leguminosas e oleaginosas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2 Abacaxi` = colDef(
+      name = "Abacaxi",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3 Alho` = colDef(
+      name = "Alho",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `4 Banana` = colDef(
+      name = "Banana",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `5 Batata - inglesa (1ª Safra)` = colDef(
+      name = "Batata-inglesa (1ª Safra)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `6 Batata - inglesa (2ª Safra)` = colDef(
+      name = "Batata-inglesa (2ª Safra)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `7 Batata - inglesa (3ª Safra)` = colDef(
+      name = "Batata-inglesa (3ª Safra)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `8 Cacau` = colDef(
+      name = "Cacau",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `9/10 Café total` = colDef(
+      name = "`Café total",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `11 Cana-de-açúcar` = colDef(
+      name = "Cana-de-açúcar",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `12 Castanha-de-caju` = colDef(
+      name = "Castanha-de-caju",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `13 Cebola` = colDef(
+      name = "Cebola",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `14 Coco-da-baía` = colDef(
+      name = "Côco-da-baía",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `15 Fumo` = colDef(
+      name = "Fumo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `16 Guaraná` = colDef(
+      name = "`Guaraná",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `17 Juta` = colDef(
+      name = "Juta",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `18 Laranja` = colDef(
+      name = "Laranja",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `19 Maçã` = colDef(
+      name = "Maçã",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `20 Malva` = colDef(
+      name = "Malva",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `21 Mandioca` = colDef(
+      name = "Mandioca",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `22 Pimenta-do-reino` = colDef(
+      name = "Pimenta-do-reino",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `23 Sisal ou agave` = colDef(
+      name = "Sisal ou agave",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `24 Tomate` = colDef(
+      name = "Tomate",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `25 Uva` = colDef(
+      name = "Uva",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # IBC-Br {data-navmenu="Produção"}
 
@@ -20100,6 +21031,157 @@ reactable(
 ```
 
 # Pesquisa Mensal do Comércio (PMC) {data-navmenu="Produção"}
+
+Column {.sidebar} {data-width=100}
+-----------------------------------------------------------------------
+A **Pesquisa Mensal do Comércio (PMC)** produz indicadores que permitem acompanhar o comportamento conjuntural do comércio varejista no País, investigando a receita bruta de revenda nas empresas formalmente constituídas, com 20 ou mais pessoas ocupadas, e cuja atividade principal é o comércio varejista.
+
+<br>
+
+IRNV: Índice de receita nominal de vendas
+IVV: Índice de volume de vendas
+
+<br>
+
+**Fonte:** Tabelas [8880](https://sidra.ibge.gov.br/tabela/8880) e [8881](https://sidra.ibge.gov.br/tabela/8880) do banco de dados Sidra do [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/comercio/9227-pesquisa-mensal-de-comercio.html?=&t=o-que-e).
+
+Column {data-width=900} {.tabset}
+-----------------------------------------------------------------------
+### Comércio varejista
+```{r}
+reactable(
+  pmc_com_var_table[,-10],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ni_irnv = colDef(
+      name = "IRNV - Número-índice (2022=100)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_mg_irnv = colDef(
+      name = "IRNV tx. M/M-1 (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_acum_ano_irnv = colDef(
+      name = "IRNV tx. acum. ano (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_12m_irnv = colDef(
+      name = "IRNV tx. M/M-12 (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ni_ivv = colDef(
+      name = "IVV - Número-índice (2022=100)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_mg_ivv = colDef(
+      name = "IVV tx. M/M-1 (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_acum_ano_ivv = colDef(
+      name = "IVV tx. acum. ano (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_12m_ivv = colDef(
+      name = "IVV tx. M/M-12 (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Comércio varejista ampliado
+```{r}
+reactable(
+  pmc_com_amp_table[,-10],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ni_irnv = colDef(
+      name = "IRNV - Número-índice (2022=100)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_mg_irnv = colDef(
+      name = "IRNV tx. M/M-1 (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_acum_ano_irnv = colDef(
+      name = "IRNV tx. acum. ano (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_12m_irnv = colDef(
+      name = "IRNV tx. M/M-12 (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_ni_ivv = colDef(
+      name = "IVV - Número-índice (2022=100)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_mg_ivv = colDef(
+      name = "IVV tx. M/M-1 (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_acum_ano_ivv = colDef(
+      name = "IVV tx. acum. ano (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_12m_ivv = colDef(
+      name = "IVV tx. M/M-12 (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # Utilização da capacidade instalada (Ind. de transformação) {data-navmenu="Produção"}
 
