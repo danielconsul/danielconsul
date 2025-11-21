@@ -32,7 +32,7 @@ library(rio)
 library(tsibble)
 ```
 
-```{r, cache=TRUE}
+```{r, cache=FALSE}
 # Coleta de dados:
 
 # API key FRED
@@ -5488,7 +5488,6 @@ knitr::include_graphics("visao_geral.png")
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 O **balanço de pagamentos (BP)** é uma peça contábil que resume as transações econômicas entre residentes no país e não residentes em um determinado período de tempo. O BP brasileiro é compilado fundamentalmente a partir dos registros individuais das transações (microdados), permitindo ao Banco Central do Brasil o acompanhamento tempestivo dos fluxos da economia brasileira com o exterior.
 
 <br>
@@ -5501,7 +5500,7 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte:** Códigos 22702 (receita), 22703 (despesa), 22701 (saldo TC) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Códigos [22702](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22702) (receita), [22703](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22703) (despesa), [22701](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22701) (saldo TC) e [4385](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=4385) (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=500}  {.tabset}
 -----------------------------------------------------------------------
@@ -5581,7 +5580,6 @@ plot_ly(
 
 Column {data-width=300}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -5637,9 +5635,8 @@ reactable(
 
 # 1.1) Balança comercial (bens) {data-navmenu="Balanço de pagamentos"}
 
-Column {.sidebar} {data-width=200}
+Column {.sidebar} {data-width=300}
 -----------------------------------------------------------------------
-
 A **balança Comercial (bens) (BC)** contabiliza as transações de itens que são resultados de atividades produtivas, tangíveis, e sobre os quais direitos de propriedade podem ser estabelecidos e transferidos através de transações. A BC é dividida em exportações e importações. As **exportações** registram a venda de bens de residentes a não residentes, enquanto as **importações** registram a compra de bens por residentes de não residentes. A rubrica é fundada nas estatísticas de comércio exterior compiladas pelo Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC), com base nos registros alfandegários do Siscomex, que são ajustadas pelo Banco Central com o intuito de ampliação da cobertura. Por conta disso, às importações publicadas pelo MDIC são incorporadas as compras de energia elétrica sem registro no Siscomex. Adicionalmente, exportações e importações são ajustadas pela inclusão das operações fictas, nas quais o produto é transacionado com um não residente, mas não atravessa a fronteira do país em que se encontra; e, por fim, a balança comercial do balanço de pagamentos incorpora encomendas postais internacionais.
 
 <br>
@@ -5648,11 +5645,10 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte**: Códigos 22708 (exportações), 22709 (importações), 22707 (saldo BC) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte**: Códigos [22708](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22708) (exportações), [22709](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22709) (importações), [22707](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22707) (saldo BC) e [4385](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=4385) (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
-Column {data-width=400}  {.tabset}
+Column {data-width=350}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Exportações (1)
 ```{r}
 plot_ly(
@@ -5727,9 +5723,8 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-Column {data-width=400}  {.tabset}
+Column {data-width=350}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -5787,8 +5782,15 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 As **exportações** são os valores das vendas para o exterior e outras remessas de bens de propriedade de residentes no país, registrado na Balança Comercial do Balanço de Pagamentos. O valor _free on board_ (FOB) representa o preço em dólares no embarque, sendo o importador responsável pelo frete, seguro e custos posteriores. Neste caso, considera-se a exportação referente ao volume total do país.
+
+<br>
+
+Índices de preço e de quantum: média 2018 = 100.
+
+<br>
+
+Valores em bilhões de US$.
 
 <br>
 
@@ -5796,12 +5798,11 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte:** Secretaria de Comércio Exterior (SECEX) do Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC), Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx) e códigos 22711 (exportações) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Secretaria de Comércio Exterior (SECEX) do Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC), Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx) e códigos [22711](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22711) (exportações) e [4385](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=435) (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
-### Valor mensal
+### Exportações
 ```{r}
 plot_ly(
   data = export, 
@@ -5902,7 +5903,6 @@ plot_ly(
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -5914,7 +5914,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_exp = colDef(
-      name = "US$ bilhões",
+      name = "Exportações (US$ bilhões)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -5960,10 +5960,13 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 O setor de exportação de **bens de capital** (BK) é utilizado para a produção de outros bens e inclui, por exemplo, máquinas e ferramentas, tratores e material de transporte.
 
 O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito das variações das quantidades físicas exportadas sobre a evolução do valor de exportação. São obtidos, implicitamente, por meio do deflacionamento dos valores exportados pelas variações dos índices de preço de exportação.
+
+<br>
+
+Valores em bilhões de US$.
 
 <br>
 
@@ -5971,8 +5974,7 @@ O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
-### US$ bilhões
+### Bens de capital
 ```{r}
 plot_ly(
   data = bk_exp, 
@@ -6014,7 +6016,6 @@ plot_ly(
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -6026,7 +6027,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_bk = colDef(
-      name = "US$ bilhões",
+      name = "Bens de capital",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -6057,10 +6058,13 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 O setor de exportação de **bens intermediários** (BI) é utilizado como insumo para a produção de outros bens e incluem, entre outros itens, partes e peças para veículos, componentes eletro-eletrônicos, minérios e produtos siderúrgicos básicos, elementos e compostos químicos e soja em grão. 
 
 O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito das variações das quantidades físicas exportadas sobre a evolução do valor de exportação. São obtidos, implicitamente, por meio do deflacionamento dos valores exportados pelas variações dos índices de preço de exportação.
+
+<br>
+
+Valores em bilhões de US$.
 
 <br>
 
@@ -6068,8 +6072,7 @@ O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
-### US$ bilhões
+### Bens intermediários
 ```{r}
 plot_ly(
   data = bi_exp, 
@@ -6111,7 +6114,6 @@ plot_ly(
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -6123,7 +6125,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_bi = colDef(
-      name = "US$ bilhões",
+      name = "Bens intermediários",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -6154,8 +6156,11 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 A exportação de **bens de consumo** refere-se a bens duráveis e não duráveis destinados ao uso de consumidores finais.
+
+<br>
+
+Valores em bilhões de US$.
 
 <br>
 
@@ -6163,8 +6168,7 @@ A exportação de **bens de consumo** refere-se a bens duráveis e não durávei
 
 Column {data-width=600} {.tabset}
 -----------------------------------------------------------------------
-
-### US$ bilhões
+### Bens de consumo
 ```{r}
 plot_ly(
   data = exp_bc, 
@@ -6186,7 +6190,6 @@ plot_ly(
 
 Column {data-width=200} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -6198,7 +6201,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_bc = colDef(
-      name = "US$ bilhões",
+      name = "Bens intermediários",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -6224,10 +6227,13 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 O setor de exportação de **bens de consumo duráveis** compreende bens que possuem uma vida útil esperada de 1 a 3 anos ou mais e com valores relativamente elevados, tais como refrigeradores, máquinas de lavar, automóveis de passeio, motocicletas, aparelhos eletrodomésticos e aparelhos celulares.
 
 Os índices de preços e de quantum (médias 2018 = 100) captam o efeito das variações das quantidades físicas exportadas sobre a evolução do valor de exportação. São obtidos, implicitamente, por meio do deflacionamento dos valores exportados pelas variações dos índices de preço de exportação.
+
+<br>
+
+Valores em bilhões de US$.
 
 <br>
 
@@ -6235,8 +6241,7 @@ Os índices de preços e de quantum (médias 2018 = 100) captam o efeito das var
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
-### US$ bilhões
+### Bens de consumo duráveis
 ```{r}
 plot_ly(
   data = bcd_exp, 
@@ -6298,7 +6303,6 @@ plot_ly(
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -6310,7 +6314,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_bcd = colDef(
-      name = "US$ bilhões",
+      name = "Bens de consumo duráveis",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -6346,10 +6350,13 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 O setor de exportação de **bens de consumo não duráveis** é compreendido por bens que possuem uma vida útil inferior a um ano e inclui produtos de alimentação e bebidas em geral, os artigos de vestuário e os brinquedos, entre outros.
 
 O índice de quantum (média 2018 = 100) capta o efeito das variações das quantidades físicas exportadas sobre a evolução do valor de exportação. É obtido, implicitamente, por meio do deflacionamento dos valores exportados pelas variações dos índices de preço de exportação.
+
+<br>
+
+Valores em bilhões de US$.
 
 <br>
 
@@ -6357,8 +6364,7 @@ O índice de quantum (média 2018 = 100) capta o efeito das variações das quan
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
-### US$ bilhões
+### Bens de consumo não duráveis
 ```{r}
 plot_ly(
   data = bcnd_exp, 
@@ -6400,7 +6406,6 @@ plot_ly(
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -6412,7 +6417,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_bcnd = colDef(
-      name = "US$ bilhões",
+      name = "Bens de consumo não duráveis",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -6443,10 +6448,13 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 Estão agregados, entre outros, na grande categoria econômica **combustíveis** os óleos brutos de petróleo, a gasolina e o álcool carburante e também os combustíveis e lubrificantes utilizados em aeronaves e embarcações de trânsito internacional, ou seja, aqueles considerados como consumo de bordo. 
 
 O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito das variações das quantidades físicas importadas sobre a evolução do valor de importação. São obtidos, implicitamente, por meio do deflacionamento dos valores importados pelas variações dos índices de preço de importação.
+
+<br>
+
+Valores em bilhões de US$.
 
 <br>
 
@@ -6455,7 +6463,7 @@ O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### US$ bilhões
+### Combustíveis
 ```{r}
 plot_ly(
   data = comb_exp, 
@@ -6517,7 +6525,6 @@ plot_ly(
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -6529,7 +6536,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_comb = colDef(
-      name = "US$ bilhões",
+      name = "Combustíveis",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -6570,16 +6577,19 @@ As **importações** correspondem às compras de mercadorias por residentes no p
 
 <br>
 
+Valores em bilhões de US$.
+
+<br>
+
 Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte:** Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC), Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx) e códigos 22712 (importações) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Ministério do Desenvolvimento, Indústria, Comércio e Serviços (MDIC), Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx) e códigos [22712](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22712) (importações) e [4385](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=4385) (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
-### US$ bilhões
+### Importações
 ```{r}
 plot_ly(
   data = import, 
@@ -6680,7 +6690,6 @@ plot_ly(
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -6692,7 +6701,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_imp = colDef(
-      name = "US$ bilhões",
+      name = "Importações",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -6738,10 +6747,13 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 O setor de importação de **bens de capital** (BK) é utilizado para a produção de outros bens e inclui, por exemplo, máquinas e ferramentas, tratores e material de transporte.
 
 O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito das variações das quantidades físicas importadas sobre a evolução do valor de importação. São obtidos, implicitamente, por meio do deflacionamento dos valores importados pelas variações dos índices de preço de importação.
+
+<br>
+
+Valores em bilhões de US$.
 
 <br>
 
@@ -6750,7 +6762,7 @@ O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### US$ bilhões
+### Bens de capital
 ```{r}
 plot_ly(
   data = bk, 
@@ -6812,7 +6824,6 @@ plot_ly(
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -6824,7 +6835,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_bk = colDef(
-      name = "US$ bilhões",
+      name = "Bens de capital",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -6860,10 +6871,13 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 O setor de importação de **bens intermediários** (BI) é utilizado como insumo para a produção de outros bens e incluem, entre outros itens, partes e peças para veículos, componentes eletro-eletrônicos, minérios e produtos siderúrgicos básicos, elementos e compostos químicos e soja em grão. 
 
 O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito das variações das quantidades físicas importadas sobre a evolução do valor de importação. São obtidos, implicitamente, por meio do deflacionamento dos valores importados pelas variações dos índices de preço de importação.
+
+<br>
+
+Valores em bilhões de US$.
 
 <br>
 
@@ -6872,7 +6886,7 @@ O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### US$ bilhões
+### Bens intermediários
 ```{r}
 plot_ly(
   data = bi, 
@@ -6934,7 +6948,6 @@ plot_ly(
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -6946,7 +6959,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_bi = colDef(
-      name = "US$ bilhões",
+      name = "Bens intermediários",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -6982,8 +6995,11 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 A importação de **bens de consumo** refere-se a bens duráveis e não duráveis destinados ao uso de consumidores finais.
+
+<br>
+
+Valores em bilhões de US$.
 
 <br>
 
@@ -6992,7 +7008,7 @@ A importação de **bens de consumo** refere-se a bens duráveis e não durávei
 Column {data-width=600} {.tabset}
 -----------------------------------------------------------------------
 
-### US$ bilhões
+### Bens de consumo
 ```{r}
 plot_ly(
   data = bc, 
@@ -7026,7 +7042,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_bc = colDef(
-      name = "US$ bilhões",
+      name = "Bens de consumo",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -7052,10 +7068,13 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 O setor de importação de **bens de consumo duráveis** compreende bens que possuem uma vida útil esperada de 1 a 3 anos ou mais e com valores relativamente elevados, tais como refrigeradores, máquinas de lavar, automóveis de passeio, motocicletas, aparelhos eletrodomésticos e aparelhos celulares.
 
 O índice de quantum (média 2018 = 100) capta o efeito das variações das quantidades físicas importadas sobre a evolução do valor de importação. É obtido, implicitamente, por meio do deflacionamento dos valores importados pelas variações dos índices de preço de importação.
+
+<br>
+
+Valores em bilhões de US$.
 
 <br>
 
@@ -7063,8 +7082,7 @@ O índice de quantum (média 2018 = 100) capta o efeito das variações das quan
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
-### US$ bilhões
+### Bens de consumo duráveis
 ```{r}
 plot_ly(
   data = bcd, 
@@ -7118,7 +7136,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_bcd = colDef(
-      name = "US$ bilhões",
+      name = "Bens de consumo duráveis",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -7149,10 +7167,13 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 O setor de **bens de consumo não duráveis** compreende bens que possuem uma vida útil inferior a um ano e incluem produtos de alimentação e bebidas em geral, os artigos de vestuário e os brinquedos, entre outros.
 
 O índice de quantum (média 2018 = 100) capta o efeito das variações das quantidades físicas importadas sobre a evolução do valor de importação. É obtido, implicitamente, por meio do deflacionamento dos valores importados pelas variações dos índices de preço de importação.
+
+<br>
+
+Valores em bilhões de US$.
 
 <br>
 
@@ -7160,8 +7181,7 @@ O índice de quantum (média 2018 = 100) capta o efeito das variações das quan
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
-### US$ bilhões
+### Bens de consumo não duráveis
 ```{r}
 plot_ly(
   data = bcnd, 
@@ -7203,7 +7223,6 @@ plot_ly(
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -7215,7 +7234,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_bcnd = colDef(
-      name = "US$ bilhões",
+      name = "Bens de consumo não duráveis",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -7253,12 +7272,16 @@ O índice de preços e o índice de quantum (médias 2018 = 100) captam o efeito
 
 <br>
 
+Valores em bilhões de US$.
+
+<br>
+
 **Fonte:** Fundação Centro de Estudos do Comércio Exterior (FUNCEX) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 
-### US$ bilhões
+### Combustíveis
 ```{r}
 plot_ly(
   data = comb, 
@@ -7332,7 +7355,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_comb = colDef(
-      name = "US$ bilhões",
+      name = "Combustíveis",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -7368,8 +7391,11 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 A **balança de serviços (BS)** é composta por serviços relativos a transportes, viagens internacionais, seguros, financeiros, construção, computação e informações, royalties e licenças, aluguel de equipamentos, serviços pessoais, culturais e de entretenimento e serviços governamentais.
+
+<br>
+
+Valores em bilhões de US$.
 
 <br>
 
@@ -7377,7 +7403,7 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte**: Códigos 22720 (receitas), 22721 (despesas), 22719 (saldo BS) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte**: Códigos [22720](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22720) (receitas), [22721](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22721) (despesas), [22719](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22719) (saldo BS) e [4385](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=4385) (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
@@ -7463,7 +7489,6 @@ plot_ly(
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -7521,8 +7546,11 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 A **renda primária (RP)** indica os montantes a pagar ou a receber em troca do uso temporário de recursos financeiros, trabalho ou ativos não financeiros não produzidos, a saber, remuneração de trabalhadores, renda de investimentos e demais rendas primárias. Fazem parte da primeira a remuneração do trabalho assalariado (salários e ordenados); da segunda, renda de investimento direto, renda de investimento em carteira, renda de outros investimentos e renda de ativos de reserva; e da terceira, tributos sobre a produção e importação, subsídios e aluguéis.
+
+<br>
+
+Valores em bilhões de US$.
 
 <br>
 
@@ -7530,11 +7558,10 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte**: Códigos 22801 (receitas), 22802 (despesas), 22800 (saldo RP) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte**: Códigos [22801](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22801) (receitas), [22802](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22802) (despesas), [22800](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22800) (saldo RP) e [4385](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=4385) (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Receitas (1)
 ```{r}
 plot_ly(
@@ -7636,7 +7663,6 @@ plot_ly(
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -7694,8 +7720,11 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 A **renda secundária (RS)**, antes denominada “transferências unilaterais correntes”, tem sua nomenclatura ajustada às contas nacionais, e apresenta a renda gerada em uma economia e distribuída para outra. Setoriza as transferências em dois componentes: governo e demais setores. No primeiro caso, estão registrados os tributos correntes sobre a renda, contribuições e benefícios sociais, cooperação internacional corrente e demais transferências correntes do governo; já no segundo, estão as transferências pessoais (transferências correntes entre famílias residentes e não residentes) e outras transferências correntes.
+
+<br>
+
+Valores em bilhões de US$.
 
 <br>
 
@@ -7703,11 +7732,10 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte**: Códigos 22839 (receitas), 22840 (despesas), 22838 (saldo RS) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte**: Códigos [22839](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22839) (receitas), [22840](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22840) (despesas), [22838](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22838) (saldo RS) e [4385](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=4385) (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Receitas (1)
 ```{r}
 plot_ly(
@@ -7807,7 +7835,6 @@ plot_ly(
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -7865,8 +7892,11 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 A **conta capital (CC)** registra as transações envolvendo compra e venda de ativos não financeiros não produzidos, e transferências de capital. As transferências de capital relacionadas com patrimônio de migrantes não mais impactam essa conta.
+
+<br>
+
+Valores em bilhões de US$.
 
 <br>
 
@@ -7874,11 +7904,10 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte**: Códigos 22852 (receitas), 22853 (despesas), 22851 (saldo CC) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte**: Códigos [22852](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22852) (receitas), [22853](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22853) (despesas), [22851](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=8851) (saldo CC) e [4385](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=4385) (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Receitas (1)
 ```{r}
 plot_ly(
@@ -7979,7 +8008,6 @@ plot_ly(
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -8037,16 +8065,18 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 A **conta capital (ativos não financeiros não produzidos)** inclui ativos intangíveis não produzidos e terrenos e outros ativos materiais não produzidos que podem ser usados na produção de bens e serviços. 
 
 <br>
 
-**Fonte**: Códigos 22855 (receitas), 22856 (despesas) e 22855 (saldo CC (ativos não financeiros não produzidos)) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+Valores em bilhões de US$.
+
+<br>
+
+**Fonte**: Códigos [22855](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22855) (receitas), [22856](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22856) (despesas) e [22854](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=2270) (saldo CC (ativos não financeiros não produzidos)) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Receitas (1)
 ```{r}
 plot_ly(
@@ -8109,7 +8139,6 @@ plot_ly(
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -8157,16 +8186,18 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 A **conta capital (ativos não financeiros não produzidos - passes de atletas)** registra as transações de compra e venda de passes de atletas profissionais realizadas entre residentes e não-residentes.
 
 <br>
 
-**Fonte**: Códigos 22858 (receitas), 22859 (despesas) e 22857 (saldo CC (ativos não financeiros não produzidos - passes de atletas)) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+Valores em bilhões de US$.
+
+<br>
+
+**Fonte**: Códigos [22858](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22858) (receitas), [22859](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22859) (despesas) e [22857](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22857) (saldo CC (ativos não financeiros não produzidos - passes de atletas)) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Receitas (1)
 ```{r}
 plot_ly(
@@ -8227,7 +8258,6 @@ plot_ly(
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -8275,12 +8305,15 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 A **conta financeira (CF)** registra fluxos decorrentes de transações com ativos e passivos financeiros entre residentes e não residentes, sendo dividida em cinco grupos funcionais: investimento direto, investimentos em carteira, derivativos financeiros (exclusive reservas) e opções de compra de ações por parte de empregados, outros investimentos e ativos de reserva. Cada conta é desdobrada em ativos e passivos, ou seja, há um item destinado a registrar fluxos envolvendo ativos externos detidos por residentes no Brasil e outro para registrar a emissão de passivos por residentes cujo credor é não residente.
 
 <br>
 
-Obs.: Valores negativos indicam entrada líquida de recursos no país.
+Valores em bilhões de US$.
+
+<br>
+
+Valores negativos indicam entrada líquida de recursos no país.
 
 <br>
 
@@ -8288,11 +8321,10 @@ Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte**: Códigos 22863 (conta financeira) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte**: Códigos [22863](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22863) (conta financeira) e [4385](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=4385) (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Saldo CF
 ```{r}
 plot_ly(
@@ -8354,7 +8386,6 @@ plot_ly(
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -8400,9 +8431,8 @@ reactable(
 
 # 3.1) Investimento direto {data-navmenu="Balanço de pagamentos"}
 
-Column {.sidebar} {data-width=200}
+Column {.sidebar} {data-width=300}
 -----------------------------------------------------------------------
-
 **Investimento direto no exterior (IDE)** registra os fluxos financeiros de ativos externos detidos por residentes brasileiros, nos quais os agentes institucionais possuem uma relação de controle ou forte poder de influência entre si. Divide-se em dois instrumentos principais: participação no capital e operações intercompanhia.
 
 **Investimento direto no país (IDP)** registra os fluxos financeiros de passivos emitidos por residentes brasileiros para credores não residentes, nos quais os agentes institucionais possuem uma relação de controle ou forte poder de influência entre si. Divide-se em dois instrumentos principais: participação no capital e operações intercompanhia.
@@ -8410,22 +8440,18 @@ Column {.sidebar} {data-width=200}
 **Investimento direto (ID)** representa o fluxo líquido entre os investimentos diretos no exterior (ativos) e os investimentos diretos no país (passivos).
 
 <br>
-
 Valores negativos indicam entrada líquida de recursos no país.
-
 <br>
-
+Valores em bilhões de US$.
 <br>
-
 Os dados como % do PIB referem-se ao acumulado em 12 meses.
 
 <br>
 
-**Fonte**: Códigos 22865 (IDE), 22885 (IDP), 22864 (saldo ID) e 4385 (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte**: Códigos [22865](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22865) (IDE), [22885](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22885) (IDP), [22864](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22864) (saldo ID) e [4385](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=4385) (PIB em dólares) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
-Column {data-width=400}  {.tabset}
+Column {data-width=350}  {.tabset}
 -----------------------------------------------------------------------
-
 ### IDE (1)
 ```{r}
 plot_ly(
@@ -8558,9 +8584,8 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-Column {data-width=400}  {.tabset}
+Column {data-width=350}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -8636,25 +8661,22 @@ reactable(
 
 # 3.2) Investimento em carteira {data-navmenu="Balanço de pagamentos"}
 
-Column {.sidebar} {data-width=300}
+Column {.sidebar} {data-width=400}
 -----------------------------------------------------------------------
 **Investimento em carteira (IC)** é dividido em ativos e passivos. **Investimento em carteira ativos** são definidos como transações e posições realizadas através de títulos de dívida ou de capital, distintos dos incluídos em investimento direto ou ativos de reserva. São registrados fluxos constituídos pela emissão de títulos de crédito comumente negociados em mercados secundários. Divide-se em dois instrumentos principais: ações e cotas em fundos, e título de renda fixa. Ações e cotas em fundos compreendem todos os instrumentos e registros que reconhecem, uma vez liquidados todos os direitos dos credores, os direitos frente ao valor residual da empresa. Os títulos de participação no capital englobam as ações negociadas ou não em bolsa e outros tipos de participação no capital. Títulos de renda fixa são os instrumentos de dívida que exigem pagamento de juros e/ou principal em algum momento futuro. Os instrumentos de dívida que sensibilizam essa conta são aqueles que podem ser negociados em mercados secundários. Os papéis com prazo de vencimento original inferior a um ano são considerados de curto prazo, e os com vencimento original superior a esse prazo, de longo prazo. **Investimento em carteira passivos** são definidos como transações e posições realizadas através de títulos de dívida ou de capital, distintos dos incluídos em investimento direto. São registrados fluxos constituídos pela emissão de títulos de crédito comumente negociados em mercados secundários. Divide-se em dois instrumentos principais: ações e cotas em fundos e título de renda fixa. Ações e cotas em fundos compreendem todos os instrumentos e registros que reconhecem, uma vez liquidados todos os direitos dos credores, os direitos frente ao valor residual da empresa. Os títulos de participação no capital englobam as ações negociadas ou não em bolsa e outros tipos de participação no capital. Títulos de renda fixa são os instrumentos de dívida exigem pagamento de juros e/ou principal em algum momento futuro. Os instrumentos de dívida que sensibilizam essa conta são aqueles que podem ser negociados em mercados secundários. Os papéis com prazo de vencimento original inferior a um ano são considerados de curto prazo, e os com vencimento original superior a esse prazo, de longo prazo.
 
 <br>
-
 Valores negativos indicam entrada líquida de recursos no país.
-
 <br>
-
+Valores em bilhões de US$.
+<br>
 Os dados como % do PIB referem-se ao acumulado em 12 meses.
-
 <br>
 
-**Fonte**: Código 22905 do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte**: Código [22905](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22905) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
-Column {data-width=350}  {.tabset}
+Column {data-width=300}  {.tabset}
 -----------------------------------------------------------------------
-
 ### IC mensal
 ```{r}
 plot_ly(
@@ -8712,9 +8734,8 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
-Column {data-width=350}  {.tabset}
+Column {data-width=300}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -8766,15 +8787,18 @@ Column {.sidebar} {data-width=200}
 
 <br>
 
+Valores em bilhões de US$.
+
+<br>
+
 Obs.: Valores negativos indicam entrada líquida de recursos no país.
 
 <br>
 
-**Fonte**: Códigos 22970 (ativos), 22971 (passivos) e 22969 (saldo outros investimentos) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte**: Códigos [22970](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22970) (ativos), [22971](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22971) (passivos) e [22969](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22969) (saldo outros investimentos) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Ativos (1)
 ```{r}
 plot_ly(
@@ -8822,7 +8846,6 @@ plot_ly(
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -8870,16 +8893,18 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 Os **ativos de reserva** compreendem as operações com os ativos externos que estão à disposição imediata e sob controle da autoridade monetária para satisfazer suas necessidades de financiamento de balanço de pagamentos, intervir no mercado de cambio e outros fins conexos. Ativos de reservas é dividido em **ouro monetário, direitos especiais de saque (DES), posição de reserva no FMI, outros ativos de reserva e demais ativos**.
 
 <br>
 
-**Fonte**: Código 23043 do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+Valors em bilhões de US$.
+
+<br>
+
+**Fonte**: Código [23043](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=23043) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Ativos de reserva
 ```{r}
 plot_ly(
@@ -8902,7 +8927,6 @@ plot_ly(
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -8940,17 +8964,19 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 As partidas a crédito e a débito lançadas no balanço de pagamentos provêm de diversas fontes de informações, gerando, na prática, total líquido diferente de zero. A principal razão está nas discrepâncias temporais das diversas origens dos dados utilizados. Com isso, torna-se necessário o lançamento de partida equilibradora para o balanceamento das contas. Os **erros e omissões(EOs)** se prestam, portanto, a compensar toda sobrestimação ou subestimação dos componentes registrados. É uma conta residual, portanto.
 
 <br>
 
-**Fonte**: Código 23060 do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+Valores em bilhões de US$.
+
+<br>
+
+**Fonte**: Código [23060](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=23060) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
-### Gráfico
+### Erros e omissões
 ```{r}
 plot_ly(
   data = eo, 
@@ -8972,7 +8998,6 @@ plot_ly(
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -9018,21 +9043,18 @@ As **reservas internacionais** compreendem os ativos externos do país prontamen
 De acordo com o [Relatório de Gestão das Reservas Internacionais](https://www.bcb.gov.br/publicacoes/relgestaoreservas) do Banco Central do Brasil de março de 2025, em dezembro de 2024 a alocação das reservas por moedas se dava da seguinte maneira: 78,45% em dólar americano (USD), 5,31% em renminbi (CNY), 5,23% em euro (EUR), 3,69% em libra esterlina (GBP), 3,55% em ouro, 1,73% em iene (JPY), 1,05% em dólar canadense (CAD) e 0,99% em dólar australiano (AUD).
 
 <br>
-
 Também em dezembro de 2024, 84,08% das reservas pelo conceito caixa estavam aplicadas em títulos governamentais soberanos.
-
 <br>
-
 O prazo médio de investimento em 2024 foi de 3,19 anos.
-
+<br>
+Valores em bilhões de US$.
 <br>
 
-**Fontes:** Código 3546 do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries) e [DataBank (World Bank)](https://databank.worldbank.org/)
+**Fontes:** Código [3546](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22702) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries) e [DataBank (World Bank)](https://databank.worldbank.org/)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
-### US$ bilhões
+### Reservas internacionais
 ```{r}
 plot_ly(
   data = res_int, 
@@ -9048,7 +9070,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly(
   data = res_int, 
@@ -9063,7 +9085,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly(
   data = res_int, 
@@ -9078,7 +9100,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### % dívida externa total
+### % da dívida externa total
 ```{r}
 plot_ly(
   data = res_int_div_ext, 
@@ -9109,7 +9131,6 @@ plot_ly(
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -9121,7 +9142,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor = colDef(
-      name = "US$ bilhões",
+      name = "Reservas internacionais",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -9153,7 +9174,7 @@ reactable(
 )
 ```
 
-### % dívida externa total
+### % da dívida externa total
 ```{r}
 reactable(
   res_int_div_ext,
@@ -9223,8 +9244,11 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 Os **termos de troca** são definidos como a relação entre os preços das exportações do país (PX) e os das suas importações (PM).
+
+<br>
+
+Média 2018 = 100.
 
 <br>
 
@@ -9248,7 +9272,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly(
   data = tt, 
@@ -9263,7 +9287,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly(
   data = tt, 
@@ -9280,7 +9304,6 @@ plot_ly(
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -9328,7 +9351,6 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
- 	
 O **Índice de commodities - Brasil** (IC-Br) exprime a média mensal ponderada dos preços em reais e em dólares das commodities relevantes para a dinâmica da inflação brasileira. O IC-Br agrega de forma ponderada os indicadores relativos aos segmentos Agropecuária (série 27575), Metal (série 27576) e Energia (série 27577). Dez/2005 = 100.
 
 <br> 
@@ -9339,11 +9361,10 @@ Boi gordo: 21,54%, Brent: 12,35%, Açúcar: 7,37%, Milho: 6,27%, Óleo de soja: 
 
 <br>
 
-**Fonte:** Códigos 27574 (real) e 29042 (dólar) no Sistema Gerenciador de [Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Códigos [27574](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=27574) (real) e [29042](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29042) (dólar) no Sistema Gerenciador de [Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### IC-Br (R$ e US$)
 ```{r}
 plot_ly() %>%
@@ -9375,7 +9396,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -9406,7 +9427,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -9439,7 +9460,6 @@ plot_ly() %>%
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -9502,14 +9522,14 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
- 	
 O **IC-Br Agropecuária** é um subíndice do IC-Br (série 27574). É uma média mensal ponderada dos preços em reais de boi gordo, algodão, óleo de soja, trigo, açúcar, milho, café, arroz, porco, suco de laranja e cacau. Dez/2005 = 100.
 
-**Fonte:** Códigos 27575 (real) e 29041 (dólar) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+<br>
+
+**Fonte:** Códigos [27575](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=27575) (real) e [29041](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29041) (dólar) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### IC-Br Agropecuária (R$ e US$)
 ```{r}
 plot_ly() %>%
@@ -9541,7 +9561,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -9572,7 +9592,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -9605,7 +9625,6 @@ plot_ly() %>%
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -9668,14 +9687,14 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
- 	
 O **IC-Br Energia** é um subíndice do IC-Br (série 27574). É uma média mensal ponderada dos preços em reais de petróleo Brent, gás natural e carvão. Dez/2005 = 100.
 
-**Fonte:** Códigos 27577 (real) e 29039 (dólar) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+<br>
+
+**Fonte:** Códigos [27577](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=27577) (real) e [29039](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29039) (dólar) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### IC-Br Energia (R$ e US$)
 ```{r}
 plot_ly() %>%
@@ -9707,7 +9726,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -9738,7 +9757,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -9771,7 +9790,6 @@ plot_ly() %>%
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -9834,14 +9852,14 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
- 	
 O **IC-Br Metal** é um subíndice do IC-Br (série 27574). É uma média mensal ponderada dos preços em reais de alumínio, minério de ferro, cobre, estanho, zinco, chumbo, níquel, ouro e prata. Dez/2005 = 100.
 
-**Fonte:** Códigos 27576 (real) e 29040 (dólar) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+<br>
+
+**Fonte:** Códigos [27576](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=27576) (real) e [29040](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29040) (dólar) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### IC-Br Metal (R$ e US$)
 ```{r}
 plot_ly() %>%
@@ -9873,7 +9891,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -9904,7 +9922,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -9937,7 +9955,6 @@ plot_ly() %>%
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -10004,7 +10021,7 @@ Column {.sidebar} {data-width=200}
 
 <br>
 
-**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/)
+**Fonte:** Federal Reserve Economic Data (FRED): [Other Mild Arabica](https://fred.stlouisfed.org/series/PCOFFOTMUSDM) and [Robustas](https://fred.stlouisfed.org/series/PCOFFROBUSDM)
 
 
 Column {data-width=400} {.tabset}
@@ -10041,7 +10058,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -10072,7 +10089,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -10105,7 +10122,6 @@ plot_ly() %>%
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -10172,7 +10188,7 @@ Column {.sidebar} {data-width=200}
 
 <br>
 
-**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/)
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PIORECRUSDM)
 
 
 Column {data-width=400} {.tabset}
@@ -10193,7 +10209,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly(
   data = miner_ferro, 
@@ -10208,7 +10224,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly(
   data = miner_ferro, 
@@ -10225,7 +10241,6 @@ plot_ly(
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -10275,9 +10290,15 @@ Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 Produzido no Mar do Norte (Europa), **Brent** é uma classe de petróleo bruto que serve como benchmark para o preço internacional de diferentes tipos de petróleo.
 
+<br>
+
 Produzido no Texas e no sul de Oklahoma, **West Texas Intermediate (WTI)** é uma classe de petróleo bruto que serve como benchmark para o preço internacional de diferentes tipos de petróleo.
 
+<br>
+
 Os preços por barris de ambos os tipos de petróleo são _free on board_ (FOB), isto é, desconsideram despesas com fretes e seguros.
+
+<br>
 
 As cotações mensais são as médias das cotações diárias.
 
@@ -10288,7 +10309,6 @@ As cotações mensais são as médias das cotações diárias.
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Cotação diária
 ```{r}
 plot_ly() %>%
@@ -10351,7 +10371,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. Mensal (%)
+### Variação Mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -10382,7 +10402,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -10416,7 +10436,6 @@ plot_ly() %>%
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese (cotação diária)
 ```{r}
 reactable(
@@ -10527,7 +10546,7 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-Preço dos contratos futuros da soja negociados na bolsa de Chicago (Chicago Board of Trade - CBOT), contrato futuro mais próximo (primeiro vencimento), tipo padrão No. 2 yellow, cotado em **dólares por tonelada métrica**.
+Preço dos contratos futuros da **soja** negociados na bolsa de Chicago (Chicago Board of Trade - CBOT), contrato futuro mais próximo (primeiro vencimento), tipo padrão No. 2 yellow, cotado em **dólares por tonelada métrica**.
 
 <br>
 
@@ -10536,7 +10555,6 @@ Preço dos contratos futuros da soja negociados na bolsa de Chicago (Chicago Boa
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Cotação
 ```{r}
 plot_ly(
@@ -10552,7 +10570,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly(
   data = soja, 
@@ -10567,7 +10585,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly(
   data = soja, 
@@ -10584,7 +10602,6 @@ plot_ly(
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -10632,17 +10649,15 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 **Global price of wheat**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars per metric ton.
 
 <br>
 
-**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/)
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PWHEAMTUSDM)
 
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Cotação
 ```{r}
 plot_ly(
@@ -10658,7 +10673,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly(
   data = trigo, 
@@ -10673,7 +10688,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly(
   data = trigo, 
@@ -10691,7 +10706,6 @@ plot_ly(
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -10739,17 +10753,19 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 A série trimestral **dívida externa bruta** compreende o total apurado em determinada data dos débitos contratuais efetivamente desembolsados e ainda não quitados, devidos por residentes de uma economia aos não residentes, quando houver a obrigatoriedade de pagamento de principal e/ou juros em algum(s) ponto(s) no futuro. O valor de mercado da dívida externa bruta impacta os valores a partir de dezembro de 2011 e abrange os títulos de dívida emitidos pela República no mercado internacional, ajustados segundo seu preço de mercado, e os demais instrumentos e emissores de dívida externa, apurados em valor nominal.
 
 <br>
 
-**Fonte:** Código 3684 do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+Valores em bilhões de US$.
+
+<br>
+
+**Fonte:** Código [3684](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=3684) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
-### US$ bilhões
+### Dívida externa bruta
 ```{r}
 plot_ly(
   data = div_bruta, 
@@ -10781,7 +10797,6 @@ plot_ly(
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -10793,7 +10808,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_usd = colDef(
-      name = "US$ bilhões",
+      name = "Dívida externa bruta",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -10824,17 +10839,19 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 A série trimestral **dívida externa líquida** refere-se à dívida externa bruta excluindo do cálculo os ativos de reservas, os haveres de bancos comerciais e os créditos brasileiros no exterior.
 
 <br>
 
-**Fonte:** Código 3685 do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+Valores em bilhões de US$.
+
+<br>
+
+**Fonte:** Código [3685](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=3685) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
-### US$ bilhões
+### Dívida externa líquida
 ```{r}
 plot_ly(
   data = div_liq, 
@@ -10866,7 +10883,6 @@ plot_ly(
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -10878,7 +10894,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_usd = colDef(
-      name = "US$ bilhões",
+      name = "Dívida externa líquida",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -10909,17 +10925,18 @@ reactable(
 
 Column {.sidebar} {data-width=150}
 -----------------------------------------------------------------------
-A **dívida líquida do setor público** é definida como o balanceamento entre as dívidas e os créditos do setor público não-financeiro e do Banco Central. Os saldos são apurados pelo critério de competência, ou seja, a apropriação de encargos é contabilizada na forma _pro-rata_, independente da ocorrência de liberações ou reembolsos no período. Eventuais registros contábeis que não utilizam esse critério são corrigidos para manter a homogeneidade da apuração. 
+A **dívida líquida do setor público** é definida como o balanceamento entre as dívidas e os créditos do setor público não-financeiro e do Banco Central. Os saldos são apurados pelo critério de competência, ou seja, a apropriação de encargos é contabilizada na forma _pro-rata_, independente da ocorrência de liberações ou reembolsos no período. Eventuais registros contábeis que não utilizam esse critério são corrigidos para manter a homogeneidade da apuração.
+
+<br>
 
 Trata-se de séries de saldo mensal em milhões correntes e como % do PIB para governo central (governo federal e Banco Central), governo federal, Banco Central, governos estaduais e municipais, governos estaduais, governos municipais, empresas Estatais, empresas Estatais federais, empresas Estatais estaduais, empresas Estatais municipais e setor público consolidado.
 
 <br>
 
-**Fonte:** Estatístiscas fiscais do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Estatístiscas fiscais diversas do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=850}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Saldos em milhões de R$ correntes
 ```{r}
 reactable(
@@ -11093,7 +11110,8 @@ plot_ly(
   x = ~date, 
   y = ~as.numeric(gsub(",", ".", valor_dl_gfbc_pib)),
   type = "scatter",
-  mode = "lines"
+  mode = "lines",
+  fill = "tozeroy"
 ) %>%
   layout(
     xaxis = list(title = " "),
@@ -11108,7 +11126,8 @@ plot_ly(
   x = ~date, 
   y = ~as.numeric(gsub(",", ".", valor_dl_spc_pib)),
   type = "scatter",
-  mode = "lines"
+  mode = "lines",
+  fill = "tozeroy"
 ) %>%
   layout(
     xaxis = list(title = " "),
@@ -11122,6 +11141,8 @@ Column {.sidebar} {data-width=150}
 -----------------------------------------------------------------------
 O **resultado nominal** corresponde à variação nominal dos saldos da dívida líquida, deduzidos os ajustes patrimoniais e metodológicos efetuados no período. Abrange o componente de atualização monetária da dívida, os juros reais e o resultado fiscal primário. São apresentados valores totais, referentes à dívida interna e externa.
 
+<br>
+
 Trata-se de séries de fluxo mensal corrente, fluxo acumulado no ano e fluxo acumulado em 12 meses em reais correntes e como % do PIB para governo central (governo federal e Banco Central), governo federal, Banco Central, governos estaduais e municipais, governos estaduais, governos municipais, empresas Estatais, empresas Estatais federais, empresas Estatais estaduais, empresas Estatais municipais, setor público consolidado, governo federal sem INSS e INSS.
 
 <br>
@@ -11130,11 +11151,10 @@ Obs.: Valores positivos representam déficits primários. Valores negativos repr
 
 <br>
 
-**Fonte:** Estatísticas fiscais (necessidades de financiamento sem desvalorização cambial) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Estatísticas fiscais diversas (necessidades de financiamento sem desvalorização cambial) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=850}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Gov. Central (GF + BC)
 ```{r}
 reactable(
@@ -11949,34 +11969,22 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Juros nominais {data-navmenu="Fiscal"}
 
 Column {.sidebar} {data-width=150}
 -----------------------------------------------------------------------
 Os **juros nominais** referem-se ao fluxo de juros, apropriados por competência, incidentes sobre a dívida interna e externa. Engloba os juros reais e o componente de atualização monetária da dívida. Corresponde ao componente financeiro do resultado fiscal. Exclui o impacto da variação cambial sobre a dívida externa e sobre a dívida mobiliária interna indexada ao dólar. 
 
+<br>
+
 Trata-se de séries de fluxo mensal corrente, fluxo acumulado no ano e fluxo acumulado em 12 meses em reais correntes e como % do PIB para governo central (governo federal e Banco Central), governo federal, Banco Central, governos estaduais e municipais, governos estaduais, governos municipais, empresas Estatais, empresas Estatais federais, empresas Estatais estaduais, empresas Estatais municipais, setor público consolidado, governo federal sem INSS e INSS.
 
 <br>
 
-**Fonte:** Estatísticas fiscais (necessidades de financiamento sem desvalorização cambial) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Estatísticas fiscais diversas (necessidades de financiamento sem desvalorização cambial) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=850}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Gov. Central (GF + BC)
 ```{r}
 reactable(
@@ -12797,6 +12805,8 @@ Column {.sidebar} {data-width=150}
 -----------------------------------------------------------------------
 O **resultado primário** é o componente não-financeiro do resultado fiscal do setor público. Corresponde ao resultado nominal menos os juros nominais apropriados por competência, incidentes sobre a dívida.
 
+<br>
+
 Trata-se de séries de fluxo mensal corrente, fluxo acumulado no ano e fluxo acumulado em 12 meses em reais correntes e como % do PIB para governo central (governo federal e Banco Central), governo federal, Banco Central, governos estaduais e municipais, governos estaduais, governos municipais, empresas Estatais, empresas Estatais federais, empresas Estatais estaduais, empresas Estatais municipais, setor público consolidado, governo federal sem INSS e INSS.
 
 <br>
@@ -12805,11 +12815,10 @@ Obs.: Valores positivos representam déficits primários. Valores negativos repr
 
 <br>
 
-**Fonte:** Estatísticas fiscais (necessidades de financiamento sem desvalorização cambial) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Estatísticas fiscais diversas (necessidades de financiamento sem desvalorização cambial) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=850}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Gov. Central (GF + BC)
 ```{r}
 reactable(
@@ -13776,7 +13785,6 @@ plot_ly(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 O **Índice de Preços ao Consumidor Amplo (IPCA)** tem como unidade de coleta estabelecimentos comerciais e de prestação de serviços, concessionária de serviços públicos e intenet e sua coleta estende-se, em geral, do dia 01 a 30 do mês de referência. Atualmente, a população-objetivo do IPCA abrange as **famílias com rendimentos de 1 a 40 salários mínimos**, qualquer que seja a fonte, residentes nas áreas urbanas das regiões de abrangência do Sistema Nacional de Índices de Preços ao Consumidor (SNIPC), as quais são: regiões metropolitanas de Belém, Fortaleza, Recife, Salvador, Belo Horizonte, Vitória, Rio de Janeiro, São Paulo, Curitiba, Porto Alegre, além do Distrito Federal e dos municípios de Goiânia, Campo Grande, Rio Branco, São Luís e Aracaju.
 
 <br>
