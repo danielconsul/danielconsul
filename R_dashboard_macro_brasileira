@@ -32,7 +32,7 @@ library(rio)
 library(tsibble)
 ```
 
-```{r, cache=FALSE}
+```{r, cache=TRUE}
 # Coleta de dados:
 
 # API key FRED
@@ -189,7 +189,6 @@ pmc_com_amp_table <- pmc_com_amp_ni_irnv %>% left_join(pmc_com_amp_ni_ivv) %>% l
   data_fmt = format(date, "%m/%Y")
 ) %>% select(data_fmt, valor_ni_irnv, valor_mg_irnv, valor_acum_ano_irnv, valor_12m_irnv,
              valor_ni_ivv, valor_mg_ivv, valor_acum_ano_ivv, valor_12m_ivv, date)
-
 
 
 # LEVANTAMENTO SISTEMÁTICO DA PRODUÇÃO AGRÍCOLA:
@@ -565,7 +564,6 @@ divida_liq_pib <- dl_gfbc_pib %>%
   arrange(desc(date))
 
 # TAXA REFERENCIAL DI X PREFIXADA - SWAPS
-
 di_180 <- ipeadata(c = "BMF12_SWAPDI180F12") %>% mutate(
   valor_di_180 = value
 ) %>% mutate(
@@ -2105,19 +2103,6 @@ rp_inss <- rp_inss_reais_corr %>%
     valor_rp_inss_acum_12m_pib = number(valor_rp_inss_acum_12m_pib, big.mark = ".", decimal.mark = ",", accuracy = 0.01)
   ) %>% select(data_fmt, valor_rp_inss_reais_corr, valor_rp_inss_acum_ano, valor_rp_inss_acum_12m, valor_rp_inss_mensal_pib, valor_rp_inss_acum_ano_pib, valor_rp_inss_acum_12m_pib, date) %>% 
   arrange(desc(date))
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # RENDIMENTO MÉDIO HABITUAL DO TRABALHO:
 rend_hab <- sidrar::get_sidra(
@@ -8663,14 +8648,20 @@ reactable(
 
 Column {.sidebar} {data-width=400}
 -----------------------------------------------------------------------
-**Investimento em carteira (IC)** é dividido em ativos e passivos. **Investimento em carteira ativos** são definidos como transações e posições realizadas através de títulos de dívida ou de capital, distintos dos incluídos em investimento direto ou ativos de reserva. São registrados fluxos constituídos pela emissão de títulos de crédito comumente negociados em mercados secundários. Divide-se em dois instrumentos principais: ações e cotas em fundos, e título de renda fixa. Ações e cotas em fundos compreendem todos os instrumentos e registros que reconhecem, uma vez liquidados todos os direitos dos credores, os direitos frente ao valor residual da empresa. Os títulos de participação no capital englobam as ações negociadas ou não em bolsa e outros tipos de participação no capital. Títulos de renda fixa são os instrumentos de dívida que exigem pagamento de juros e/ou principal em algum momento futuro. Os instrumentos de dívida que sensibilizam essa conta são aqueles que podem ser negociados em mercados secundários. Os papéis com prazo de vencimento original inferior a um ano são considerados de curto prazo, e os com vencimento original superior a esse prazo, de longo prazo. **Investimento em carteira passivos** são definidos como transações e posições realizadas através de títulos de dívida ou de capital, distintos dos incluídos em investimento direto. São registrados fluxos constituídos pela emissão de títulos de crédito comumente negociados em mercados secundários. Divide-se em dois instrumentos principais: ações e cotas em fundos e título de renda fixa. Ações e cotas em fundos compreendem todos os instrumentos e registros que reconhecem, uma vez liquidados todos os direitos dos credores, os direitos frente ao valor residual da empresa. Os títulos de participação no capital englobam as ações negociadas ou não em bolsa e outros tipos de participação no capital. Títulos de renda fixa são os instrumentos de dívida exigem pagamento de juros e/ou principal em algum momento futuro. Os instrumentos de dívida que sensibilizam essa conta são aqueles que podem ser negociados em mercados secundários. Os papéis com prazo de vencimento original inferior a um ano são considerados de curto prazo, e os com vencimento original superior a esse prazo, de longo prazo.
+**Investimento em carteira (IC)** é dividido em ativos e passivos. **Investimento em carteira ativos** são definidos como transações e posições realizadas através de títulos de dívida ou de capital, distintos dos incluídos em investimento direto ou ativos de reserva. São registrados fluxos constituídos pela emissão de títulos de crédito comumente negociados em mercados secundários. Divide-se em dois instrumentos principais: ações e cotas em fundos, e título de renda fixa. **Investimento em carteira passivos** são definidos como transações e posições realizadas através de títulos de dívida ou de capital, distintos dos incluídos em investimento direto. São registrados fluxos constituídos pela emissão de títulos de crédito comumente negociados em mercados secundários. Divide-se em dois instrumentos principais: ações e cotas em fundos e título de renda fixa. 
 
 <br>
+
 Valores negativos indicam entrada líquida de recursos no país.
+
 <br>
+
 Valores em bilhões de US$.
+
 <br>
+
 Os dados como % do PIB referem-se ao acumulado em 12 meses.
+
 <br>
 
 **Fonte**: Código [22905](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=22905) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
@@ -8897,7 +8888,7 @@ Os **ativos de reserva** compreendem as operações com os ativos externos que e
 
 <br>
 
-Valors em bilhões de US$.
+Valores em bilhões de US$.
 
 <br>
 
@@ -13807,26 +13798,10 @@ O **Índice de Preços ao Consumidor Amplo (IPCA)** tem como unidade de coleta e
 
 <br>
 
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html?=&t=o-que-e) e códigos 11427 (EX0), 16121 (EX1), 27838 (EX2), 27839 (EX3), 16122 (dupla ponderação), 28750 (percentil 55), 28751 (ex-alimentação e energia) e 21379 (índice de difusão) do Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html?=&t=o-que-e) e códigos [11427](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11427) (EX0), [16121](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=16121) (EX1), [27838](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=27838) (EX2), [27839](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=27839) (EX3), [16122](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=16122) (dupla ponderação), [28750](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=28750) (percentil 55), [28751](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=28751) (ex-alimentação e energia) e [21379](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=21379) (índice de difusão) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=800}  {.tabset}
 -----------------------------------------------------------------------
-
-### Tx. M/M-1 (Gráfico)
-```{r}
-plot_ly(
-  data = ipca, 
-  x = ~data, 
-  y = ~as.numeric(gsub(",", ".", `IPCA - Variação mensal`)),
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "%")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
 ### Tx. M/M-1 (Grupos) (%)
 ```{r}
 reactable(
@@ -13905,21 +13880,6 @@ reactable(
 )
 ```
 
-### Tx. acum. no ano (Gráfico)
-```{r}
-plot_ly(
-  data = ipca, 
-  x = ~data, 
-  y = ~as.numeric(gsub(",", ".", `IPCA - Variação acumulada no ano`)),
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "%")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
 ### Tx. acum. no ano (Grupos) (%)
 ```{r}
 reactable(
@@ -13996,21 +13956,6 @@ reactable(
     headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
   )
 )
-```
-
-### Tx. acum. em 12 meses (Gráfico)
-```{r}
-plot_ly(
-  data = ipca, 
-  x = ~data, 
-  y = ~as.numeric(gsub(",", ".", `IPCA - Variação acumulada em 12 meses`)),
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "%")
-  ) %>% rangeslider(thickness = 0.05)
 ```
 
 ### Tx. acum. em 12 meses (Grupos) (%)
@@ -14132,7 +14077,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_ipca_p55 = colDef(
-      name = "Núcleo ercentil 55",
+      name = "Núcleo percentil 55",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -14162,20 +14107,6 @@ reactable(
     headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
   )
 )
-```
-
-### Índice de difusão (Gráfico)
-```{r}
-plot_ly(
-  data = ipca_nuc_dif, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", valor_ipca_dif)),
-  type = "bar"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "%")
-  ) %>% rangeslider(thickness = 0.05)
 ```
 
 ### Peso mensal (Grupos) (%)
@@ -14256,26 +14187,12 @@ reactable(
 )
 ```
 
-# Índice de Preços ao Consumidor Amplo 15 (IPCA-15) {data-navmenu="Inflação"}
-
-Column {.sidebar} {data-width=150}
------------------------------------------------------------------------
-
-Com divulgação na Internet iniciada em maio de 2000, o **Índice Nacional de Preços ao Consumidor Amplo 15 (IPCA-15)** difere do Índice Nacional de Preços ao Consumidor Amplo (IPCA), apenas no período de coleta que abrange, em geral, do dia 16 do mês anterior ao 15 do mês de referência e na abrangência geográfica. Atualmente, a população-objetivo do IPCA-15 abrange as famílias com rendimentos de 1 a 40 salários mínimos, qualquer que seja a fonte, residentes em 11 áreas urbanas das regiões de abrangência do SNIPC, as quais são: regiões metropolitanas de Belém, Fortaleza, Recife, Salvador, Belo Horizonte, Rio de Janeiro, São Paulo, Curitiba, Porto Alegre, além do Distrito Federal e do município de Goiânia.
-
-<br>
-
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9260-indice-nacional-de-precos-ao-consumidor-amplo-15.html?=&t=o-que-e)
-
-Column {data-width=850}  {.tabset}
------------------------------------------------------------------------
-
 ### Tx. M/M-1 (Gráfico)
 ```{r}
 plot_ly(
-  data = ipca_15, 
+  data = ipca, 
   x = ~data, 
-  y = ~as.numeric(gsub(",", ".", `IPCA15 - Variação mensal`)),
+  y = ~as.numeric(gsub(",", ".", `IPCA - Variação mensal`)),
   type = "scatter",
   mode = "lines"
 ) %>%
@@ -14285,6 +14202,62 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
+### Tx. acum. no ano (Gráfico)
+```{r}
+plot_ly(
+  data = ipca, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", `IPCA - Variação acumulada no ano`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Tx. acum. em 12 meses (Gráfico)
+```{r}
+plot_ly(
+  data = ipca, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", `IPCA - Variação acumulada em 12 meses`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Índice de difusão (Gráfico)
+```{r}
+plot_ly(
+  data = ipca_nuc_dif, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_ipca_dif)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+# Índice de Preços ao Consumidor Amplo 15 (IPCA-15) {data-navmenu="Inflação"}
+
+Column {.sidebar} {data-width=100}
+-----------------------------------------------------------------------
+Com divulgação na Internet iniciada em maio de 2000, o **Índice Nacional de Preços ao Consumidor Amplo 15 (IPCA-15)** difere do Índice Nacional de Preços ao Consumidor Amplo (IPCA), apenas no período de coleta que abrange, em geral, do dia 16 do mês anterior ao 15 do mês de referência e na abrangência geográfica. Atualmente, a população-objetivo do IPCA-15 abrange as famílias com rendimentos de 1 a 40 salários mínimos, qualquer que seja a fonte, residentes em 11 áreas urbanas das regiões de abrangência do SNIPC, as quais são: regiões metropolitanas de Belém, Fortaleza, Recife, Salvador, Belo Horizonte, Rio de Janeiro, São Paulo, Curitiba, Porto Alegre, além do Distrito Federal e do município de Goiânia.
+
+<br>
+
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9260-indice-nacional-de-precos-ao-consumidor-amplo-15.html?=&t=o-que-e), tabelas [3065](https://sidra.ibge.gov.br/tabela/3065) e [7062](https://sidra.ibge.gov.br/tabela/7062) do banco de dados Sidra
+
+Column {data-width=900}  {.tabset}
+-----------------------------------------------------------------------
 ### Tx. M/M-1 (Grupos) (%)
 ```{r}
 reactable(
@@ -14363,21 +14336,6 @@ reactable(
 )
 ```
 
-### Tx. acum. no ano (Gráfico)
-```{r}
-plot_ly(
-  data = ipca_15, 
-  x = ~data, 
-  y = ~as.numeric(gsub(",", ".", `IPCA15 - Variação acumulada no ano`)),
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "%")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
 ### Tx. acum. no ano (Grupos) (%)
 ```{r}
 reactable(
@@ -14454,21 +14412,6 @@ reactable(
     headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
   )
 )
-```
-
-### Tx. acum. em 12 meses (Gráfico)
-```{r}
-plot_ly(
-  data = ipca_15, 
-  x = ~data, 
-  y = ~as.numeric(gsub(",", ".", `IPCA15 - Variação acumulada em 12 meses`)),
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "%")
-  ) %>% rangeslider(thickness = 0.05)
 ```
 
 ### Tx. acum. em 12 meses (Grupos) (%)
@@ -14627,10 +14570,54 @@ reactable(
 )
 ```
 
+### Tx. M/M-1 (Gráfico)
+```{r}
+plot_ly(
+  data = ipca_15, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", `IPCA15 - Variação mensal`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Tx. acum. no ano (Gráfico)
+```{r}
+plot_ly(
+  data = ipca_15, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", `IPCA15 - Variação acumulada no ano`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Tx. acum. em 12 meses (Gráfico)
+```{r}
+plot_ly(
+  data = ipca_15, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", `IPCA15 - Variação acumulada em 12 meses`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
 # Índice de Preços ao Consumidor - Disponibilidade interna (IPC-DI) {data-navmenu="Inflação"}
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 O **Índice de Preços ao Consumidor - Disponibilidade Interna (IPC-DI)** da FGV é um indicador que mede as variações intertemporais de preços de um conjunto fixo de bens e serviços componentes de despesas habituais de famílias com nível de renda situado entre 1 e 33 salários mínimos mensais. Sua pesquisa de preços se desenvolve diariamente, cobrindo sete das principais capitais do país: São Paulo, Rio de Janeiro, Belo Horizonte, Salvador, Recife, Porto Alegre e Brasília. A coleta de preços é realizada diariamente para alimentar o sistema de apuração de sete versões do IPC: Índice de Preços ao Consumidor Diário (IPC Diário), Índice de Preços ao Consumidor Semanal (IPC-S), Índice de Preços ao Consumidor - 10 (IPC-10), Índice de Preços ao Consumidor do Mercado (IPC-M), Índice de Preços ao Consumidor - Disponibilidade Interna (IPC-DI), Índice de Preços ao Consumidor - 3º idade (IPC-3i) e Índice de Preços ao Consumidor - Classe 1 (IPC-C1). Para efeito de coleta de preços, o IPC-DI mede a evolução de preços no período compreendido entre o primeiro ao último dia do mês de referência.
 
 <br>
@@ -14640,7 +14627,7 @@ O **Índice de Preços ao Consumidor - Disponibilidade Interna (IPC-DI)** da FGV
 Column {data-width=500}  {.tabset}
 -----------------------------------------------------------------------
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly(
   data = ipc_di, 
@@ -14655,7 +14642,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly(
   data = ipc_di, 
@@ -14672,7 +14659,6 @@ plot_ly(
 
 Column {data-width=300}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese (%)
 ```{r}
 reactable(
@@ -14715,57 +14701,16 @@ reactable(
 
 Column {.sidebar} {data-width=120}
 -----------------------------------------------------------------------
-
 O **Índice de Preços ao Produtor (IPP)**, cujo âmbito são as indústrias extrativas e de transformação, tem como principal objetivo mensurar a mudança média dos preços de venda recebidos pelos produtores domésticos de bens e serviços, bem como sua evolução ao longo do tempo, sinalizando as tendências inflacionárias de curto prazo no país. Constitui, assim, um indicador essencial para o acompanhamento macroeconômico e, por conseguinte, um valioso instrumento analítico para tomadores de decisão, públicos ou privados.
 
 O IPP investiga, em pouco mais de 1.700 empresas, os preços recebidos pelo produtor, isentos de impostos, tarifas e fretes e definidos segundo as práticas comerciais mais usuais. Os produtos coletados são especificados em detalhes (aspectos físicos e de transação), garantindo, dessa forma, que sejam comparados produtos homogêneos ao longo do tempo. Com isso, coletam-se cerca de 5.000 preços mensalmente.
 
 <br>
 
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e)
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9282-indice-de-precos-ao-produtor-industrias-extrativas-e-de-transformacao.html?=&t=o-que-e), tabelas [6723](https://sidra.ibge.gov.br/tabela/6723), [6903](https://sidra.ibge.gov.br/tabela/6903) e [6904](https://sidra.ibge.gov.br/tabela/6904) do banco de dados Sidra
 
 Column {data-width=880}  {.tabset}
 -----------------------------------------------------------------------
-
-### Tx. M/M-1 (Gráfico)
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = ipp_mg,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `Indústria Geral`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústria geral"
-  ) %>%
-  add_trace(
-    data = ipp_mg,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `B Indústrias Extrativas`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústrias extrativas"
-  ) %>%
-  add_trace(
-    data = ipp_mg,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `C Indústrias de Transformação`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústrias de transformação"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "%", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
-```
-
 ### Tx. M/M-1 (Seções e atividades) (%)
 ```{r}
 reactable(
@@ -14922,46 +14867,6 @@ reactable(
     headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
   )
 )
-```
-
-### Tx. acum. no ano (Gráfico)
-```{r}
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = ipp_acum_ano,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `Indústria Geral`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústria geral"
-  ) %>%
-  add_trace(
-    data = ipp_acum_ano,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `B Indústrias Extrativas`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústrias extrativas"
-  ) %>%
-  add_trace(
-    data = ipp_acum_ano,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `C Indústrias de Transformação`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústrias de transformação"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "%", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
 ```
 
 ### Tx. acum. no ano (seções e atividades) (%)
@@ -15122,45 +15027,6 @@ reactable(
 )
 ```
 
-### Tx. acum. em 12 meses (Gráfico)
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = ipp_12m,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `Indústria Geral`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústria geral"
-  ) %>%
-  add_trace(
-    data = ipp_12m,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `B Indústrias Extrativas`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústrias extrativas"
-  ) %>%
-  add_trace(
-    data = ipp_12m,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `C Indústrias de Transformação`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústrias de transformação"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "%", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
-```
-
 ### Tx. acum. em 12 meses (Seções e atividades) (%)
 ```{r}
 reactable(
@@ -15317,45 +15183,6 @@ reactable(
     headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
   )
 )
-```
-
-### Número-índice (Gráfico)
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = ipp_num_ind,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `Indústria Geral`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústria geral"
-  ) %>%
-  add_trace(
-    data = ipp_num_ind,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `B Indústrias Extrativas`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústrias extrativas"
-  ) %>%
-  add_trace(
-    data = ipp_num_ind,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `C Indústrias de Transformação`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústrias de transformação"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "Dez/2018 = 100", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
 ```
 
 ### Número-índice (Seções e atividades) (%)
@@ -16119,11 +15946,168 @@ reactable(
 )
 ```
 
+### Tx. M/M-1 (Gráfico)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = ipp_mg,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `Indústria Geral`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústria geral"
+  ) %>%
+  add_trace(
+    data = ipp_mg,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `B Indústrias Extrativas`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias extrativas"
+  ) %>%
+  add_trace(
+    data = ipp_mg,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `C Indústrias de Transformação`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias de transformação"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Tx. acum. no ano (Gráfico)
+```{r}
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = ipp_acum_ano,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `Indústria Geral`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústria geral"
+  ) %>%
+  add_trace(
+    data = ipp_acum_ano,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `B Indústrias Extrativas`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias extrativas"
+  ) %>%
+  add_trace(
+    data = ipp_acum_ano,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `C Indústrias de Transformação`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias de transformação"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Tx. acum. em 12 meses (Gráfico)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = ipp_12m,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `Indústria Geral`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústria geral"
+  ) %>%
+  add_trace(
+    data = ipp_12m,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `B Indústrias Extrativas`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias extrativas"
+  ) %>%
+  add_trace(
+    data = ipp_12m,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `C Indústrias de Transformação`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias de transformação"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Número-índice (Gráfico)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = ipp_num_ind,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `Indústria Geral`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústria geral"
+  ) %>%
+  add_trace(
+    data = ipp_num_ind,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `B Indústrias Extrativas`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias extrativas"
+  ) %>%
+  add_trace(
+    data = ipp_num_ind,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `C Indústrias de Transformação`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias de transformação"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "Dez/2018 = 100", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+
 # Índice de Preços ao Produtor Amplo - Disponibilidade Interna (IPA-DI) {data-navmenu="Inflação"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 O **Índice de Preços ao Produtor Amplo - Disponibilidade Interna (IPA-DI)** é um indicador de abrangência nacional e está estruturado para medir as variações médias dos preços recebidos pelos produtores domésticos na venda de seus produtos. A sua composição tem por base as pesquisas estruturais relativas aos setores agropecuário e industrial, além das Contas Nacionais, divulgadas pelo IBGE. O IPA é apresentado em duas diferentes estruturas de classificação de seus itens componentes: Origem – Produtos Agropecuários e Industriais e Estágios de Processamento – Bens Finais, Bens Intermediários e Matérias Primas Brutas. Para efeito de coleta de preços, o IPA-DI mede a evolução de preços no período compreendido entre o primeiro ao último dia do mês de referência.
 <br>
 
@@ -16131,8 +16115,7 @@ O **Índice de Preços ao Produtor Amplo - Disponibilidade Interna (IPA-DI)** é
 
 Column {data-width=500}  {.tabset}
 -----------------------------------------------------------------------
-
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly(
   data = ipa_di, 
@@ -16147,7 +16130,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly(
   data = ipa_di, 
@@ -16164,7 +16147,6 @@ plot_ly(
 
 Column {data-width=300}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese (%)
 ```{r}
 reactable(
@@ -16207,7 +16189,6 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 O **Índice Geral de Preços - Disponibilidade Interna (IGP-DI)** é um indicador do movimento de preços que cobre todo o processo produtivo, desde preços de matérias-primas agrícolas e industriais, passando pelos preços de produtos intermediários até os de bens e serviços finais. É composto pela média aritmética ponderada do Índice de Preços ao Produtor Amplo (IPA) (60%), do Índice de Preços ao Consumidor (IPC) (30%) e do Índice Nacional de Custo da Construção (INCC) (10%). Para efeito de coleta de preços, o IGP-DI mede a evolução de preços no período compreendido entre o primeiro ao último dia do mês de referência. O conceito de Disponibilidade Interna (DI) refere-se à produção nacional e às importações, excluindo as exportações.
 
 <br>
@@ -16216,8 +16197,7 @@ O **Índice Geral de Preços - Disponibilidade Interna (IGP-DI)** é um indicado
 
 Column {data-width=500}  {.tabset}
 -----------------------------------------------------------------------
-
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly(
   data = igp_di, 
@@ -16232,7 +16212,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly(
   data = igp_di, 
@@ -16249,7 +16229,6 @@ plot_ly(
 
 Column {data-width=300}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese (%)
 ```{r}
 reactable(
@@ -16292,7 +16271,6 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 O **Índice Geral de Preços do Mercado (IGP-M)** é um indicador do movimento de preços que cobre todo o processo produtivo, desde preços de matérias-primas agrícolas e industriais, passando pelos preços de produtos intermediários até os de bens e serviços finais. É composto pela média ponderada do Índice de Preços ao Produtor Amplo do Mercado (IPA-M) (60%), do Índice de Preços ao Consumidor do Mercado (IPC-M) (30%) e do Índice Nacional de Custo da Construção do Mercado (INCC-M) (10%). Para efeito de coleta de preços, o IGP-M mede a evolução de preços no período compreendido entre os dias 21 do mês anterior e o dia 20 do mês de referência.
 
 <br>
@@ -16301,8 +16279,7 @@ O **Índice Geral de Preços do Mercado (IGP-M)** é um indicador do movimento d
 
 Column {data-width=500}  {.tabset}
 -----------------------------------------------------------------------
-
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly(
   data = igpm, 
@@ -16317,7 +16294,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly(
   data = igpm, 
@@ -16334,7 +16311,6 @@ plot_ly(
 
 Column {data-width=300}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese (%)
 ```{r}
 reactable(
@@ -16377,30 +16353,14 @@ reactable(
 
 Column {.sidebar} {data-width=150}
 -----------------------------------------------------------------------
-
 O **Índice Nacional de Preços ao Consumidor (INPC)** tem como unidade de coleta estabelecimentos comerciais e de prestação de serviços, concessionária de serviços públicos e internet e sua coleta estende-se, em geral, do dia 01 a 30 do mês de referência. Atualmente, a população-objetivo do INPC abrange as **famílias com rendimentos de 1 a 5 salários mínimos**, cuja pessoa de referência é assalariada, residentes nas áreas urbanas das regiões de abrangência do Sistema Nacional de Índices de Preços ao Consumidor (SNIPC), as quais são: regiões metropolitanas de Belém, Fortaleza, Recife, Salvador, Belo Horizonte, Vitória, Rio de Janeiro, São Paulo, Curitiba, Porto Alegre, além do Distrito Federal e dos municípios de Goiânia, Campo Grande, Rio Branco, São Luís e Aracaju. Para além de seu objetivo principal, medir a variação dos preços, o índice tem sido usualmente utilizado como base para correção monetária dos salários no Brasil. 
 
 <br>
 
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9258-indice-nacional-de-precos-ao-consumidor.html?=&t=o-que-e)
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9258-indice-nacional-de-precos-ao-consumidor.html?=&t=o-que-e), tabelas [1736](https://sidra.ibge.gov.br/tabela/1736) e [7063](https://sidra.ibge.gov.br/tabela/7063) do banco de dados Sidra
 
 Column {data-width=850}  {.tabset}
 -----------------------------------------------------------------------
-
-### Tx. M/M-1 (Gráfico)
-```{r}
-plot_ly(
-  data = inpc, 
-  x = ~data, 
-  y = ~as.numeric(gsub(",", ".", `INPC - Variação mensal`)),
-  type = "bar"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "%")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
 ### Tx. M/M-1 (Grupos) (%)
 ```{r}
 reactable(
@@ -16479,20 +16439,6 @@ reactable(
 )
 ```
 
-### Tx. acum. no ano (Gráfico)
-```{r}
-plot_ly(
-  data = inpc, 
-  x = ~data, 
-  y = ~as.numeric(gsub(",", ".", `INPC - Variação acumulada no ano`)),
-  type = "bar"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "%")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
 ### Tx. acum. no ano (Grupos) (%)
 ```{r}
 reactable(
@@ -16569,20 +16515,6 @@ reactable(
     headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
   )
 )
-```
-
-### Tx. acum. em 12 meses (Gráfico)
-```{r}
-plot_ly(
-  data = inpc, 
-  x = ~data, 
-  y = ~as.numeric(gsub(",", ".", `INPC - Variação acumulada em 12 meses`)),
-  type = "bar"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "%")
-  ) %>% rangeslider(thickness = 0.05)
 ```
 
 ### Tx. acum. em 12 meses (Grupos) (%)
@@ -16741,6 +16673,48 @@ reactable(
 )
 ```
 
+### Tx. M/M-1 (Gráfico)
+```{r}
+plot_ly(
+  data = inpc, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", `INPC - Variação mensal`)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Tx. acum. no ano (Gráfico)
+```{r}
+plot_ly(
+  data = inpc, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", `INPC - Variação acumulada no ano`)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Tx. acum. em 12 meses (Gráfico)
+```{r}
+plot_ly(
+  data = inpc, 
+  x = ~data, 
+  y = ~as.numeric(gsub(",", ".", `INPC - Variação acumulada em 12 meses`)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
 # CAGED {data-navmenu="Mercado de trabalho"}
 
 Column {.sidebar} {data-width=200}
@@ -16754,7 +16728,7 @@ Column {.sidebar} {data-width=200}
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
 
-### Gráfico
+### Admissões, demissões e saldo
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -16792,7 +16766,6 @@ plot_ly() %>%
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -16846,7 +16819,7 @@ O **rendimento efetivo** consiste no rendimento de fato recebido em qualquer pos
 
 <br>
 
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e), tabela [6393](https://sidra.ibge.gov.br/tabela/6393) do banco de dados Sidra
 
 Column {data-width=900}  {.tabset}
 -----------------------------------------------------------------------
@@ -16872,7 +16845,7 @@ plot_ly() %>%
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "Milhões de R$", autorange = TRUE),
+    yaxis = list(title = "Bilhões de R$", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -16970,11 +16943,10 @@ O **rendimento habitual** consiste no rendimento recebido por empregados, empreg
 
 <br>
 
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e), tabela [6392](https://sidra.ibge.gov.br/tabela/6393) do banco de dados Sidra
 
 Column {data-width=850}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Massa de rendimento mensal habitual nominal e real
 ```{r}
 plot_ly() %>%
@@ -16996,7 +16968,7 @@ plot_ly() %>%
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "Milhões de R$", autorange = TRUE),
+    yaxis = list(title = "Bilhões de R$", autorange = TRUE),
     legend = list(
       orientation = "h",
       x = 0.5,
@@ -17094,11 +17066,10 @@ O **nível de ocupação** refere-se ao número de pessoas ocupadas na semana de
 
 <br>
 
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e), tabela [6323](https://sidra.ibge.gov.br/tabela/6381) do banco de dados Sidra
 
 Column {data-width=850}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Pessoas ocupadas (mil pessoas)
 ```{r}
 reactable(
@@ -17182,7 +17153,7 @@ reactable(
 )
 ```
 
-### Var. abs. (três trimestres móveis anteriores) (mil pessoas)
+### Variação absoluta (três trimestres móveis anteriores) (mil pessoas)
 ```{r}
 reactable(
   ocup_3t[, -13],
@@ -17265,7 +17236,7 @@ reactable(
 )
 ```
 
-### Var. abs. (mesmo trimestre móvel do ano anterior) (mil pessoas)
+### Variação absoluta (mesmo trimestre móvel do ano anterior) (mil pessoas)
 ```{r}
 reactable(
   ocup_ano_ant[, -13],
@@ -17350,7 +17321,7 @@ reactable(
 
 # Rendimento médio efetivo {data-navmenu="Mercado de trabalho"}
 
-Column {.sidebar} {data-width=200}
+Column {.sidebar} {data-width=150}
 -----------------------------------------------------------------------
 **Rendimento bruto nominal real médio efetivamente recebido** no mês de referência em todos os trabalhos que as pessoas ocupadas com rendimento tinham na semana referência. A série em termos reais (deflacionada pelo IPCA) é a preços do mês do meio do trimestre mais recente que está sendo divulgado. O **rendimento efetivo** consiste no rendimento de fato recebido em qualquer posição na ocupação, no mês de referência, incluindo todos os pagamentos que não tenham caráter contínuo e considerando os descontos por ausências no trabalho.
 
@@ -17360,9 +17331,9 @@ As informações dos indicadores são divulgados a cada mês referentes ao últi
  
  <br>
 
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e), tabela [6387](https://sidra.ibge.gov.br/tabela/6387) do Banco de Dados Sidra.
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e), tabela [6387](https://sidra.ibge.gov.br/tabela/6387) do banco de dados Sidra
 
-Column {data-width=800}  {.tabset}
+Column {data-width=850}  {.tabset}
 -----------------------------------------------------------------------
 ### Rendimento médio efetivo mensal nominal e real
 ```{r}
@@ -17475,7 +17446,7 @@ reactable(
 
 # Rendimento médio habitual {data-navmenu="Mercado de trabalho"}
 
-Column {.sidebar} {data-width=200}
+Column {.sidebar} {data-width=150}
 -----------------------------------------------------------------------
 **Rendimento bruto nominal e real médio habitualmente recebido** em todos os trabalhos que as pessoas ocupadas com rendimento tinham na semana referência. A série em termos reais (deflacionada pelo IPCA) é a preços do mês do meio do trimestre mais recente que está sendo divulgado. O **rendimento habitual** consiste no rendimento recebido por empregados, empregadores e trabalhadores por conta própria, mensalmente, sem acréscimos extraordinários ou descontos esporádicos. 
 
@@ -17485,9 +17456,9 @@ As informações dos indicadores são divulgados a cada mês referentes ao últi
  
 <br>
 
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e), Tabela [6390](https://sidra.ibge.gov.br/tabela/6390) do Banco de Dados Sidra
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e), tabela [6390](https://sidra.ibge.gov.br/tabela/6390) do Banco de Dados Sidra
 
-Column {data-width=800}  {.tabset}
+Column {data-width=850}  {.tabset}
 -----------------------------------------------------------------------
 ### Rendimento médio efetivo mensal nominal e real
 ```{r}
@@ -17602,15 +17573,13 @@ reactable(
 
 Column {.sidebar} {data-width=300}
 -----------------------------------------------------------------------
-O **salário mínimo nominal vigente** não considera abonos salariais ocorridos nos períodos. O salário mínimo urbano foi instituído no Brasil por decreto-lei do presidente Getúlio Vargas, durante a ditadura do Estado Novo, e começou a vigorar em julho de 1940, com valores diferenciados entre estados e sub-regiões. Em 1943, foi incorporado à Consolidação das Leis do Trabalho (CLT) e, em 1963, foi estendido ao campo por meio do Estatuto do Trabalhador Rural. Foi nacionalmente unificado em maio de 1984, mas, desde 2000, a Lei Complementar 103 permite que os estados fixem pisos estaduais superiores ao mínimo nacional. Nota: Os dados desta série para o período em que a legislação federal definia faixas diversificadas referem-se ao maior salário mínimo vigente no país.
+O **salário mínimo nominal vigente** não considera abonos salariais ocorridos nos períodos. O salário mínimo urbano foi instituído no Brasil por decreto-lei do presidente Getúlio Vargas e começou a vigorar em julho de 1940, com valores diferenciados entre estados e sub-regiões. Em 1943, foi incorporado à Consolidação das Leis do Trabalho (CLT) e, em 1963, foi estendido ao campo por meio do Estatuto do Trabalhador Rural. Foi nacionalmente unificado em maio de 1984, mas, desde 2000, a Lei Complementar 103 permite que os estados fixem pisos estaduais superiores ao mínimo nacional.
 
 <br>
-
 **Salário mínimo real:** é o valor do salário mínimo nominal ajustado pelo índice de inflação (R$ do último mês) (jul/1940-jan/19944: IPC-SP/Fipe; jan/1994-jan/1948: IPC-RJ/FGV; jan/1948-mar/1979: IGPC-Mtb; abr/1979-atual: INPC).
 
 <br>
-
-O **salário mínimo paridade do poder de compra (PPC)** representa, em cada mês, qual era o preço nos Estados Unidos da mesma cesta de bens que se podia adquirir com um salário mínimo no Brasil. Nota: A conversão é feita pela taxa de paridade de poder de compra (PPC) observada pelo Banco Mundial em 2011, corrigida pela inflação ao consumidor nos Estados Unidos e no Brasil. Para a inflação americana, utiliza-se o IPC do Bureau of Labor Statistics (BLS). Para a inflação brasileira, INPC/IBGE (a partir de março de 1979), IGPC-Mtb (jan/1948-mar/1979), IPC-RJ/FGV (jan/1944-jan/1948) e IPC-SP/Fipe (jul/1940-jan/1944).
+O **salário mínimo paridade do poder de compra (PPC)** representa, em cada mês, qual era o preço nos Estados Unidos da mesma cesta de bens que se podia adquirir com um salário mínimo no Brasil. Nota: A conversão é feita pela taxa PPC observada pelo Banco Mundial em 2011, corrigida pela inflação ao consumidor nos Estados Unidos e no Brasil. Para a inflação americana, utiliza-se o IPC do Bureau of Labor Statistics (BLS). Para a inflação brasileira, INPC/IBGE (a partir de março de 1979), IGPC-Mtb (jan/1948-mar/1979), IPC-RJ/FGV (jan/1944-jan/1948) e IPC-SP/Fipe (jul/1940-jan/1944).
 
 <br>
 
@@ -17619,7 +17588,7 @@ O **salário mínimo paridade do poder de compra (PPC)** representa, em cada mê
 Column {data-width=350}  {.tabset}
 -----------------------------------------------------------------------
 
-### Gráfico
+### Salário mínimo nominal, real e em dólar PPC
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -17660,7 +17629,6 @@ plot_ly() %>%
 
 Column {data-width=350}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -17714,11 +17682,10 @@ A **taxa de desocupação** é o percentual de pessoas desocupadas em relação 
 
 <br>
 
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e)
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/sociais/trabalho/9173-pesquisa-nacional-por-amostra-de-domicilios-continua-trimestral.html?=&t=o-que-e), tabela [6381](https://sidra.ibge.gov.br/tabela/6381) do banco de dados Sidra
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Taxa de desocupação (%)
 ```{r}
 plot_ly(
@@ -17739,7 +17706,7 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
-### Var. trim. móvel anterior (p.p)
+### Variação trimestre móvel anterior (p.p)
 ```{r}
 plot_ly(
   data = desocup, 
@@ -17758,7 +17725,7 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
-### Var. mesmo trim. móvel ano anterior (p.p)
+### Variação mesmo trimestre móvel ano anterior (p.p)
 ```{r}
 plot_ly(
   data = desocup, 
@@ -17779,7 +17746,6 @@ plot_ly(
 
 Column {data-width=350}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -17823,22 +17789,19 @@ reactable(
 )
 ```
 
-# Base monetária {data-navmenu="Monetário"}
-
-# Meios de pagamento {data-navmenu="Monetário"}
-
-# Multiplicador monetário {data-navmenu="Monetário"}
-
 # Regra de Taylor {data-navmenu="Monetário"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-A **Regra de Taylor** é uma determinação exógena da taxa de juros e foi desenvolvida pelo economista John B. Taylor nos anos 1990. Aqui, a taxa Selic é função de seu próprio passado (lags), do desvio da inflação à meta e do hiato do produto. Trata-se de exercício baseado em aula da [Análise Macro](https://analisemacro.com.br/)
+A **Regra de Taylor** é uma determinação exógena da taxa de juros e foi desenvolvida pelo economista John B. Taylor nos anos 1990. Aqui, a taxa Selic é função de seu próprio passado (lags), do desvio da inflação à meta e do hiato do produto.
+
+<br>
+
+Trata-se de exercício baseado em aula da [Análise Macro](https://analisemacro.com.br/)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
-### Gráfico
+### Regra de Taylor
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -17879,7 +17842,6 @@ plot_ly() %>%
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -17931,12 +17893,11 @@ O **Certificado de Depósito Interbancário (CDI)** é uma taxa de juros em que 
 
 <br>
 
-**Fonte:** Códigos 4391 (% acumulada no mês) e 4392 (% acumulada no mês anualizada base 252) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Códigos [4391](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=4391) (% acumulada no mês) e [4392](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=4392) (% acumulada no mês anualizada base 252) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
-### Gráfico (% a.m.)
+### CDI (% a.m.)
 ```{r}
 plot_ly(
   data = cdi, 
@@ -17956,7 +17917,7 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
-### Gráfico (% a.a.)
+### CDI (% a.a.)
 ```{r}
 plot_ly(
   data = cdi, 
@@ -17978,7 +17939,6 @@ plot_ly(
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -17990,12 +17950,12 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     cdi_mensal = colDef(
-      name = "% a.m.",
+      name = "CDI % a.m.",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     cdi_anual = colDef(
-      name = "% a.a.",
+      name = "CDI % a.a.",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -18019,7 +17979,7 @@ reactable(
 
 # Taxa referencial DI x prefixada (swaps) {data-navmenu="Monetário"}
 
-Column {.sidebar} {data-width=100}
+Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
 **Taxa referencial dos contratos de swap entre DI e prefixada (180 e 360 dias):** os contratos de swap são aqueles em que as partes trocam um índice de rentabilidade por outro, com o intuito de fazer "hedge", casar posições ativas com posições passivas, equalizar preços, arbitrar mercados ou até alavancar sua exposição ao risco. Neste caso, a troca de rentabilidade se dá entre a taxa DI e uma taxa prefixada entre as partes do contrato. “Hedge” é a operação realizada no mercado derivativo que visa fixar antecipadamente o preço de uma mercadoria, ou ativo financeiro, de forma a neutralizar o impacto de mudanças no nível de preços.
 
@@ -18033,7 +17993,7 @@ Dados de fim de período.
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-### Gráfico
+### Taxa referencial DI x prefixada (swaps)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -18140,11 +18100,10 @@ O diferencial de juros é definido a partir da divisão do fator da Taxa Selic p
 
 <br>
 
-**Fonte**: Código 4189 do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries) para taxa Selic, [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html) para IPCA e [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/) para FED rate
+**Fonte**: Código [4189](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=4189) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries) para taxa Selic, [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/precos-e-custos/9256-indice-nacional-de-precos-ao-consumidor-amplo.html) para IPCA e [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/) para FED rate
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Taxas Selic Over nominal e real
 ```{r}
 plot_ly() %>%
@@ -18162,7 +18121,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", selic_real)),
     type = "scatter",
     mode = "lines",
-    name = "Selic real ex-post (IPCA)"
+    name = "Selic Over real ex-post (IPCA)"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
@@ -18193,7 +18152,7 @@ plot_ly() %>%
     y = ~as.numeric(gsub(",", ".", dif_juros)),
     type = "scatter",
     mode = "lines",
-    name = "Diferencial de juros (Selic/FED Rate)"
+    name = "Diferencial de juros (Selic Over/FED Rate)"
   ) %>%
   layout(
     xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
@@ -18209,7 +18168,6 @@ plot_ly() %>%
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese (%)
 ```{r}
 reactable(
@@ -18236,12 +18194,12 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     selic_real = colDef(
-      name = "Selic real ex-post (IPCA)",
+      name = "Selic Over real ex-post (IPCA)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     dif_juros = colDef(
-      name = "Diferencial de juros (Selic/FED rate)",
+      name = "Diferencial de juros (Selic Over/FED rate)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -18271,11 +18229,10 @@ A **Pesquisa Trimestral do Abate** investiga informações sobre a quantidade de
 
 <br>
 
-**Fonte:** Tabelas [1092](https://sidra.ibge.gov.br/tabela/1092), [1093](https://sidra.ibge.gov.br/tabela/1093) e [1094](https://sidra.ibge.gov.br/tabela/1094) do banco de dados Sidra do [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9203-pesquisas-trimestrais-do-abate-de-animais.html?=&t=o-que-e).
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9203-pesquisas-trimestrais-do-abate-de-animais.html?=&t=o-que-e), tabelas [1092](https://sidra.ibge.gov.br/tabela/1092), [1093](https://sidra.ibge.gov.br/tabela/1093) e [1094](https://sidra.ibge.gov.br/tabela/1094) do banco de dados Sidra
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Bovinos
 ```{r}
 plot_ly(
@@ -18320,7 +18277,6 @@ plot_ly(
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -18372,11 +18328,10 @@ A **Pesquisa Trimestral do Leite** investiga informações sobre as quantidades 
 
 <br>
 
-**Fonte:** Tabela [1086](https://sidra.ibge.gov.br/tabela/1086) do banco de dados Sidra do [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9209-pesquisa-trimestral-do-leite.html?=&t=o-que-e).
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9209-pesquisa-trimestral-do-leite.html?=&t=o-que-e), tabela [1086](https://sidra.ibge.gov.br/tabela/1086) do banco de dados Sidra
 
 Column {data-width=850} {.tabset}
 -----------------------------------------------------------------------
-
 ### Leite cru adquirido
 ```{r}
 plot_ly(
@@ -18467,17 +18422,16 @@ reactable(
 
 # Levantamento Sistemático da Produção Agrícola {data-navmenu="Produção"}
 
-Column {.sidebar} {data-width=200}
+Column {.sidebar} {data-width=100}
 -----------------------------------------------------------------------
 O **Levantamento Sistemático da Produção Agrícola** fornece estimativas de área plantada, área colhida, quantidade produzida e rendimento médio de produtos selecionados com base em critérios de importância econômica e social para o País. Ele permite não só o acompanhamento de cada cultura investigada, desde a fase de intenção de plantio até o final da colheita, no ano civil de referência, como também o prognóstico da safra do próximo ano, para o qual é realizado o levantamento nos meses de outubro, novembro e dezembro.
 
 <br>
 
-**Fonte:** Tabela [6588](https://sidra.ibge.gov.br/tabela/6588) do banco de dados Sidra do [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9201-levantamento-sistematico-da-producao-agricola.html?edicao=45099&t=o-que-e).
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9201-levantamento-sistematico-da-producao-agricola.html?edicao=45099&t=o-que-e), tabela [6588](https://sidra.ibge.gov.br/tabela/6588) do banco de dados Sidra
 
-Column {data-width=800} {.tabset}
+Column {data-width=900} {.tabset}
 -----------------------------------------------------------------------
-
 ### Área plantada (hectares)
 ```{r}
 reactable(
@@ -18534,7 +18488,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `9/10 Café total` = colDef(
-      name = "`Café total",
+      name = "Café total",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -18687,7 +18641,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `9/10 Café total` = colDef(
-      name = "`Café total",
+      name = "Café total",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -18840,7 +18794,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `9/10 Café total` = colDef(
-      name = "`Café total",
+      name = "Café total",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -18993,7 +18947,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     `9/10 Café total` = colDef(
-      name = "`Café total",
+      name = "Café total",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -19094,80 +19048,22 @@ reactable(
 
 Column {.sidebar} {data-width=150}
 -----------------------------------------------------------------------
+O **IBC-Br** é um indicador de atividade produzido pelo BC. Divulgado desde março de 2010, tem como objetivo mensurar a atividade econômica de forma tempestiva e em frequência mensal.
 
-O **IBC-Br** é um indicador de atividade produzido pelo BC. Divulgado desde março de 2010, tem como objetivo mensurar a atividade econômica de forma tempestiva e em frequência mensal. A partir de abril de 2025, o BC passou a divulgar também os componentes do IBC-Br (IBC-Br Agropecuária, IBC-Br Indústria, IBC-Br serviços e IBC-Br Impostos), além do IBC-Br excluindo a agropecuária (IBC-Br ex-Agropecuária).
+<br>
+
+A partir de abril de 2025, o BC passou a divulgar também os componentes do IBC-Br (IBC-Br Agropecuária, IBC-Br Indústria, IBC-Br serviços e IBC-Br Impostos), além do IBC-Br excluindo a agropecuária (IBC-Br ex-Agropecuária).
+
+<br>
+
 O IBC-Br e seus componentes são construídos com base em proxies representativas da evolução em volume do valor adicionado bruto (VAB) da agropecuária, da indústria e do setor de serviços, e do volume de impostos. Essas proxies são agregadas com pesos derivados, em especial, das tabelas de recursos e usos do Sistema de Contas Nacionais (IBGE). Também são utilizadas outras informações de caráter estrutural, como as obtidas na Pesquisa Industrial Anual (PIA-IBGE), na Pesquisa Anual de Serviços (PAS-IBGE) e na Produção Agrícola Municipal (PAM-IBGE).
 
 <br>
 
-**Fonte:** Códigos 24364 (IBC-Br), 29602 (agropecuária), 29604 (indústria), 29606 (serviços), 29608 (ex-agropecuária) e 29610 (impostos) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Códigos [24364](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=24364) (IBC-Br), [29602](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29602) (agropecuária), [29604](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29604) (indústria), [29606](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29606) (serviços), [29608](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29608) (ex-agropecuária) e [29610](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29610) (impostos) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=850} {.tabset}
 -----------------------------------------------------------------------
-
-### Gráfico
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = ibc,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `valor_ibc`)),
-    type = "scatter",
-    mode = "lines",
-    name = "IBC-Br (Geral)"
-  ) %>%
-  add_trace(
-    data = ibc,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `valor_ibc_agro`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Agropecuária"
-  ) %>%
-  add_trace(
-    data = ibc,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `valor_ibc_ind`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústria"
-  )%>%
-  add_trace(
-    data = ibc,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `valor_ibc_serv`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Serviços"
-  ) %>%
-  add_trace(
-    data = ibc,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `valor_ibc_ex_agro`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Ex-agropecuária"
-  ) %>%
-  add_trace(
-    data = ibc,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `valor_ibc_impostos`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Impostos"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "2002 = 100", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
-```
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -19256,6 +19152,71 @@ reactable(
 )
 ```
 
+### IBC-Br
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc`)),
+    type = "scatter",
+    mode = "lines",
+    name = "IBC-Br (Geral)"
+  ) %>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc_agro`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Agropecuária"
+  ) %>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc_ind`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústria"
+  )%>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc_serv`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Serviços"
+  ) %>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc_ex_agro`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Ex-agropecuária"
+  ) %>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc_impostos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Impostos"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "2002 = 100", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+
+
 # Indicador IPEA de FBCF {data-navmenu="Produção"}
 
 Column {.sidebar} {data-width=200}
@@ -19268,8 +19229,7 @@ A **formação bruta de capital fixo (FBCF)** da economia é composta por invest
 
 Column {data-width=500} {.tabset}
 -----------------------------------------------------------------------
-
-### Gráfico
+### Indicador IPEA de FBCF
 ```{r}
 ```{r}
 plot_ly() %>%
@@ -19303,7 +19263,6 @@ plot_ly() %>%
 
 Column {data-width=300} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -19350,18 +19309,17 @@ A pesquisa **Produção de Ovos de Galinha (POG)** fornece indicadores da varia�
 
 <br>
 
-**Fonte:** [Tabela 7524](https://sidra.ibge.gov.br/tabela/7524) do Banco de Dados Sidra do [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9216-pesquisa-trimestral-da-producao-de-ovos-de-galinha.html?edicao=20753&t=o-que-e)
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9216-pesquisa-trimestral-da-producao-de-ovos-de-galinha.html?edicao=20753&t=o-que-e), tabela[7524](https://sidra.ibge.gov.br/tabela/7524) do banco de dados Sidra
 
 Column {data-width=900} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
   pog[, -5],
   columns = list(
     data_fmt = colDef(
-      name = "Mês",
+      name = "Trimestre",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -19398,61 +19356,18 @@ reactable(
 )
 ```
 
-
-
 # Pesquisa Industrial Mensal - Produção física (PIM-PF) {data-navmenu="Produção"}
 
 Column {.sidebar} {data-width=80}
 -----------------------------------------------------------------------
-
 A **Pesquisa Industrial Mensal - Produção física (PIM-PF)** produz indicadores de curto prazo relativos ao comportamento do produto real da indústria, tendo como unidade de investigação a empresa formalmente constituída cuja principal fonte de receita seja a atividade industrial.
 
 <br>
 
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/industria/9294-pesquisa-industrial-mensal-producao-fisica-brasil.html?=&t=o-que-e)
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/industria/9294-pesquisa-industrial-mensal-producao-fisica-brasil.html?=&t=o-que-e), tabela [8888](https://sidra.ibge.gov.br/tabela/8888) do banco de dados Sidra
 
 Column {data-width=920} {.tabset}
 -----------------------------------------------------------------------
-
-### Tx. M/M-1 (Indústria geral e seções) (Gráfico)
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = pim_sec_ativ_mg,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `1 Indústria geral`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústria geral"
-  ) %>%
-  add_trace(
-    data = pim_sec_ativ_mg,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `2 Indústrias extrativas`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústrias extrativas"
-  ) %>%
-  add_trace(
-    data = pim_sec_ativ_mg,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `3 Indústrias de transformação`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústrias de transformação"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "%", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
-```
-
 ### Tx. M/M-1 (Indústria geral, seções e atividades) (%)
 ```{r}
 reactable(
@@ -19614,247 +19529,6 @@ reactable(
     headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
   )
 )
-```
-
-### Tx. M/M-12 (Indústria geral e seções) (Gráfico)
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = pim_sec_ativ_12m,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `1 Indústria geral`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústria geral"
-  ) %>%
-  add_trace(
-    data = pim_sec_ativ_12m,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `2 Indústrias extrativas`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústrias extrativas"
-  ) %>%
-  add_trace(
-    data = pim_sec_ativ_12m,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `3 Indústrias de transformação`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústrias de transformação"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "%", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
-```
-
-### Tx. M/M-12 (Indústria geral, seções e atividades) (%)
-```{r}
-reactable(
-  pim_sec_ativ_12m[, -29],
-  columns = list(
-    data_fmt = colDef(
-      name = "Mês",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `1 Indústria geral` = colDef(
-      name = "Indústria geral",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `2 Indústrias extrativas` = colDef(
-      name = "Indústrias extrativas",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3 Indústrias de transformação` = colDef(
-      name = "Indústrias de transformação",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.10 Fabricação de produtos alimentícios` = colDef(
-      name = "Fabricação de produtos alimentícios",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.11 Fabricação de bebidas` = colDef(
-      name = "Fabricação de bebidas",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.12 Fabricação de produtos do fumo` = colDef(
-      name = "Fabricação de produtos do fumo",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.13 Fabricação de produtos têxteis` = colDef(
-      name = "Fabricação de produtos têxteis",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.14 Confecção de artigos do vestuário e acessórios` = colDef(
-      name = "Confecção de artigos do vestuário e acessórios",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.15 Preparação de couros e fabricação de artefatos de couro, artigos para viagem e calçados` = colDef(
-      name = "Preparação de couros e fabricação de artefatos de couro, artigos para viagem e calçados",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.16 Fabricação de produtos de madeira` = colDef(
-      name = "Fabricação de produtos de madeira",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.17 Fabricação de celulose, papel e produtos de papel` = colDef(
-      name = "Fabricação de celulose, papel e produtos de papel",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.18 Impressão e reprodução de gravações` = colDef(
-      name = "Impressão e reprodução de gravações",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.19 Fabricação de coque, de produtos derivados do petróleo e de biocombustíveis` = colDef(
-      name = "Fabricação de coque, de produtos derivados do petróleo e de biocombustíveis",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.20 Fabricação de produtos químicos` = colDef(
-      name = "Fabricação de produtos químicos",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.21 Fabricação de produtos farmoquímicos e farmacêuticos` = colDef(
-      name = "Fabricação de produtos farmoquímicos e farmacêuticos",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.22 Fabricação de produtos de borracha e de material plástico` = colDef(
-      name = "Fabricação de produtos de borracha e de material plástico",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.23 Fabricação de produtos de minerais não metálicos` = colDef(
-      name = "Fabricação de produtos de minerais não metálicos",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.24 Metalurgia` = colDef(
-      name = "Metalurgia",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.25 Fabricação de produtos de metal, exceto máquinas e equipamentos` = colDef(
-      name = "Fabricação de produtos de metal, exceto máquinas e equipamentos",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.26 Fabricação de equipamentos de informática, produtos eletrônicos e ópticos` = colDef(
-      name = "Fabricação de equipamentos de informática, produtos eletrônicos e ópticos",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.27 Fabricação de máquinas, aparelhos e materiais elétricos` = colDef(
-      name = "Fabricação de máquinas, aparelhos e materiais elétricos",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.28 Fabricação de máquinas e equipamentos` = colDef(
-      name = "Fabricação de máquinas e equipamentos",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.29 Fabricação de veículos automotores, reboques e carrocerias` = colDef(
-      name = "Fabricação de veículos automotores, reboques e carrocerias",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.30 Fabricação de outros equipamentos de transporte, exceto veículos automotores` = colDef(
-      name = "Fabricação de outros equipamentos de transporte, exceto veículos automotores",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.31 Fabricação de móveis` = colDef(
-      name = "Fabricação de móveis",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.32 Fabricação de produtos diversos` = colDef(
-      name = "Fabricação de produtos diversos",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `3.33 Manutenção, reparação e instalação de máquinas e equipamentos` = colDef(
-      name = "Manutenção, reparação e instalação de máquinas e equipamentos",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-### Var. acum. no ano (Indústria geral e seções) (Gráfico)
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = pim_sec_ativ_acum_ano,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `1 Indústria geral`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústria geral"
-  ) %>%
-  add_trace(
-    data = pim_sec_ativ_acum_ano,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `2 Indústrias extrativas`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústrias extrativas"
-  ) %>%
-  add_trace(
-    data = pim_sec_ativ_acum_ano,
-    x = ~data,
-    y = ~as.numeric(gsub(",", ".", `3 Indústrias de transformação`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústrias de transformação"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "%", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
 ```
 
 ### Var. acum. no ano (seções e atividades) (%)
@@ -20020,21 +19694,285 @@ reactable(
 )
 ```
 
-### Tx. M/M-1 (GCE) (Gráfico)
+### Tx. M/M-12 (Indústria geral, seções e atividades) (%)
+```{r}
+reactable(
+  pim_sec_ativ_12m[, -29],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `1 Indústria geral` = colDef(
+      name = "Indústria geral",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `2 Indústrias extrativas` = colDef(
+      name = "Indústrias extrativas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3 Indústrias de transformação` = colDef(
+      name = "Indústrias de transformação",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.10 Fabricação de produtos alimentícios` = colDef(
+      name = "Fabricação de produtos alimentícios",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.11 Fabricação de bebidas` = colDef(
+      name = "Fabricação de bebidas",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.12 Fabricação de produtos do fumo` = colDef(
+      name = "Fabricação de produtos do fumo",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.13 Fabricação de produtos têxteis` = colDef(
+      name = "Fabricação de produtos têxteis",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.14 Confecção de artigos do vestuário e acessórios` = colDef(
+      name = "Confecção de artigos do vestuário e acessórios",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.15 Preparação de couros e fabricação de artefatos de couro, artigos para viagem e calçados` = colDef(
+      name = "Preparação de couros e fabricação de artefatos de couro, artigos para viagem e calçados",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.16 Fabricação de produtos de madeira` = colDef(
+      name = "Fabricação de produtos de madeira",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.17 Fabricação de celulose, papel e produtos de papel` = colDef(
+      name = "Fabricação de celulose, papel e produtos de papel",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.18 Impressão e reprodução de gravações` = colDef(
+      name = "Impressão e reprodução de gravações",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.19 Fabricação de coque, de produtos derivados do petróleo e de biocombustíveis` = colDef(
+      name = "Fabricação de coque, de produtos derivados do petróleo e de biocombustíveis",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.20 Fabricação de produtos químicos` = colDef(
+      name = "Fabricação de produtos químicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.21 Fabricação de produtos farmoquímicos e farmacêuticos` = colDef(
+      name = "Fabricação de produtos farmoquímicos e farmacêuticos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.22 Fabricação de produtos de borracha e de material plástico` = colDef(
+      name = "Fabricação de produtos de borracha e de material plástico",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.23 Fabricação de produtos de minerais não metálicos` = colDef(
+      name = "Fabricação de produtos de minerais não metálicos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.24 Metalurgia` = colDef(
+      name = "Metalurgia",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.25 Fabricação de produtos de metal, exceto máquinas e equipamentos` = colDef(
+      name = "Fabricação de produtos de metal, exceto máquinas e equipamentos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.26 Fabricação de equipamentos de informática, produtos eletrônicos e ópticos` = colDef(
+      name = "Fabricação de equipamentos de informática, produtos eletrônicos e ópticos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.27 Fabricação de máquinas, aparelhos e materiais elétricos` = colDef(
+      name = "Fabricação de máquinas, aparelhos e materiais elétricos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.28 Fabricação de máquinas e equipamentos` = colDef(
+      name = "Fabricação de máquinas e equipamentos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.29 Fabricação de veículos automotores, reboques e carrocerias` = colDef(
+      name = "Fabricação de veículos automotores, reboques e carrocerias",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.30 Fabricação de outros equipamentos de transporte, exceto veículos automotores` = colDef(
+      name = "Fabricação de outros equipamentos de transporte, exceto veículos automotores",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.31 Fabricação de móveis` = colDef(
+      name = "Fabricação de móveis",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.32 Fabricação de produtos diversos` = colDef(
+      name = "Fabricação de produtos diversos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `3.33 Manutenção, reparação e instalação de máquinas e equipamentos` = colDef(
+      name = "Manutenção, reparação e instalação de máquinas e equipamentos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
-### Tx. M/M-1 (GCE) (%)
+### Tx. M/M-1 (Indústria geral e seções) (Gráfico)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = pim_sec_ativ_mg,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `1 Indústria geral`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústria geral"
+  ) %>%
+  add_trace(
+    data = pim_sec_ativ_mg,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `2 Indústrias extrativas`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias extrativas"
+  ) %>%
+  add_trace(
+    data = pim_sec_ativ_mg,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `3 Indústrias de transformação`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias de transformação"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
 
-### Tx. M/M-12 (GCE) (Gráfico)
+### Var. acum. no ano (Indústria geral e seções) (Gráfico)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = pim_sec_ativ_acum_ano,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `1 Indústria geral`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústria geral"
+  ) %>%
+  add_trace(
+    data = pim_sec_ativ_acum_ano,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `2 Indústrias extrativas`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias extrativas"
+  ) %>%
+  add_trace(
+    data = pim_sec_ativ_acum_ano,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `3 Indústrias de transformação`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias de transformação"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
 
-### Tx. M/M-12 (GCE) (%)
-
-### Var. acum. no ano (GCE) (Gráfico)
-
-### Var. acum. no ano (GCE) (%)
-
-
-
-
+### Tx. M/M-12 (Indústria geral e seções) (Gráfico)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = pim_sec_ativ_12m,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `1 Indústria geral`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústria geral"
+  ) %>%
+  add_trace(
+    data = pim_sec_ativ_12m,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `2 Indústrias extrativas`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias extrativas"
+  ) %>%
+  add_trace(
+    data = pim_sec_ativ_12m,
+    x = ~data,
+    y = ~as.numeric(gsub(",", ".", `3 Indústrias de transformação`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústrias de transformação"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
 
 # Hiato do produto {data-navmenu="Produção"}
 
@@ -20048,7 +19986,6 @@ O **hiato do produto** é a diferença entre o PIB efetivo e o PIB potencial. Po
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Hiato do produto
 ```{r}
 plot_ly() %>%
@@ -20092,7 +20029,6 @@ plot_ly() %>%
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese (%)
 ```{r}
 reactable(
@@ -20136,7 +20072,6 @@ reactable(
 )
 ```
 
-
 # Pesquisa Mensal de Serviços (PMS) {data-navmenu="Produção"}
 
 Column {.sidebar} {data-width=100}
@@ -20145,31 +20080,10 @@ A **Pesquisa Mensal de Serviços (PMS)** produz indicadores que permitem acompan
 
 <br>
 
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/servicos/9229-pesquisa-mensal-de-servicos.html?=&t=o-que-e)
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/servicos/9229-pesquisa-mensal-de-servicos.html?=&t=o-que-e), tabela [8163](https://sidra.ibge.gov.br/tabela/8163) do banco de dados Sidra
 
 Column {data-width=900} {.tabset}
 -----------------------------------------------------------------------
-
-### Receita nominal de serviços (Gráfico) (Tx. M/M-1) (%)
-```{r}
-plot_ly(
-  data = pms_seg_mg_rec, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", `Total`)),
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(
-      title = "%",
-      tick0 = 0,
-      dtick = 1
-    )
-  ) %>%
-  rangeslider(thickness = 0.05)
-```
-
 ### Receita nominal de serviços (Atividades - Tx. M/M-1) (%)
 ```{r}
 reactable(
@@ -20296,26 +20210,6 @@ reactable(
     headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
   )
 )
-```
-
-### Receita nominal de serviços (Gráfico) (Tx. acum. no ano) (%)
-```{r}
-plot_ly(
-  data = pms_seg_acum_ano_rec, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", `Total`)),
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(
-      title = "%",
-      tick0 = 0,
-      dtick = 3
-    )
-  ) %>%
-  rangeslider(thickness = 0.05)
 ```
 
 ### Receita nominal de serviços (Atividades - Tx. acum. no ano) (%)
@@ -20446,26 +20340,6 @@ reactable(
 )
 ```
 
-### Receita nominal de serviços (Gráfico) (Tx. M/M-12) (%)
-```{r}
-plot_ly(
-  data = pms_seg_12m_rec, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", `Total`)),
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(
-      title = "%",
-      tick0 = 0,
-      dtick = 3
-    )
-  ) %>%
-  rangeslider(thickness = 0.05)
-```
-
 ### Receita nominal de serviços (Atividades - Tx. M/M-12) (%)
 ```{r}
 reactable(
@@ -20592,26 +20466,6 @@ reactable(
     headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
   )
 )
-```
-
-### Volume de serviços (Gráfico)  (Tx. M/M-1) (%)
-```{r}
-plot_ly(
-  data = pms_seg_mg_vol, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", `Total`)),
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(
-      title = "%",
-      tick0 = 0,
-      dtick = 1
-    )
-  ) %>%
-  rangeslider(thickness = 0.05)
 ```
 
 ### Volume de serviços (Atividades - Tx. M/M-1) (%)
@@ -20742,26 +20596,6 @@ reactable(
 )
 ```
 
-### Volume de serviços (Gráfico)  (Tx. acum. no ano) (%)
-```{r}
-plot_ly(
-  data = pms_seg_acum_ano_vol, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", `Total`)),
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(
-      title = "%",
-      tick0 = 0,
-      dtick = 2
-    )
-  ) %>%
-  rangeslider(thickness = 0.05)
-```
-
 ### Volume de serviços (Atividades - Tx. acum. no ano) (%)
 ```{r}
 reactable(
@@ -20888,26 +20722,6 @@ reactable(
     headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
   )
 )
-```
-
-### Volume de serviços (Gráfico)  (Tx. M/M-12) (%)
-```{r}
-plot_ly(
-  data = pms_seg_12m_vol, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", `Total`)),
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(
-      title = "%",
-      tick0 = 0,
-      dtick = 2
-    )
-  ) %>%
-  rangeslider(thickness = 0.05)
 ```
 
 ### Volume de serviços (Atividades - Tx. M/M-12) (%)
@@ -21038,6 +20852,128 @@ reactable(
 )
 ```
 
+### Receita nominal de serviços (Gráfico) (Tx. M/M-1) (%)
+```{r}
+plot_ly(
+  data = pms_seg_mg_rec, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Total`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Receita nominal de serviços (Gráfico) (Tx. acum. no ano) (%)
+```{r}
+plot_ly(
+  data = pms_seg_acum_ano_rec, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Total`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 3
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Receita nominal de serviços (Gráfico) (Tx. M/M-12) (%)
+```{r}
+plot_ly(
+  data = pms_seg_12m_rec, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Total`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 3
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Volume de serviços (Gráfico)  (Tx. M/M-1) (%)
+```{r}
+plot_ly(
+  data = pms_seg_mg_vol, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Total`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 1
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Volume de serviços (Gráfico)  (Tx. acum. no ano) (%)
+```{r}
+plot_ly(
+  data = pms_seg_acum_ano_vol, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Total`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 2
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+### Volume de serviços (Gráfico)  (Tx. M/M-12) (%)
+```{r}
+plot_ly(
+  data = pms_seg_12m_vol, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Total`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(
+      title = "%",
+      tick0 = 0,
+      dtick = 2
+    )
+  ) %>%
+  rangeslider(thickness = 0.05)
+```
+
+
+
 # Pesquisa Mensal do Comércio (PMC) {data-navmenu="Produção"}
 
 Column {.sidebar} {data-width=100}
@@ -21047,11 +20983,12 @@ A **Pesquisa Mensal do Comércio (PMC)** produz indicadores que permitem acompan
 <br>
 
 IRNV: Índice de receita nominal de vendas
+<br>
 IVV: Índice de volume de vendas
 
 <br>
 
-**Fonte:** Tabelas [8880](https://sidra.ibge.gov.br/tabela/8880) e [8881](https://sidra.ibge.gov.br/tabela/8880) do banco de dados Sidra do [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/comercio/9227-pesquisa-mensal-de-comercio.html?=&t=o-que-e).
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/comercio/9227-pesquisa-mensal-de-comercio.html?=&t=o-que-e), tabelas [8880](https://sidra.ibge.gov.br/tabela/8880) e [8881](https://sidra.ibge.gov.br/tabela/8880) do banco de dados Sidra
 
 Column {data-width=900} {.tabset}
 -----------------------------------------------------------------------
@@ -21195,16 +21132,15 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
-A **utilização da capacidade instalada (UCI)** é compreendida majoritariamente pelas empresas industriais como o percentual de ocupação dos fatores capital e trabalho no mês de realização da pesquisa. O informante deve escolher uma entre as nove faixas apresentadas no questionário: 0% (empresa paralisada); de 0% a 19%; 20% a 39%; 40% a 59%; 60% a 69%; 70% a 79%; 80% a 89%; 90 a 99%; ou 100% (plena capacidade). Para efeito de cálculo da UCI média, a faixa escolhida pela empresa é substituída por um único número, representativo do ponto médio daquela faixa. O conjunto de informantes é composto por grandes, médias e pequenas empresas industriais, representativas do universo empresarial da indústria de transformação.
+A **utilização da capacidade instalada (UCI)** é compreendida majoritariamente pelas empresas da indústria de transformação como o percentual de ocupação dos fatores capital e trabalho no mês de realização da pesquisa. O informante deve escolher uma entre as nove faixas apresentadas no questionário: 0% (empresa paralisada); de 0% a 19%; 20% a 39%; 40% a 59%; 60% a 69%; 70% a 79%; 80% a 89%; 90 a 99%; ou 100% (plena capacidade). Para efeito de cálculo da UCI média, a faixa escolhida pela empresa é substituída por um único número, representativo do ponto médio daquela faixa. O conjunto de informantes é composto por grandes, médias e pequenas empresas industriais, representativas do universo empresarial da indústria de transformação.
 
 <br>
 
-**Fonte:** Fundação Getúlio Vargas via código 24352 do [Sistema Gerenciador de Séries Temproais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=24352)
+**Fonte:** Fundação Getúlio Vargas via código [24352](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=24352) do [Sistema Gerenciador de Séries Temproais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-### Gráfico
+### Utilização da capacidade instalada (indústria de transformação)
 ```{r}
 plot_ly(
   data = uci, 
@@ -21261,7 +21197,7 @@ reactable(
 
 # PIB (ótica da oferta) {data-navmenu="Produção"}
 
-Column {.sidebar} {data-width=80}
+Column {.sidebar} {data-width=100}
 -----------------------------------------------------------------------
 O **Produto Interno Bruto (PIB)** é a medição mais comum usada para auferir a atividade econômica de um país. Ele representa o valor total dos bens e serviços finais produzidos dentro de um país durante um período específico de tempo. Pela **ótica da oferta**, o PIB representa os grande setores da economia: agropecuária, indústria e comércio e serviços.
 
@@ -21271,11 +21207,10 @@ Aqui são apresentadas as seguintes taxas percentuais: taxa trimestral contra tr
 
 <br>
 
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/contas-nacionais/9300-contas-nacionais-trimestrais.html?=&t=o-que-e)
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/contas-nacionais/9300-contas-nacionais-trimestrais.html?=&t=o-que-e), tabela [5932](https://sidra.ibge.gov.br/tabela/5932) do banco de dados Sidra
 
-Column {data-width=920} {.tabset}
+Column {data-width=900} {.tabset}
 -----------------------------------------------------------------------
-
 ### Tx. trim. contra trim. imediat. anterior (%)
 ```{r}
 reactable(
@@ -21725,7 +21660,7 @@ reactable(
 
 # PIB (ótica da demanda) {data-navmenu="Produção"}
 
-Column {.sidebar} {data-width=80}
+Column {.sidebar} {data-width=100}
 -----------------------------------------------------------------------
 O **Produto Interno Bruto (PIB)** é a medição mais comum usada para auferir a atividade econômica de um país. Ele representa o valor total dos bens e serviços finais produzidos dentro de um país durante um período específico de tempo. Pela **ótica da demanda**, o PIB representa o consumo das famílias, o consumo da adminstração pública, a formação bruta de capital fixo (FBCF) e as exportações líquidas (exportações - importações).
 
@@ -21735,11 +21670,10 @@ Aqui são apresentadas as seguintes taxas percentuais: taxa trimestral contra tr
 
 <br>
 
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/contas-nacionais/9300-contas-nacionais-trimestrais.html?=&t=o-que-e)
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/contas-nacionais/9300-contas-nacionais-trimestrais.html?=&t=o-que-e), tabela [5932](https://sidra.ibge.gov.br/tabela/5932) do banco de dados Sidra
 
-Column {data-width=920} {.tabset}
+Column {data-width=900} {.tabset}
 -----------------------------------------------------------------------
-
 ### Tx. trim. contra trim. imediat. anterior (%)
 ```{r}
 reactable(
@@ -21975,10 +21909,9 @@ reactable(
 
 # Taxa de câmbio comercial {data-navmenu="Taxa de câmbio"}
 
-Column {.sidebar} {data-width=200}
+Column {.sidebar} {data-width=300}
 -----------------------------------------------------------------------
-
-**Taxa de câmbio comercial (compra e venda) - cotações diárias e mensais:** refere-se às taxas administradas até 13 de março de 1990 e às taxas livres a partir dessa data (Resolução 1.690, de 18.03.1990). As taxas administradas são aquelas fixadas pelo Banco Central. As taxas livres correspondem à média das taxas efetivas de operações no mercado interbancário, ponderada pelo volume de transações de venda do dia. As transações fechadas em taxas que mais se distanciam da média do mercado (outliers) e aquelas que evidenciam formação artificial de preço ou contrárias às práticas regulares do mercado são excluídas dos cálculos. A partir de março de 1992, essa taxa recebeu a denominação de **taxa PTAX (fechamento)**, isto é, a partir de 01.07.2011, é a média aritmética das taxas de compra e das taxas de venda dos boletins do dia, conforme Circulares 3.506, de 23.09.2010, e 3.537, de 25.05.2011. Até 30.06.2011, é a taxa média ponderada dos negócios realizados no mercado interbancário de câmbio com liquidação em dois dias úteis, calculada pelo Banco Central do Brasil, conforme Comunicado N. 6.815/99. 
+**Taxa de câmbio comercial (compra e venda):** refere-se às taxas administradas até 13.03.1990 e às taxas livres a partir dessa data. As taxas administradas são aquelas fixadas pelo Banco Central. As taxas livres correspondem à média das taxas efetivas de operações no mercado interbancário, ponderada pelo volume de transações de venda do dia. As transações fechadas em taxas que mais se distanciam da média do mercado (outliers) e aquelas que evidenciam formação artificial de preço ou contrárias às práticas regulares do mercado são excluídas dos cálculos. A partir de março de 1992, essa taxa recebeu a denominação de **taxa PTAX (fechamento)**, isto é, a partir de 01.07.2011, é a média aritmética das taxas de compra e das taxas de venda dos boletins do dia, conforme Circulares 3.506, de 23.09.2010, e 3.537, de 25.05.2011. Até 30.06.2011, é a taxa média ponderada dos negócios realizados no mercado interbancário de câmbio com liquidação em dois dias úteis, calculada pelo Banco Central do Brasil, conforme Comunicado N. 6.815/99. 
 
 <br>
 
@@ -21986,11 +21919,10 @@ As taxas mensais referem-se aos valores de fim de período.
 
 <br>
 
-**Fonte:** Códigos 10813 (compra diária), 1 (venda diária), 3695 (compra mensal) e 3696 (venda mensal) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Códigos [10813](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=10813) (compra diária), [1](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=1) (venda diária), [3695](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=3695) (compra mensal) e [3696](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=3696) (venda mensal) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
-Column {data-width=400} {.tabset}
+Column {data-width=350} {.tabset}
 -----------------------------------------------------------------------
-
 ### Cotação diária
 ```{r}
 plot_ly(
@@ -22051,9 +21983,8 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-Column {data-width=400}  {.tabset}
+Column {data-width=350}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese (cotação diária)
 ```{r, results='asis'}
 reactable(
@@ -22159,16 +22090,14 @@ reactable(
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-
 A série mensal **taxa de câmbio real** reflete a variação da moeda nacional em relação a uma moeda ou a uma cesta de moedas estrangeiras (geralmente ponderada pelo fluxo de comércio exterior), corrigida pelo diferencial entre as inflações doméstica (IPCA) e externa. Jun/1994 = 100.
 
 <br>
 
-**Fonte:** Códigos 11752 (dólar americano) e 11753 (efetiva) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** Códigos [11752](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11752) (dólar americano) e [11753](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11753) (efetiva) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Taxa de câmbio real
 ```{r}
 plot_ly() %>%
@@ -22200,7 +22129,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. mensal (%)
+### Variação mensal (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -22231,7 +22160,7 @@ plot_ly() %>%
   )
 ```
 
-### Var. em 12 meses (%)
+### Variação em 12 meses (%)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -22264,7 +22193,6 @@ plot_ly() %>%
 
 Column {data-width=400}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese
 ```{r}
 reactable(
@@ -22327,18 +22255,17 @@ reactable(
 
 Column {.sidebar} {data-width=250}
 -----------------------------------------------------------------------
+**Câmbio contratado comercial (exportações):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportações de bens. Códigos [13962](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13962) (diário), [11045](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11045) (mensal) e [11056](11056) (anual) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB).
 
-**Câmbio contratado comercial (exportações):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportações de bens. Códigos 13962 (diário), 11045 (mensal) e 11056 (anual) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB).
+**Câmbio contratado comercial (importações):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais ao mercado não financeiro relativas a importações de bens. Códigos [13966](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13966) (diário), [11046](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11046) (mensal) e [11057](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11057) (anual) no SGS/BCB.
 
-**Câmbio contratado comercial (importações):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais ao mercado não financeiro relativas a importações de bens. Códigos 13966 (diário), 11046 (mensal) e 11057 (anual) no SGS/BCB.
+**Câmbio contratado comercial (saldo):** Resultado líquido de contratações de câmbio comercial de exportação e de importação. Códigos [13967](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13967) (diário), [11047](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11047) (mensal) e [11058](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11058) (anual) no SGS/BCB.
 
-**Câmbio contratado comercial (saldo):** Resultado líquido de contratações de câmbio comercial de exportação e de importação. Códigos 13967 (diário), 11047 (mensal) e 11058 (anual) no SGS/BCB.
+**Câmbio contratado financeiro (compras):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportação de serviços e ingressos de capitais estrangeiros ou retorno de capitais brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos [13968](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13968) (diário), [11048](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11048) (mensal) e [11059](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11059) (anual) no SGS/BCB.
 
-**Câmbio contratado financeiro (compras):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportação de serviços e ingressos de capitais estrangeiros ou retorno de capitais brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos 13968 (diário), 11048 (mensal) e 11059 (anual) no SGS/BCB.
+**Câmbio contratado financeiro (vendas):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a importação de serviços e saídas de capitais estrangeiros ou brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos [13969](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13969) (diário), [11049](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11049) (mensal) e [11060](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11060) (anual) no SGS/BCB.
 
-**Câmbio contratado financeiro (vendas):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a importação de serviços e saídas de capitais estrangeiros ou brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos 13969 (diário), 11049 (mensal) e 11060 (anual) no SGS/BCB.
-
-**Câmbio contratado financeiro (saldo):** Resultado líquido de contratações de câmbio financeiro de compra e venda. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos 13970 (diário), 11050 (mensal) e 11061 (anual) no SGS/BCB.
+**Câmbio contratado financeiro (saldo):** Resultado líquido de contratações de câmbio financeiro de compra e venda. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos [13970](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13970) (diário), [11050](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11050) (mensal) e [11061](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11061) (anual) no SGS/BCB.
 
 **Câmbio contratado (saldo):** Somatório do saldo do câmbio contratado comercial e do saldo do câmbio contratado financeiro.
 
@@ -22348,7 +22275,6 @@ Todos os valores estão em milhões de dólares.
 
 Column {data-width=750}  {.tabset}
 -----------------------------------------------------------------------
-
 ### Quadro-síntese (diário)
 ```{r, results='asis'}
 reactable(
