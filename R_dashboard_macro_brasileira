@@ -32,13 +32,356 @@ library(rio)
 library(tsibble)
 ```
 
-```{r, cache=TRUE}
+```{r, cache=FALSE}
 # Coleta de dados:
 
 # API key FRED
 fredr_set_key("0087fc9b146c214d78104e3737039ea4")
 
 # Sys.setlocale("LC_ALL", "pt_BR.UTF-8")
+
+# FED RATE:
+upper_lim <- fredr(
+  series_id = "DFEDTARU"
+) %>% mutate(
+  upper = value
+) %>% select(date, upper)
+
+lower_lim <- fredr(
+  series_id = "DFEDTARL"
+) %>% mutate(
+  lower = value
+) %>% select(date, lower)
+
+effective_fed_rate <- fredr(
+  series_id = "EFFR"
+) %>% mutate(
+  fed_rate = value
+) %>% select(date, fed_rate)
+
+effr <- upper_lim %>% left_join(lower_lim) %>% left_join(effective_fed_rate) %>% mutate(
+  data_fmt = format(date, "%d/%m/%Y")
+) %>% mutate(
+  lower = number(lower, decimal.mark = ",", accuracy = 0.01),
+  fed_rate = number(fed_rate, decimal.mark = ",", accuracy = 0.01),
+  upper = number(upper, decimal.mark = ",", accuracy = 0.01)  
+) %>% arrange(desc(date)) %>%
+  select(data_fmt, lower, fed_rate, upper, date) %>% drop_na()
+
+# ZINCO:
+zinco <- fredr(
+  series_id = "PZINCUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  valor_graph = valor,
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, valor_graph, date)
+
+# URÂNIO:
+uranio <- fredr(
+  series_id = "PURANUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, date)
+
+# PREÇO GLOBAL DE TODAS AS COMMODITIES:
+todas_commodities <- fredr(
+  series_id = "PALLFNFINDEXM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, date)
+
+# NÍQUEL:
+niquel <- fredr(
+  series_id = "PNICKUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  valor_graph = valor,
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, valor_graph, date)
+
+# MILHO:
+milho <- fredr(
+  series_id = "PMAIZMTUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, date)
+
+# LARANJA:
+laranja <- fredr(
+  series_id = "PORANGUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, date)
+
+# GÁS NATURAL:
+gas_natural <- fredr(
+  series_id = "PNGASEUUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, date)
+
+# COBRE:
+cobre <- fredr(
+  series_id = "PCOPPUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  valor_graph = valor,
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, valor_graph, date)
+
+# CAMARÃO:
+camarao <- fredr(
+  series_id = "PSHRIUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, date)
+
+# CACAU:
+cacau <- fredr(
+  series_id = "PCOCOUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  valor_graph = valor,
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, valor_graph, date)
+
+# BORRACHA:
+borracha <- fredr(
+  series_id = "PRUBBUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, date)
+
+# BANANA:
+banana <- fredr(
+  series_id = "PBANSOPUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, date)
+
+# AZEITE DE OLIVA:
+azeite_oliva <- fredr(
+  series_id = "POLVOILUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  valor_graph = valor,
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, valor_graph, date)
+
+# ÓLEO DE GIRASSOL:
+oleo_girassol <- fredr(
+  series_id = "PSUNOUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  valor_graph = valor,
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, valor_graph, date)
+
+# ÓLEO DE SOJA:
+oleo_soja <- fredr(
+  series_id = "PSOILUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  valor_graph = valor,  
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, valor_graph, date)
+
+# ÓLEO DE PALMA:
+oleo_palma <- fredr(
+  series_id = "PPOILUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  valor_graph = valor,
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, valor_graph, date)
+
+# ALUMÍNIO:
+aluminio <- fredr(
+  series_id = "PALUMUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  valor_graph = valor,
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, valor_graph, date)
+
+# ALGODÃO:
+algodao <- fredr(
+  series_id = "PCOTTINDUSDM"
+) %>% mutate(
+  valor = value
+) %>% mutate(
+  var_mg = (valor / lag(valor) - 1) * 100,
+  var_12m = (valor / lag(valor, 12) - 1) * 100
+) %>% mutate(
+    data_fmt = format(date, "%m/%Y"),
+    valor = number(valor, big.mark = ".", decimal.mark = ",", accuracy = 0.01),
+    var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.01),
+    var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.01)
+  ) %>%
+  arrange(desc(date)) %>%
+  select(data_fmt, valor, var_mg, var_12m, date)
 
 # PESQUISA MENSAL DO COMÉRCIO - COMÉRCIO VAREJISTA:
 ## IRNV:
@@ -9338,6 +9681,1180 @@ reactable(
 )
 ```
 
+# Algodão {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of cotton**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+US cents per pound.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PCOTTINDUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = algodao, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US cents per pound")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = algodao, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = algodao, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  algodao[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Data",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Algodão (US cents per pound)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Alumínio {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of aluminum**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+US dollars per metric ton.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PALUMUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = aluminio, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_graph)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US dollars per metric ton")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = aluminio, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = algodao, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  aluminio[, -5:-6],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Alumínio (US dollars per metric ton)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Azeite de oliva {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of olive oil**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+US dollars per metric ton.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/POLVOILUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = azeite_oliva, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_graph)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US dollars per metric ton")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = azeite_oliva, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = azeite_oliva, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  azeite_oliva[, -5:-6],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Azeite de oliva (US dollars per metric ton)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Banana {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of bananas**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+US dollars per metric ton.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PBANSOPUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = banana, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US dollars per metric ton")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = banana, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = banana, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  banana[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Banana (US dollars per metric ton)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Borracha {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of rubber**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+US cents per pound.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PRUBBUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = borracha, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US cents per pound")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = borracha, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = borracha, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  borracha[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Borracha (US cents per pound)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Cacau {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of cocoa**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+US dollars per metric ton.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PCOCOUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = cacau, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_graph)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US dollars per metric ton")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = cacau, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = cacau, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  cacau[, -5:-6],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Cacau (US dollars per metric ton)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Café {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of coffee (other mild arabica and robustas)**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars (cents per pound).
+
+<br>
+
+**Fonte:** Federal Reserve Economic Data (FRED): [Other Mild Arabica](https://fred.stlouisfed.org/series/PCOFFOTMUSDM) and [Robustas](https://fred.stlouisfed.org/series/PCOFFROBUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = cafe,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_arab)),
+    type = "scatter",
+    mode = "lines",
+    name = "Other mild arabica"
+  ) %>%
+  add_trace(
+    data = cafe,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_rob)),
+    type = "scatter",
+    mode = "lines",
+    name = "Robustas"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "US$", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = cafe,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", var_mg_arab)),
+    type = "scatter",
+    mode = "lines",
+    name = "Other mild arabica"
+  ) %>%
+  add_trace(
+    data = cafe,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", var_mg_rob)),
+    type = "scatter",
+    mode = "lines",
+    name = "Robustas"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = cafe,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", var_12m_arab)),
+    type = "scatter",
+    mode = "lines",
+    name = "Other nukd arabica"
+  ) %>%
+  add_trace(
+    data = cafe,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", var_12m_rob)),
+    type = "scatter",
+    mode = "lines",
+    name = "Robustas"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  cafe[, -8],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_arab = colDef(
+      name = "Other mild arabica (US$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg_arab = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m_arab = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_rob = colDef(
+      name = "Robustas (US$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg_rob = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m_rob = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )   
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Camarão {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of shrimp**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+US dollars per kilogram.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PSHRIUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = camarao, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US dollars per kilogram")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = borracha, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = camarao, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 10)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  camarao[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Camarão (US dollars per kilogram)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Cobre {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of copper**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+US dollars per metric ton.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PCOPPUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = cobre, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_graph)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US dollars per metric ton")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = cobre, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = cobre, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  cobre[, -5:-6],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Cobre (US dollars per metric ton)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Gás natural {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of natural gas**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars (European Union).
+
+<br>
+
+US dollars per million metric british thermal unit.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PNGASEUUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = gas_natural, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US dollars per million metric british thermal unit")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = gas_natural, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = gas_natural, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 50)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  gas_natural[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Gás natural (US dollars per million metric british thermal unit)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # Índice de commodities - Brasil {data-navmenu="Commodities"}
 
 Column {.sidebar} {data-width=200}
@@ -10004,111 +11521,71 @@ reactable(
 )
 ```
 
-# Café {data-navmenu="Commodities"}
+# Laranja {data-navmenu="Commodities"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-**Global price of coffee (other mild arabica and robustas)**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars (cents per pound).
+**Global price of orange**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
 
 <br>
 
-**Fonte:** Federal Reserve Economic Data (FRED): [Other Mild Arabica](https://fred.stlouisfed.org/series/PCOFFOTMUSDM) and [Robustas](https://fred.stlouisfed.org/series/PCOFFROBUSDM)
+US dollars per pound.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PORANGUSDM)
 
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-
 ### Cotação
 ```{r}
-plot_ly() %>%
-  add_trace(
-    data = cafe,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_arab)),
-    type = "scatter",
-    mode = "lines",
-    name = "Other mild arabica"
-  ) %>%
-  add_trace(
-    data = cafe,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_rob)),
-    type = "scatter",
-    mode = "lines",
-    name = "Robustas"
-  ) %>%
+plot_ly(
+  data = laranja, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines"
+) %>%
   layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "US$", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
+    xaxis = list(title = " "),
+    yaxis = list(title = "US dollars per pound")
+  ) %>% rangeslider(thickness = 0.05)
 ```
 
 ### Variação mensal (%)
 ```{r}
-plot_ly() %>%
-  add_trace(
-    data = cafe,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", var_mg_arab)),
-    type = "scatter",
-    mode = "lines",
-    name = "Other mild arabica"
-  ) %>%
-  add_trace(
-    data = cafe,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", var_mg_rob)),
-    type = "scatter",
-    mode = "lines",
-    name = "Robustas"
-  ) %>%
+plot_ly(
+  data = laranja, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
   layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "%", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
 ```
 
 ### Variação em 12 meses (%)
 ```{r}
-plot_ly() %>%
-  add_trace(
-    data = cafe,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", var_12m_arab)),
-    type = "scatter",
-    mode = "lines",
-    name = "Other nukd arabica"
-  ) %>%
-  add_trace(
-    data = cafe,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", var_12m_rob)),
-    type = "scatter",
-    mode = "lines",
-    name = "Robustas"
-  ) %>%
+plot_ly(
+  data = laranja, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
   layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "%", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 10)
+  ) %>% rangeslider(thickness = 0.05)
 ```
 
 Column {data-width=400} {.tabset}
@@ -10116,43 +11593,140 @@ Column {data-width=400} {.tabset}
 ### Quadro-síntese
 ```{r}
 reactable(
-  cafe[, -8],
+  laranja[, -5],
   columns = list(
     data_fmt = colDef(
-      name = "Data",
+      name = "Mês",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_arab = colDef(
-      name = "Other mild arabica (US$)",
+    valor = colDef(
+      name = "Laranja (US dollars per pound)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    var_mg_arab = colDef(
+    var_mg = colDef(
       name = "Variação mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    var_12m_arab = colDef(
+    var_12m = colDef(
       name = "Variação em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_rob = colDef(
-      name = "Robustas (US$)",
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Milho {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of corn**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+US dollars per metric ton.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PMAIZMTUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = milho, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US dollars per metric ton")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = milho, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = milho, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  milho[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    var_mg_rob = colDef(
+    valor = colDef(
+      name = "Milho (US dollars per metric ton)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
       name = "Variação mensal (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    var_12m_rob = colDef(
+    var_12m = colDef(
       name = "Variação em 12 meses (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )   
+    )
   ),
   bordered = TRUE,
   highlight = TRUE,
@@ -10179,8 +11753,15 @@ Column {.sidebar} {data-width=200}
 
 <br>
 
-**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PIORECRUSDM)
+US dollars per metric ton.
 
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PIORECRUSDM)
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
@@ -10238,7 +11819,7 @@ reactable(
   miner_ferro[, -5],
   columns = list(
     data_fmt = colDef(
-      name = "Data",
+      name = "Mês",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -10257,6 +11838,454 @@ reactable(
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ) 
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Níquel {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of nickel**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+US dollars per metric ton.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PNICKUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = niquel, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_graph)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US dollars per metric ton")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = niquel, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = niquel, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  niquel[, -5:-6],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Níquel (US dollars per metric ton)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Óleo de girassol {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of sunflower oil**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+US dollars per metric ton.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PSUNOUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = oleo_girassol, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_graph)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US dollars per metric ton")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = oleo_girassol, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = oleo_girassol, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  oleo_girassol[, -5:-6],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Óleo de girassol (US dollars per metric ton)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Óleo de palma {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of palm oil**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+US dollars per metric ton.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PPOILUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = oleo_palma, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_graph)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US dollars per metric ton")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = oleo_palma, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = oleo_palma, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  oleo_palma[, -5:-6],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Óleo de palma (US dollars per metric ton)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Óleo de soja {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of soybeans oil**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+US dollars per metric ton.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PSOILUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = oleo_soja, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_graph)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US dollars per metric ton")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = oleo_soja, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = oleo_soja, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  oleo_soja[, -5:-6],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Óleo de soja (US dollars per metric ton)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
   ),
   bordered = TRUE,
   highlight = TRUE,
@@ -10424,7 +12453,6 @@ plot_ly() %>%
   )
 ```
 
-
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
 ### Quadro-síntese (cotação diária)
@@ -10533,6 +12561,118 @@ reactable(
 )
 ```
 
+# Preço global de todas as commodities {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price index of all commodities**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+Index 2016 = 100.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PALLFNFINDEXM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = todas_commodities, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "2016 = 100")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = todas_commodities, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = todas_commodities, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  todas_commodities[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Preço global de todas as commodities (2016 = 100)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # Soja em grãos {data-navmenu="Commodities"}
 
 Column {.sidebar} {data-width=200}
@@ -10599,7 +12739,7 @@ reactable(
   soja[, -5],
   columns = list(
     data_fmt = colDef(
-      name = "Data",
+      name = "Mês",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -10703,12 +12843,236 @@ reactable(
   soja[, -5],
   columns = list(
     data_fmt = colDef(
-      name = "Data",
+      name = "Mês",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor = colDef(
       name = "Trigo (US$)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Urânio {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of uranium**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+US dollars per pound.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PURANUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = uranio, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US dollars per pound")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = uranio, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = uranio, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  uranio[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Urânio (US dollars per pound)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Zinco {data-navmenu="Commodities"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+**Global price of zinco**. Value represents the benchmark prices which are representative of the global market. They are determined by the largest exporter of a given commodity. Prices are period averages in nominal U.S. dollars.
+
+<br>
+
+US dollars per metric ton.
+
+<br>
+
+Not seasonally adjusted.
+
+<br>
+
+**Fonte:** [Federal Reserve Economic Data (FRED)](https://fred.stlouisfed.org/series/PZINCUSDM)
+
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Cotação
+```{r}
+plot_ly(
+  data = zinco, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_graph)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "US dollars per metric ton")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação mensal (%)
+```{r}
+plot_ly(
+  data = zinco, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_mg)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%", dtick = 5)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Variação em 12 meses (%)
+```{r}
+plot_ly(
+  data = zinco, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", var_12m)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%",
+                       dtick = 20)
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  zinco[, -5:-6],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor = colDef(
+      name = "Zinco (US dollars per metric ton)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -11960,7 +14324,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-# Juros nominais {data-navmenu="Fiscal"}
+# (-) Juros nominais {data-navmenu="Fiscal"}
 
 Column {.sidebar} {data-width=150}
 -----------------------------------------------------------------------
@@ -12790,7 +15154,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-# Resultado primário {data-navmenu="Fiscal"}
+# (=) Resultado primário {data-navmenu="Fiscal"}
 
 Column {.sidebar} {data-width=150}
 -----------------------------------------------------------------------
@@ -17323,7 +19687,7 @@ reactable(
 
 Column {.sidebar} {data-width=150}
 -----------------------------------------------------------------------
-**Rendimento bruto nominal real médio efetivamente recebido** no mês de referência em todos os trabalhos que as pessoas ocupadas com rendimento tinham na semana referência. A série em termos reais (deflacionada pelo IPCA) é a preços do mês do meio do trimestre mais recente que está sendo divulgado. O **rendimento efetivo** consiste no rendimento de fato recebido em qualquer posição na ocupação, no mês de referência, incluindo todos os pagamentos que não tenham caráter contínuo e considerando os descontos por ausências no trabalho.
+**Rendimento bruto nominal e real médio efetivamente recebido** no mês de referência em todos os trabalhos que as pessoas ocupadas com rendimento tinham na semana referência. A série em termos reais (deflacionada pelo IPCA) é a preços do mês do meio do trimestre mais recente que está sendo divulgado. O **rendimento efetivo** consiste no rendimento de fato recebido em qualquer posição na ocupação, no mês de referência, incluindo todos os pagamentos que não tenham caráter contínuo e considerando os descontos por ausências no trabalho.
 
 <br>
 
@@ -17789,6 +20153,108 @@ reactable(
 )
 ```
 
+# Effective federal funds rate (FED rate) {data-navmenu="Monetário"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+The **federal funds market** consists of domestic unsecured borrowings in U.S. dollars by depository institutions from other depository institutions and certain other entities, primarily government-sponsored enterprises. The **effective federal funds rate (EFFR)** is calculated as a volume-weighted median of overnight federal funds transactions reported in the FR 2420 Report of Selected Money Market Rates. 
+
+<br>
+
+The series "lower and upper limits" of the federal funds target are established by the Federal Open Market Committee (FOMC). The data updated each day is the data effective as of that day.
+
+<br>
+
+**Fontes:** Federal Reserve Economic Data: [Effective Federal Funds Rate](https://fred.stlouisfed.org/series/EFFR), [Federal Funds Target Range - Lower Limit](https://fred.stlouisfed.org/series/DFEDTARL), [Federal Funds Target Range - Upper Limit](https://fred.stlouisfed.org/series/DFEDTARU)
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Effective federal funds rate (FED rate)
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = effr,
+    x = ~as.Date(date),
+    y = ~as.numeric(gsub(",", ".", fed_rate)),
+    type = "scatter",
+    mode = "lines",
+    name = "Effective Federal Funds Rate"
+  ) %>%
+  add_trace(
+    data = effr,
+    x = ~as.Date(date),
+    y = ~as.numeric(gsub(",", ".", lower)),
+    type = "scatter",
+    mode = "lines",
+    line = list(color = "orange", dash = "dash"),
+    name = "Limite inferior"
+  ) %>%
+  add_trace(
+    data = effr,
+    x = ~as.Date(date),
+    y = ~as.numeric(gsub(",", ".", upper)),
+    type = "scatter",
+    mode = "lines",
+    line = list(color = "orange", dash = "dash"),
+    name = "Limite superior"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese (%)
+```{r}
+reactable(
+  effr[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Data",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    lower = colDef(
+      name = "Limite inferior",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    fed_rate = colDef(
+      name = "Effective Federal Funds Rate",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    upper = colDef(
+      name = "Limite superior",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
 # Regra de Taylor {data-navmenu="Monetário"}
 
 Column {.sidebar} {data-width=200}
@@ -18221,84 +20687,83 @@ reactable(
 )
 ```
 
-# Pesquisa Trimestral do Abate de Animais {data-navmenu="Produção"}
+# Hiato do produto {data-navmenu="Produção"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-A **Pesquisa Trimestral do Abate** investiga informações sobre a quantidade de animais abatidos e o peso total das carcaças, por espécie pesquisada, tendo como unidade de coleta o estabelecimento que efetua o abate sob fiscalização sanitária federal, estadual ou municipal. A pesquisa fornece informações sobre o total de cabeças abatidas e o peso total das carcaças para as espécies de bovinos (bois, vacas, novilhos e novilhas), suínos e frangos.
+O **hiato do produto** é a diferença entre o PIB efetivo e o PIB potencial. Por não ser observável, é estimado por métodos estatísticos e estruturais aplicados ao PIB, ao desemprego, ao NUCI e à produtividade. Empregam-se métodos univariados — os filtros de Hodrick–Prescott (HP), de Hamilton e o Band-Pass —, um método multivariado conforme Areosa (2008) e a abordagem de função de produção. A estimativa central corresponde à mediana do conjunto de medidas, apresentada ao redor de intervalo de plausibilidade, seguindo [Orair e Bacciotti (2018)](https://www2.senado.leg.br/bdsf/bitstream/handle/id/536764/EE_04_2018.pdf). As estimativas tendenciais são obtidas a partir de séries históricas ampliadas para minimizar o viés de final da amostra. Um hiato positivo indica que o produto efetivo está acima do produto potencial, isto é, a economia está operando acima do pleno emprego dos fatores de produção. Um hiato negativo indica que o produto efetivo está abaixo do produto potencial, isto é, há fatores de produção ociosos na economia.
 
 <br>
 
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9203-pesquisas-trimestrais-do-abate-de-animais.html?=&t=o-que-e), tabelas [1092](https://sidra.ibge.gov.br/tabela/1092), [1093](https://sidra.ibge.gov.br/tabela/1093) e [1094](https://sidra.ibge.gov.br/tabela/1094) do banco de dados Sidra
+**Fonte:** [Instituição Fiscal Independente (IFI)](https://www12.senado.leg.br/ifi) do Senado Federal
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-### Bovinos
+### Hiato do produto
 ```{r}
-plot_ly(
-  data = pta_graph, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", valor_bovinos)),
-  type = "bar"
-) %>%
+plot_ly() %>%
+  add_trace(
+    data = hiato_ifi,
+    x = ~as.Date(data),
+    y = ~as.numeric(gsub(",", ".", hiato)),
+    type = "scatter",
+    mode = "lines",
+    name = "Hiato do produto"
+  ) %>%
+  add_trace(
+    data = hiato_ifi,
+    x = ~as.Date(data),
+    y = ~as.numeric(gsub(",", ".", lim_inf)),
+    type = "scatter",
+    mode = "lines",
+    line = list(color = "orange", dash = "dash"),
+    name = "Limite inferior"
+  ) %>%
+  add_trace(
+    data = hiato_ifi,
+    x = ~as.Date(data),
+    y = ~as.numeric(gsub(",", ".", lim_sup)),
+    type = "scatter",
+    mode = "lines",
+    line = list(color = "orange", dash = "dash"),
+    name = "Limite superior"
+  ) %>%
   layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "Bovinos abatidos (cabeças)")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-### Suínos
-```{r}
-plot_ly(
-  data = pta_graph, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", valor_suinos)),
-  type = "bar"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "Suínos abatidos (cabeças)")
-  ) %>% rangeslider(thickness = 0.05)
-```
-
-### Frangos
-```{r}
-plot_ly(
-  data = pta_graph, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", valor_frangos)),
-  type = "bar"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "Frangos abatidos (cabeças)")
-  ) %>% rangeslider(thickness = 0.05)
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "%", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
 ```
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-### Quadro-síntese
+### Quadro-síntese (%)
 ```{r}
 reactable(
-  pta[, -5],
+  hiato_ifi[, -5],
   columns = list(
     data_fmt = colDef(
       name = "Trimestre",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_bovinos = colDef(
-      name = "Bovinos abatidos (cabeças)",
+    lim_inf = colDef(
+      name = "Limite inferior",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_suinos = colDef(
-      name = "Suínos abatidos (cabeças)",
+    hiato = colDef(
+      name = "Hiato do produto",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_frangos = colDef(
-      name = "Frangos abatidos (cabeças)",
+    lim_sup = colDef(
+      name = "Limite superior",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -18320,89 +20785,244 @@ reactable(
 )
 ```
 
-# Pesquisa Trimestral do Leite {data-navmenu="Produção"}
+# IBC-Br {data-navmenu="Produção"}
 
 Column {.sidebar} {data-width=150}
 -----------------------------------------------------------------------
-A **Pesquisa Trimestral do Leite** investiga informações sobre as quantidades de leite fluido cru, tendo como unidade de coleta o estabelecimento que se dedica à industrialização de leite de vaca e está sob fiscalização sanitária federal, estadual ou municipal.
+O **IBC-Br** é um indicador de atividade produzido pelo BC. Divulgado desde março de 2010, tem como objetivo mensurar a atividade econômica de forma tempestiva e em frequência mensal.
 
 <br>
 
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9209-pesquisa-trimestral-do-leite.html?=&t=o-que-e), tabela [1086](https://sidra.ibge.gov.br/tabela/1086) do banco de dados Sidra
+A partir de abril de 2025, o BC passou a divulgar também os componentes do IBC-Br (IBC-Br Agropecuária, IBC-Br Indústria, IBC-Br serviços e IBC-Br Impostos), além do IBC-Br excluindo a agropecuária (IBC-Br ex-Agropecuária).
 
-Column {data-width=850} {.tabset}
------------------------------------------------------------------------
-### Leite cru adquirido
-```{r}
-plot_ly(
-  data = ptl_graph, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", `Quantidade de leite cru, resfriado ou não, adquirido`)),
-  type = "bar"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "Qtde. leite cru adquirido (mil litros)")
-  ) %>% rangeslider(thickness = 0.05)
-```
+<br>
 
-### Leite cru industrializado
-```{r}
-plot_ly(
-  data = ptl_graph, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", `Quantidade de leite cru, resfriado ou não, industrializado`)),
-  type = "bar"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "Qtde. leite cru industrializado (mil litros)")
-  ) %>% rangeslider(thickness = 0.05)
-```
+O IBC-Br e seus componentes são construídos com base em proxies representativas da evolução em volume do valor adicionado bruto (VAB) da agropecuária, da indústria e do setor de serviços, e do volume de impostos. Essas proxies são agregadas com pesos derivados, em especial, das tabelas de recursos e usos do Sistema de Contas Nacionais (IBGE). Também são utilizadas outras informações de caráter estrutural, como as obtidas na Pesquisa Industrial Anual (PIA-IBGE), na Pesquisa Anual de Serviços (PAS-IBGE) e na Produção Agrícola Municipal (PAM-IBGE).
 
-### Preço médio
-```{r}
-plot_ly(
-  data = ptl_table, 
-  x = ~date, 
-  y = ~as.numeric(gsub(",", ".", `Preço médio`)),
-  type = "scatter",
-  mode = "lines"
-) %>%
-  layout(
-    xaxis = list(title = " "),
-    yaxis = list(title = "Preço médio (R$ por litro)")
-  ) %>% rangeslider(thickness = 0.05)
-```
+<br>
+
+**Fonte:** Códigos [24364](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=24364) (IBC-Br), [29602](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29602) (agropecuária), [29604](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29604) (indústria), [29606](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29606) (serviços), [29608](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29608) (ex-agropecuária) e [29610](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29610) (impostos) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
 
 Column {data-width=850} {.tabset}
 -----------------------------------------------------------------------
 ### Quadro-síntese
 ```{r}
 reactable(
-  ptl_table[, -5],
+  ibc[, -14],
   columns = list(
     data_fmt = colDef(
-      name = "Trimestre",
+      name = "Mês",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    `Quantidade de leite cru, resfriado ou não, adquirido` = colDef(
-      name = "Leite cru adquirido (mil litros)",
+    `valor_ibc` = colDef(
+      name = "IBC-Br (Geral)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    `Quantidade de leite cru, resfriado ou não, industrializado` = colDef(
-      name = "Leite cru industrializado (mil litros)",
+    `var_ibc_mg` = colDef(
+      name = "Var. mensal (Geral) (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    `Preço médio` = colDef(
-      name = "Preço médio (R$ por litro)",
+    `valor_ibc_agro` = colDef(
+      name = "Agropecuária",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `var_ibc_mg_agro` = colDef(
+      name = "Var. mensal (Agropecuária) (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_ibc_ind` = colDef(
+      name = "Indústria",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `var_ibc_mg_ind` = colDef(
+      name = "Var. mensal (Indústria) (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_ibc_serv` = colDef(
+      name = "Serviços",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `var_ibc_mg_serv` = colDef(
+      name = "Var. mensal (Serviços) (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_ibc_ex_agro` = colDef(
+      name = "Ex-agropecuária",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `var_ibc_mg_ex_agro` = colDef(
+      name = "Var. mensal (Ex-agropecuária) (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_ibc_impostos` = colDef(
+      name = "Impostos",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `var_ibc_mg_impostos` = colDef(
+      name = "Var. mensal (Impostos) (%)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
   ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### IBC-Br
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc`)),
+    type = "scatter",
+    mode = "lines",
+    name = "IBC-Br (Geral)"
+  ) %>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc_agro`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Agropecuária"
+  ) %>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc_ind`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Indústria"
+  )%>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc_serv`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Serviços"
+  ) %>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc_ex_agro`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Ex-agropecuária"
+  ) %>%
+  add_trace(
+    data = ibc,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", `valor_ibc_impostos`)),
+    type = "scatter",
+    mode = "lines",
+    name = "Impostos"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "2002 = 100", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+# Indicador IPEA de FBCF {data-navmenu="Produção"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+A **formação bruta de capital fixo (FBCF)** da economia é composta por investimentos em máquinas e equipamentos e em construção civil. Como os investimentos em máquinas e equipamentos equivalem ao Consumo Aparente (CA) de bens de capital, foi construído um indicador mensal da FBCF por meio da média ponderada deste indicador de CA com um indicador de construção civil.
+
+<br>
+
+**Fonte:** Instituto de Pesquisa Econômica Aplicada (IPEA) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
+
+Column {data-width=500} {.tabset}
+-----------------------------------------------------------------------
+### Indicador IPEA de FBCF
+```{r}
+```{r}
+plot_ly() %>%
+  add_trace(
+    data = ind_fbcf,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_ipea_fbcf)),
+    type = "scatter",
+    mode = "lines",
+    name = "Índice real"
+  ) %>%
+  add_trace(
+    data = ind_fbcf,
+    x = ~date,
+    y = ~as.numeric(gsub(",", ".", valor_ipea_fbcf_cc)),
+    type = "scatter",
+    mode = "lines",
+    name = "Índice real (construção civil)"
+  ) %>%
+  layout(
+    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
+    yaxis = list(title = "Média 1995 = 100", autorange = TRUE),
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      y = -0.2,
+      xanchor = "center"
+    )
+  )
+```
+
+Column {data-width=300} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  ind_fbcf[, -4],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_ipea_fbcf` = colDef(
+      name = "Índice real",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `valor_ipea_fbcf_cc` = colDef(
+      name = "Índice real (construção civil)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),  
   bordered = TRUE,
   highlight = TRUE,
   striped = TRUE,
@@ -19044,318 +21664,6 @@ reactable(
 )
 ```
 
-# IBC-Br {data-navmenu="Produção"}
-
-Column {.sidebar} {data-width=150}
------------------------------------------------------------------------
-O **IBC-Br** é um indicador de atividade produzido pelo BC. Divulgado desde março de 2010, tem como objetivo mensurar a atividade econômica de forma tempestiva e em frequência mensal.
-
-<br>
-
-A partir de abril de 2025, o BC passou a divulgar também os componentes do IBC-Br (IBC-Br Agropecuária, IBC-Br Indústria, IBC-Br serviços e IBC-Br Impostos), além do IBC-Br excluindo a agropecuária (IBC-Br ex-Agropecuária).
-
-<br>
-
-O IBC-Br e seus componentes são construídos com base em proxies representativas da evolução em volume do valor adicionado bruto (VAB) da agropecuária, da indústria e do setor de serviços, e do volume de impostos. Essas proxies são agregadas com pesos derivados, em especial, das tabelas de recursos e usos do Sistema de Contas Nacionais (IBGE). Também são utilizadas outras informações de caráter estrutural, como as obtidas na Pesquisa Industrial Anual (PIA-IBGE), na Pesquisa Anual de Serviços (PAS-IBGE) e na Produção Agrícola Municipal (PAM-IBGE).
-
-<br>
-
-**Fonte:** Códigos [24364](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=24364) (IBC-Br), [29602](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29602) (agropecuária), [29604](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29604) (indústria), [29606](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29606) (serviços), [29608](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29608) (ex-agropecuária) e [29610](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=29610) (impostos) do [Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
-
-Column {data-width=850} {.tabset}
------------------------------------------------------------------------
-### Quadro-síntese
-```{r}
-reactable(
-  ibc[, -14],
-  columns = list(
-    data_fmt = colDef(
-      name = "Mês",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `valor_ibc` = colDef(
-      name = "IBC-Br (Geral)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `var_ibc_mg` = colDef(
-      name = "Var. mensal (Geral) (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `valor_ibc_agro` = colDef(
-      name = "Agropecuária",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `var_ibc_mg_agro` = colDef(
-      name = "Var. mensal (Agropecuária) (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `valor_ibc_ind` = colDef(
-      name = "Indústria",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `var_ibc_mg_ind` = colDef(
-      name = "Var. mensal (Indústria) (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `valor_ibc_serv` = colDef(
-      name = "Serviços",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `var_ibc_mg_serv` = colDef(
-      name = "Var. mensal (Serviços) (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `valor_ibc_ex_agro` = colDef(
-      name = "Ex-agropecuária",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `var_ibc_mg_ex_agro` = colDef(
-      name = "Var. mensal (Ex-agropecuária) (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `valor_ibc_impostos` = colDef(
-      name = "Impostos",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `var_ibc_mg_impostos` = colDef(
-      name = "Var. mensal (Impostos) (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-### IBC-Br
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = ibc,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `valor_ibc`)),
-    type = "scatter",
-    mode = "lines",
-    name = "IBC-Br (Geral)"
-  ) %>%
-  add_trace(
-    data = ibc,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `valor_ibc_agro`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Agropecuária"
-  ) %>%
-  add_trace(
-    data = ibc,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `valor_ibc_ind`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Indústria"
-  )%>%
-  add_trace(
-    data = ibc,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `valor_ibc_serv`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Serviços"
-  ) %>%
-  add_trace(
-    data = ibc,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `valor_ibc_ex_agro`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Ex-agropecuária"
-  ) %>%
-  add_trace(
-    data = ibc,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", `valor_ibc_impostos`)),
-    type = "scatter",
-    mode = "lines",
-    name = "Impostos"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "2002 = 100", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
-```
-
-
-
-# Indicador IPEA de FBCF {data-navmenu="Produção"}
-
-Column {.sidebar} {data-width=200}
------------------------------------------------------------------------
-A **formação bruta de capital fixo (FBCF)** da economia é composta por investimentos em máquinas e equipamentos e em construção civil. Como os investimentos em máquinas e equipamentos equivalem ao Consumo Aparente (CA) de bens de capital, foi construído um indicador mensal da FBCF por meio da média ponderada deste indicador de CA com um indicador de construção civil.
-
-<br>
-
-**Fonte:** Instituto de Pesquisa Econômica Aplicada (IPEA) via [Ipeadata](https://www.ipeadata.gov.br/Default.aspx)
-
-Column {data-width=500} {.tabset}
------------------------------------------------------------------------
-### Indicador IPEA de FBCF
-```{r}
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = ind_fbcf,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_ipea_fbcf)),
-    type = "scatter",
-    mode = "lines",
-    name = "Índice real"
-  ) %>%
-  add_trace(
-    data = ind_fbcf,
-    x = ~date,
-    y = ~as.numeric(gsub(",", ".", valor_ipea_fbcf_cc)),
-    type = "scatter",
-    mode = "lines",
-    name = "Índice real (construção civil)"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "Média 1995 = 100", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
-```
-
-Column {data-width=300} {.tabset}
------------------------------------------------------------------------
-### Quadro-síntese
-```{r}
-reactable(
-  ind_fbcf[, -4],
-  columns = list(
-    data_fmt = colDef(
-      name = "Mês",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `valor_ipea_fbcf` = colDef(
-      name = "Índice real",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `valor_ipea_fbcf_cc` = colDef(
-      name = "Índice real (construção civil)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),  
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-# Produção de Ovos de Galinha (POG) {data-navmenu="Produção"}
-
-Column {.sidebar} {data-width=100}
------------------------------------------------------------------------
-A pesquisa **Produção de Ovos de Galinha (POG)** fornece indicadores da variação da produção física de ovos de galinha, tendo como unidade de coleta o estabelecimento agropecuário que se dedica à atividade de produção de ovos de galinha, independentemente de sua finalidade, e com capacidade de alojamento de 10.000 ou mais galinhas poedeiras e/ou matrizeiras. Quanto à finalidade da produção, os dados tratam-se do somatório de consumo e incubação.
-
-<br>
-
-**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9216-pesquisa-trimestral-da-producao-de-ovos-de-galinha.html?edicao=20753&t=o-que-e), tabela[7524](https://sidra.ibge.gov.br/tabela/7524) do banco de dados Sidra
-
-Column {data-width=900} {.tabset}
------------------------------------------------------------------------
-### Quadro-síntese
-```{r}
-reactable(
-  pog[, -5],
-  columns = list(
-    data_fmt = colDef(
-      name = "Trimestre",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Número de informantes` = colDef(
-      name = "Nº de informantes (unidades)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Número de cabeças de galinhas poedeiras nos estabelecimentos agropecuários` = colDef(
-      name = "Nº de cabeças de galinhas poedeiras nos estabelecimentos agropecuários (unidades)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    `Quantidade de ovos produzidos` = colDef(
-      name = "Quantidade de ovos produzidos (mil dúzias)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),  
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
 # Pesquisa Industrial Mensal - Produção física (PIM-PF) {data-navmenu="Produção"}
 
 Column {.sidebar} {data-width=80}
@@ -19972,104 +22280,6 @@ plot_ly() %>%
       xanchor = "center"
     )
   )
-```
-
-# Hiato do produto {data-navmenu="Produção"}
-
-Column {.sidebar} {data-width=200}
------------------------------------------------------------------------
-O **hiato do produto** é a diferença entre o PIB efetivo e o PIB potencial. Por não ser observável, é estimado por métodos estatísticos e estruturais aplicados ao PIB, ao desemprego, ao NUCI e à produtividade. Empregam-se métodos univariados — os filtros de Hodrick–Prescott (HP), de Hamilton e o Band-Pass —, um método multivariado conforme Areosa (2008) e a abordagem de função de produção. A estimativa central corresponde à mediana do conjunto de medidas, apresentada ao redor de intervalo de plausibilidade, seguindo [Orair e Bacciotti (2018)](https://www2.senado.leg.br/bdsf/bitstream/handle/id/536764/EE_04_2018.pdf). As estimativas tendenciais são obtidas a partir de séries históricas ampliadas para minimizar o viés de final da amostra. Um hiato positivo indica que o produto efetivo está acima do produto potencial, isto é, a economia está operando acima do pleno emprego dos fatores de produção. Um hiato negativo indica que o produto efetivo está abaixo do produto potencial, isto é, há fatores de produção ociosos na economia.
-
-<br>
-
-**Fonte:** [Instituição Fiscal Independente (IFI)](https://www12.senado.leg.br/ifi) do Senado Federal
-
-Column {data-width=400} {.tabset}
------------------------------------------------------------------------
-### Hiato do produto
-```{r}
-plot_ly() %>%
-  add_trace(
-    data = hiato_ifi,
-    x = ~as.Date(data),
-    y = ~as.numeric(gsub(",", ".", hiato)),
-    type = "scatter",
-    mode = "lines",
-    name = "Hiato do produto"
-  ) %>%
-  add_trace(
-    data = hiato_ifi,
-    x = ~as.Date(data),
-    y = ~as.numeric(gsub(",", ".", lim_inf)),
-    type = "scatter",
-    mode = "lines",
-    line = list(color = "orange", dash = "dash"),
-    name = "Limite inferior"
-  ) %>%
-  add_trace(
-    data = hiato_ifi,
-    x = ~as.Date(data),
-    y = ~as.numeric(gsub(",", ".", lim_sup)),
-    type = "scatter",
-    mode = "lines",
-    line = list(color = "orange", dash = "dash"),
-    name = "Limite superior"
-  ) %>%
-  layout(
-    xaxis = list(title = " ", rangeslider = list(thickness = 0.05)),
-    yaxis = list(title = "%", autorange = TRUE),
-    legend = list(
-      orientation = "h",
-      x = 0.5,
-      y = -0.2,
-      xanchor = "center"
-    )
-  )
-```
-
-Column {data-width=400} {.tabset}
------------------------------------------------------------------------
-### Quadro-síntese (%)
-```{r}
-reactable(
-  hiato_ifi[, -5],
-  columns = list(
-    data_fmt = colDef(
-      name = "Trimestre",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    lim_inf = colDef(
-      name = "Limite inferior",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    hiato = colDef(
-      name = "Hiato do produto",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    lim_sup = colDef(
-      name = "Limite superior",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
 ```
 
 # Pesquisa Mensal de Serviços (PMS) {data-navmenu="Produção"}
@@ -20972,8 +23182,6 @@ plot_ly(
   rangeslider(thickness = 0.05)
 ```
 
-
-
 # Pesquisa Mensal do Comércio (PMC) {data-navmenu="Produção"}
 
 Column {.sidebar} {data-width=100}
@@ -21128,30 +23336,57 @@ reactable(
 )
 ```
 
-# Utilização da capacidade instalada (Ind. de transformação) {data-navmenu="Produção"}
+# Pesquisa Trimestral do Abate de Animais {data-navmenu="Produção"}
 
 Column {.sidebar} {data-width=200}
 -----------------------------------------------------------------------
-A **utilização da capacidade instalada (UCI)** é compreendida majoritariamente pelas empresas da indústria de transformação como o percentual de ocupação dos fatores capital e trabalho no mês de realização da pesquisa. O informante deve escolher uma entre as nove faixas apresentadas no questionário: 0% (empresa paralisada); de 0% a 19%; 20% a 39%; 40% a 59%; 60% a 69%; 70% a 79%; 80% a 89%; 90 a 99%; ou 100% (plena capacidade). Para efeito de cálculo da UCI média, a faixa escolhida pela empresa é substituída por um único número, representativo do ponto médio daquela faixa. O conjunto de informantes é composto por grandes, médias e pequenas empresas industriais, representativas do universo empresarial da indústria de transformação.
+A **Pesquisa Trimestral do Abate** investiga informações sobre a quantidade de animais abatidos e o peso total das carcaças, por espécie pesquisada, tendo como unidade de coleta o estabelecimento que efetua o abate sob fiscalização sanitária federal, estadual ou municipal. A pesquisa fornece informações sobre o total de cabeças abatidas e o peso total das carcaças para as espécies de bovinos (bois, vacas, novilhos e novilhas), suínos e frangos.
 
 <br>
 
-**Fonte:** Fundação Getúlio Vargas via código [24352](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=24352) do [Sistema Gerenciador de Séries Temproais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9203-pesquisas-trimestrais-do-abate-de-animais.html?=&t=o-que-e), tabelas [1092](https://sidra.ibge.gov.br/tabela/1092), [1093](https://sidra.ibge.gov.br/tabela/1093) e [1094](https://sidra.ibge.gov.br/tabela/1094) do banco de dados Sidra
 
 Column {data-width=400} {.tabset}
 -----------------------------------------------------------------------
-### Utilização da capacidade instalada (indústria de transformação)
+### Bovinos
 ```{r}
 plot_ly(
-  data = uci, 
+  data = pta_graph, 
   x = ~date, 
-  y = ~as.numeric(gsub(",", ".", valor_uci)),
-  type = "scatter",
-  mode = "lines"
+  y = ~as.numeric(gsub(",", ".", valor_bovinos)),
+  type = "bar"
 ) %>%
   layout(
     xaxis = list(title = " "),
-    yaxis = list(title = "%")
+    yaxis = list(title = "Bovinos abatidos (cabeças)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Suínos
+```{r}
+plot_ly(
+  data = pta_graph, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_suinos)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Suínos abatidos (cabeças)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Frangos
+```{r}
+plot_ly(
+  data = pta_graph, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_frangos)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Frangos abatidos (cabeças)")
   ) %>% rangeslider(thickness = 0.05)
 ```
 
@@ -21160,20 +23395,125 @@ Column {data-width=400} {.tabset}
 ### Quadro-síntese
 ```{r}
 reactable(
-  uci[, -4],
+  pta[, -5],
   columns = list(
     data_fmt = colDef(
-      name = "Mês",
+      name = "Trimestre",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    valor_uci = colDef(
-      name = "Utilização da capacidade instalada (%)",
+    valor_bovinos = colDef(
+      name = "Bovinos abatidos (cabeças)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
-    var_mg = colDef(
-      name = "Variação mensal (p.p.)",
+    valor_suinos = colDef(
+      name = "Suínos abatidos (cabeças)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_frangos = colDef(
+      name = "Frangos abatidos (cabeças)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Pesquisa Trimestral do Leite {data-navmenu="Produção"}
+
+Column {.sidebar} {data-width=150}
+-----------------------------------------------------------------------
+A **Pesquisa Trimestral do Leite** investiga informações sobre as quantidades de leite fluido cru, tendo como unidade de coleta o estabelecimento que se dedica à industrialização de leite de vaca e está sob fiscalização sanitária federal, estadual ou municipal.
+
+<br>
+
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9209-pesquisa-trimestral-do-leite.html?=&t=o-que-e), tabela [1086](https://sidra.ibge.gov.br/tabela/1086) do banco de dados Sidra
+
+Column {data-width=850} {.tabset}
+-----------------------------------------------------------------------
+### Leite cru adquirido
+```{r}
+plot_ly(
+  data = ptl_graph, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Quantidade de leite cru, resfriado ou não, adquirido`)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Qtde. leite cru adquirido (mil litros)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Leite cru industrializado
+```{r}
+plot_ly(
+  data = ptl_graph, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Quantidade de leite cru, resfriado ou não, industrializado`)),
+  type = "bar"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Qtde. leite cru industrializado (mil litros)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+### Preço médio
+```{r}
+plot_ly(
+  data = ptl_table, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", `Preço médio`)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "Preço médio (R$ por litro)")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=850} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  ptl_table[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Quantidade de leite cru, resfriado ou não, adquirido` = colDef(
+      name = "Leite cru adquirido (mil litros)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Quantidade de leite cru, resfriado ou não, industrializado` = colDef(
+      name = "Leite cru industrializado (mil litros)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Preço médio` = colDef(
+      name = "Preço médio (R$ por litro)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
@@ -21906,6 +24246,340 @@ reactable(
 )
 ```
 
+# Produção de Ovos de Galinha (POG) {data-navmenu="Produção"}
+
+Column {.sidebar} {data-width=100}
+-----------------------------------------------------------------------
+A pesquisa **Produção de Ovos de Galinha (POG)** fornece indicadores da variação da produção física de ovos de galinha, tendo como unidade de coleta o estabelecimento agropecuário que se dedica à atividade de produção de ovos de galinha, independentemente de sua finalidade, e com capacidade de alojamento de 10.000 ou mais galinhas poedeiras e/ou matrizeiras. Quanto à finalidade da produção, os dados tratam-se do somatório de consumo e incubação.
+
+<br>
+
+**Fonte:** [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/estatisticas/economicas/agricultura-e-pecuaria/9216-pesquisa-trimestral-da-producao-de-ovos-de-galinha.html?edicao=20753&t=o-que-e), tabela[7524](https://sidra.ibge.gov.br/tabela/7524) do banco de dados Sidra
+
+Column {data-width=900} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  pog[, -5],
+  columns = list(
+    data_fmt = colDef(
+      name = "Trimestre",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Número de informantes` = colDef(
+      name = "Nº de informantes (unidades)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Número de cabeças de galinhas poedeiras nos estabelecimentos agropecuários` = colDef(
+      name = "Nº de cabeças de galinhas poedeiras nos estabelecimentos agropecuários (unidades)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    `Quantidade de ovos produzidos` = colDef(
+      name = "Quantidade de ovos produzidos (mil dúzias)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),  
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Utilização da capacidade instalada (Ind. de transformação) {data-navmenu="Produção"}
+
+Column {.sidebar} {data-width=200}
+-----------------------------------------------------------------------
+A **utilização da capacidade instalada (UCI)** é compreendida majoritariamente pelas empresas da indústria de transformação como o percentual de ocupação dos fatores capital e trabalho no mês de realização da pesquisa. O informante deve escolher uma entre as nove faixas apresentadas no questionário: 0% (empresa paralisada); de 0% a 19%; 20% a 39%; 40% a 59%; 60% a 69%; 70% a 79%; 80% a 89%; 90 a 99%; ou 100% (plena capacidade). Para efeito de cálculo da UCI média, a faixa escolhida pela empresa é substituída por um único número, representativo do ponto médio daquela faixa. O conjunto de informantes é composto por grandes, médias e pequenas empresas industriais, representativas do universo empresarial da indústria de transformação.
+
+<br>
+
+**Fonte:** Fundação Getúlio Vargas via código [24352](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=24352) do [Sistema Gerenciador de Séries Temproais do Banco Central do Brasil (SGS/BCB)](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries)
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Utilização da capacidade instalada (indústria de transformação)
+```{r}
+plot_ly(
+  data = uci, 
+  x = ~date, 
+  y = ~as.numeric(gsub(",", ".", valor_uci)),
+  type = "scatter",
+  mode = "lines"
+) %>%
+  layout(
+    xaxis = list(title = " "),
+    yaxis = list(title = "%")
+  ) %>% rangeslider(thickness = 0.05)
+```
+
+Column {data-width=400} {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese
+```{r}
+reactable(
+  uci[, -4],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_uci = colDef(
+      name = "Utilização da capacidade instalada (%)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_mg = colDef(
+      name = "Variação mensal (p.p.)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+# Movimento de câmbio contratado {data-navmenu="Taxa de câmbio"}
+
+Column {.sidebar} {data-width=250}
+-----------------------------------------------------------------------
+**Câmbio contratado comercial (exportações):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportações de bens. Códigos [13962](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13962) (diário), [11045](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11045) (mensal) e [11056](11056) (anual) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB).
+
+**Câmbio contratado comercial (importações):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais ao mercado não financeiro relativas a importações de bens. Códigos [13966](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13966) (diário), [11046](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11046) (mensal) e [11057](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11057) (anual) no SGS/BCB.
+
+**Câmbio contratado comercial (saldo):** Resultado líquido de contratações de câmbio comercial de exportação e de importação. Códigos [13967](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13967) (diário), [11047](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11047) (mensal) e [11058](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11058) (anual) no SGS/BCB.
+
+**Câmbio contratado financeiro (compras):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportação de serviços e ingressos de capitais estrangeiros ou retorno de capitais brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos [13968](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13968) (diário), [11048](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11048) (mensal) e [11059](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11059) (anual) no SGS/BCB.
+
+**Câmbio contratado financeiro (vendas):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a importação de serviços e saídas de capitais estrangeiros ou brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos [13969](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13969) (diário), [11049](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11049) (mensal) e [11060](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11060) (anual) no SGS/BCB.
+
+**Câmbio contratado financeiro (saldo):** Resultado líquido de contratações de câmbio financeiro de compra e venda. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos [13970](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13970) (diário), [11050](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11050) (mensal) e [11061](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11061) (anual) no SGS/BCB.
+
+**Câmbio contratado (saldo):** Somatório do saldo do câmbio contratado comercial e do saldo do câmbio contratado financeiro.
+
+<br>
+
+Todos os valores estão em milhões de dólares.
+
+Column {data-width=750}  {.tabset}
+-----------------------------------------------------------------------
+### Quadro-síntese (diário)
+```{r, results='asis'}
+reactable(
+  cambio_contratado[, -9],
+  columns = list(
+    data_fmt = colDef(
+      name = "Data",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_exp = colDef(
+      name = "Comercial exportação (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_imp = colDef(
+      name = "Comercial importação (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo_com = colDef(
+      name = "Saldo comercial (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_compra = colDef(
+      name = "Financeiro compra (4)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_venda = colDef(
+      name = "Financeiro venda (5)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo_financ = colDef(
+      name = "Saldo financeiro (6) (4-5)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_saldo_total = colDef(
+      name = "Saldo câmbio contratado (7) (3+6)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Quadro-síntese (mensal)
+```{r, results='asis'}
+reactable(
+  cambio_contratado_mensal[, -9],
+  columns = list(
+    data_fmt = colDef(
+      name = "Mês",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_exp_mensal = colDef(
+      name = "Comercial exportação (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_imp_mensal = colDef(
+      name = "Comercial importação (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_com_saldo_mensal = colDef(
+      name = "Saldo comercial (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_compra_mensal = colDef(
+      name = "Financeiro compra (4)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_venda_mensal = colDef(
+      name = "Financeiro venda (5)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_fin_saldo_mensal = colDef(
+      name = "Saldo financeiro (6) (4-5)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    cc_saldo = colDef(
+      name = "Saldo câmbio contratado (7) (3+6)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
+
+### Quadro-síntese (anual)
+```{r, results='asis'}
+reactable(
+  cambio_contratado_anual[, -9],
+  columns = list(
+    data_fmt = colDef(
+      name = "Ano",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_exp_anual = colDef(
+      name = "Comercial exportação (1)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_imp_anual = colDef(
+      name = "Comercial importação (2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_com_saldo_anual = colDef(
+      name = "Saldo comercial (3) (1-2)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_compra_anual = colDef(
+      name = "Financeiro compra (4)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_venda_anual = colDef(
+      name = "Financeiro venda (5)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    valor_fin_saldo_anual = colDef(
+      name = "Saldo financeiro (6) (4-5)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    cc_saldo = colDef(
+      name = "Saldo câmbio contratado (7) (3+6)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    )
+  ),
+  bordered = TRUE,
+  highlight = TRUE,
+  striped = TRUE,
+  resizable = TRUE,
+  defaultPageSize = 25,
+  theme = reactableTheme(
+    color = "black",
+    backgroundColor = "white",
+    borderColor = "black",
+    stripedColor = "#D6EAF8",
+    cellPadding = "8px 12px",
+    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
+    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
+  )
+)
+```
 
 # Taxa de câmbio comercial {data-navmenu="Taxa de câmbio"}
 
@@ -22230,219 +24904,6 @@ reactable(
     ),
     var_12m_efet = colDef(
       name = "Variação em 12 meses (%)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-# Movimento de câmbio contratado {data-navmenu="Taxa de câmbio"}
-
-Column {.sidebar} {data-width=250}
------------------------------------------------------------------------
-**Câmbio contratado comercial (exportações):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportações de bens. Códigos [13962](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13962) (diário), [11045](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11045) (mensal) e [11056](11056) (anual) no Sistema Gerenciador de Séries Temporais do Banco Central do Brasil (SGS/BCB).
-
-**Câmbio contratado comercial (importações):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais ao mercado não financeiro relativas a importações de bens. Códigos [13966](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13966) (diário), [11046](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11046) (mensal) e [11057](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11057) (anual) no SGS/BCB.
-
-**Câmbio contratado comercial (saldo):** Resultado líquido de contratações de câmbio comercial de exportação e de importação. Códigos [13967](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13967) (diário), [11047](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11047) (mensal) e [11058](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11058) (anual) no SGS/BCB.
-
-**Câmbio contratado financeiro (compras):** Somatório das contratações de compra de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a exportação de serviços e ingressos de capitais estrangeiros ou retorno de capitais brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos [13968](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13968) (diário), [11048](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11048) (mensal) e [11059](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11059) (anual) no SGS/BCB.
-
-**Câmbio contratado financeiro (vendas):** Somatório das contratações de venda de moeda estrangeira efetuadas pelos bancos comerciais junto ao mercado não financeiro relativas a importação de serviços e saídas de capitais estrangeiros ou brasileiros. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos [13969](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13969) (diário), [11049](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11049) (mensal) e [11060](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11060) (anual) no SGS/BCB.
-
-**Câmbio contratado financeiro (saldo):** Resultado líquido de contratações de câmbio financeiro de compra e venda. Não inclui operações de câmbio de compra e venda junto ao Banco Central do Brasil. Códigos [13970](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=13970) (diário), [11050](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11050) (mensal) e [11061](https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=11061) (anual) no SGS/BCB.
-
-**Câmbio contratado (saldo):** Somatório do saldo do câmbio contratado comercial e do saldo do câmbio contratado financeiro.
-
-<br>
-
-Todos os valores estão em milhões de dólares.
-
-Column {data-width=750}  {.tabset}
------------------------------------------------------------------------
-### Quadro-síntese (diário)
-```{r, results='asis'}
-reactable(
-  cambio_contratado[, -9],
-  columns = list(
-    data_fmt = colDef(
-      name = "Data",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_exp = colDef(
-      name = "Comercial exportação (1)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_imp = colDef(
-      name = "Comercial importação (2)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_saldo_com = colDef(
-      name = "Saldo comercial (3) (1-2)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_compra = colDef(
-      name = "Financeiro compra (4)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_venda = colDef(
-      name = "Financeiro venda (5)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_saldo_financ = colDef(
-      name = "Saldo financeiro (6) (4-5)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_saldo_total = colDef(
-      name = "Saldo câmbio contratado (7) (3+6)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-### Quadro-síntese (mensal)
-```{r, results='asis'}
-reactable(
-  cambio_contratado_mensal[, -9],
-  columns = list(
-    data_fmt = colDef(
-      name = "Mês",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_exp_mensal = colDef(
-      name = "Comercial exportação (1)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_imp_mensal = colDef(
-      name = "Comercial importação (2)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_com_saldo_mensal = colDef(
-      name = "Saldo comercial (3) (1-2)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_compra_mensal = colDef(
-      name = "Financeiro compra (4)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_venda_mensal = colDef(
-      name = "Financeiro venda (5)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_fin_saldo_mensal = colDef(
-      name = "Saldo financeiro (6) (4-5)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    cc_saldo = colDef(
-      name = "Saldo câmbio contratado (7) (3+6)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    )
-  ),
-  bordered = TRUE,
-  highlight = TRUE,
-  striped = TRUE,
-  resizable = TRUE,
-  defaultPageSize = 25,
-  theme = reactableTheme(
-    color = "black",
-    backgroundColor = "white",
-    borderColor = "black",
-    stripedColor = "#D6EAF8",
-    cellPadding = "8px 12px",
-    style = list(fontFamily = "Segoe UI, sans-serif", fontSize = "14px"),
-    headerStyle = list(background = "white", fontWeight = "bold", textAlign = "center", verticalAlign = "middle")
-  )
-)
-```
-
-### Quadro-síntese (anual)
-```{r, results='asis'}
-reactable(
-  cambio_contratado_anual[, -9],
-  columns = list(
-    data_fmt = colDef(
-      name = "Ano",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_exp_anual = colDef(
-      name = "Comercial exportação (1)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_imp_anual = colDef(
-      name = "Comercial importação (2)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_com_saldo_anual = colDef(
-      name = "Saldo comercial (3) (1-2)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_compra_anual = colDef(
-      name = "Financeiro compra (4)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_venda_anual = colDef(
-      name = "Financeiro venda (5)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    valor_fin_saldo_anual = colDef(
-      name = "Saldo financeiro (6) (4-5)",
-      align = "center",
-      headerStyle = list(textAlign = "center", verticalAlign = "middle")
-    ),
-    cc_saldo = colDef(
-      name = "Saldo câmbio contratado (7) (3+6)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
