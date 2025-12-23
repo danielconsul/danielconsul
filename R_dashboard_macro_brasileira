@@ -53,7 +53,15 @@ carry_over <- carry_over %>% mutate(
 ) %>% mutate(
   data_fmt = format(date, "%m/%Y"),
   carry_over = number(carry_over, decimal.mark = ",", accuracy = 0.01)
-) %>% arrange(desc(date)) %>% select(data_fmt, carry_over, date)
+) %>% select(data_fmt, carry_over, date)
+
+carry_over_anual <- carry_over %>% filter(str_starts(data_fmt, "04")) %>% mutate(
+  data_fmt = format(date, "%Y")
+) %>% mutate(
+  date = seq.Date(from = floor_date(min(date), unit = "year"),
+                  to = floor_date(max(date), unit = "year"),
+                  by = "year")
+) %>% arrange(desc(date))
 
 # CONSUMER PRICE INDEX - US INFLATION RATE:
 cpi <- fredr(
@@ -2756,11 +2764,13 @@ uci <- get_series(
   code = c(valor_uci = 24352)
 ) %>% mutate(
   data_fmt = format(date, "%m/%Y"),
-  var_mg = valor_uci - lag(valor_uci)
+  var_mg = valor_uci - lag(valor_uci),
+  var_12m = valor_uci - lag(valor_uci, 12)
 ) %>% mutate(
   valor_uci = number(valor_uci, decimal.mark = ",", accuracy = 0.1),
   var_mg = number(var_mg, decimal.mark = ",", accuracy = 0.1),
-) %>% select(data_fmt, valor_uci, var_mg, date) %>% arrange(desc(date))
+  var_12m = number(var_12m, decimal.mark = ",", accuracy = 0.1)
+) %>% select(data_fmt, valor_uci, var_mg, var_12m, date) %>% arrange(desc(date))
 
 # IPC-DI:
 ipc_di <- ipeadata(code = "IGP12_IPCG12") %>% mutate(
@@ -5855,7 +5865,7 @@ Columns {.sidebar} {data-width=250}
 
 <div style="font-size:18px">
 Este _dashboard_ apresenta de forma centralizada uma série de dados macroeconômicos brasileiros nas últimas décadas.
-São apresentadas informações referentes ao balanço de pagamentos, termos de troca, reservas internacionais, preços e índices de commodities, estatísticas fiscais, inflação, mercado de trabalho, estatísticas monetárias, produção e taxa de câmbio através de dados com frequências diárias, mensais, trimestrais e anuais coletados junto a órgãos como Banco Central do Brasil (BCB), Federal Reserve Economic Data (FRED), Instituto Brasileiro de Geografia e Estatística (IBGE) e Instituto de Pesquisa Econômica Aplicada (IPEA).
+São apresentadas informações referentes ao balanço de pagamentos, termos de troca, reservas internacionais, preços e índices de commodities, estatísticas fiscais, inflação, mercado de trabalho, estatísticas monetárias, produção e taxa de câmbio através de dados com frequências diárias, mensais, trimestrais e anuais coletados junto a órgãos como Banco Central do Brasil (BCB), Federal Reserve (FED), Instituto Brasileiro de Geografia e Estatística (IBGE) e Instituto de Pesquisa Econômica Aplicada (IPEA).
 
 <br><br>
 
@@ -6312,7 +6322,7 @@ reactable(
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
     valor_exp = colDef(
-      name = "Exportações (US$ bilhões)",
+      name = "Exportações",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -16472,7 +16482,7 @@ reactable(
 )
 ```
 
-### Tx. acum. em 12 meses (Grupos) (%)
+### Tx. M/M-12 (Grupos) (%)
 ```{r}
 reactable(
   ipca_grupos_acum_12m[, -12],
@@ -16731,7 +16741,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Tx. acum. em 12 meses (Gráfico)
+### Tx. M/M-12 (Gráfico)
 ```{r}
 plot_ly(
   data = ipca, 
@@ -16928,7 +16938,7 @@ reactable(
 )
 ```
 
-### Tx. acum. em 12 meses (Grupos) (%)
+### Tx. M/M-12 (Grupos) (%)
 ```{r}
 reactable(
   ipca15_grupos_acum_12m[, -12],
@@ -17114,7 +17124,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Tx. acum. em 12 meses (Gráfico)
+### Tx. M/M-12 (Gráfico)
 ```{r}
 plot_ly(
   data = ipca_15, 
@@ -17541,7 +17551,7 @@ reactable(
 )
 ```
 
-### Tx. acum. em 12 meses (Seções e atividades) (%)
+### Tx. M/M-12 (Seções e atividades) (%)
 ```{r}
 reactable(
   ipp_12m[, -28],
@@ -17973,7 +17983,7 @@ reactable(
 )
 ```
 
-### Tx. acum. em 12 meses (GCE) (%)
+### Tx. M/M-12 (GCE) (%)
 ```{r}
 reactable(
   ipp_gce_12m[, -8],
@@ -18317,7 +18327,7 @@ reactable(
 )
 ```
 
-### Tx. acum. em 12 meses (Grupos) (%)
+### Tx. M/M-12 (Grupos) (%)
 ```{r}
 reactable(
   ipp_gis_12m[, -25],
@@ -18539,7 +18549,7 @@ plot_ly() %>%
   )
 ```
 
-### Tx. acum. em 12 meses (Gráfico)
+### Tx. M/M-12 (Gráfico)
 ```{r}
 plot_ly() %>%
   add_trace(
@@ -19031,7 +19041,7 @@ reactable(
 )
 ```
 
-### Tx. acum. em 12 meses (Grupos) (%)
+### Tx. M/M-12 (Grupos) (%)
 ```{r}
 reactable(
   inpc_grupos_acum_12m[, -12],
@@ -19215,7 +19225,7 @@ plot_ly(
   ) %>% rangeslider(thickness = 0.05)
 ```
 
-### Tx. acum. em 12 meses (Gráfico)
+### Tx. M/M-12 (Gráfico)
 ```{r}
 plot_ly(
   data = inpc, 
@@ -23781,7 +23791,11 @@ O **_carry over_** ou **carregamento estatístico** ou **herança estatística**
 
 <br>
 
-Carry over = (4 * PIB último trimestre) / PIB acumulado nos últimos quatro trimestres
+Carry over = (4 * PIB último trimestre) / PIB acumulado nos últimos quatro trimestres = PIB último trimestre / PIB médio dos últimos quatro trimestres
+
+<br>
+
+Deve-se utilizar a série dessazonalizada do PIB.
 
 <br>
 
@@ -23792,7 +23806,7 @@ Column {data-width=400} {.tabset}
 ### Carregamento estatístico
 ```{r}
 plot_ly(
-  data = carry_over, 
+  data = carry_over_anual, 
   x = ~date, 
   y = ~as.numeric(gsub(",", ".", carry_over)),
   type = "bar"
@@ -23812,10 +23826,10 @@ Column {data-width=400} {.tabset}
 ### Quadro-síntese
 ```{r}
 reactable(
-  carry_over[, -3],
+  carry_over_anual[, -3],
   columns = list(
     data_fmt = colDef(
-      name = "Trimestre",
+      name = "Ano",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     ),
@@ -24640,7 +24654,7 @@ Column {data-width=400} {.tabset}
 ### Quadro-síntese
 ```{r}
 reactable(
-  uci[, -4],
+  uci[, -5],
   columns = list(
     data_fmt = colDef(
       name = "Mês",
@@ -24654,6 +24668,11 @@ reactable(
     ),
     var_mg = colDef(
       name = "Variação mensal (p.p.)",
+      align = "center",
+      headerStyle = list(textAlign = "center", verticalAlign = "middle")
+    ),
+    var_12m = colDef(
+      name = "Variação em 12 meses (p.p.)",
       align = "center",
       headerStyle = list(textAlign = "center", verticalAlign = "middle")
     )
